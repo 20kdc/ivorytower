@@ -12,11 +12,11 @@ gen_mingw_wineifwehaveit() {
 gen_mingw_nostl() {
 	cat <<EOF
 [binaries]
-c = '$2-w64-mingw32-gcc-win32'
-cpp = '$2-w64-mingw32-g++-win32'
-ar = '$2-w64-mingw32-ar'
-windres = '$2-w64-mingw32-windres'
-strip = '$2-w64-mingw32-strip'
+c = '$1-w64-mingw32-gcc-win32'
+cpp = '$1-w64-mingw32-g++-win32'
+ar = '$1-w64-mingw32-ar'
+windres = '$1-w64-mingw32-windres'
+strip = '$1-w64-mingw32-strip'
 EOF
 	gen_mingw_wineifwehaveit
 cat <<EOF
@@ -24,11 +24,9 @@ cat <<EOF
 [properties]
 needs_exe_wrapper = true
 
-[host_machine]
-system = 'windows'
-cpu_family = '$1'
-cpu = '$2'
-endian = 'little'
+EOF
+cross_meson_mach windows "$1"
+cat <<EOF
 
 [built-in options]
 c_args = ['-fno-exceptions']
@@ -41,11 +39,11 @@ EOF
 gen_mingw_staticstl() {
 	cat <<EOF
 [binaries]
-c = '$2-w64-mingw32-gcc-win32'
-cpp = '$2-w64-mingw32-g++-win32'
-ar = '$2-w64-mingw32-ar'
-windres = '$2-w64-mingw32-windres'
-strip = '$2-w64-mingw32-strip'
+c = '$1-w64-mingw32-gcc-win32'
+cpp = '$1-w64-mingw32-g++-win32'
+ar = '$1-w64-mingw32-ar'
+windres = '$1-w64-mingw32-windres'
+strip = '$1-w64-mingw32-strip'
 EOF
 	gen_mingw_wineifwehaveit
 cat <<EOF
@@ -53,11 +51,9 @@ cat <<EOF
 [properties]
 needs_exe_wrapper = true
 
-[host_machine]
-system = 'windows'
-cpu_family = '$1'
-cpu = '$2'
-endian = 'little'
+EOF
+cross_meson_mach windows "$1"
+cat <<EOF
 
 [built-in options]
 c_args = []
@@ -74,10 +70,10 @@ EOF
 echo " Installing cross files..."
 echo
 # windows
-gen_mingw_nostl "x86" "i686" | cross_install "ivt_wx32_nostl"
-gen_mingw_nostl "x86_64" "x86_64" | cross_install "ivt_wx64_nostl"
-gen_mingw_staticstl "x86" "i686" | cross_install "ivt_wx32_staticstl"
-gen_mingw_staticstl "x86_64" "x86_64" | cross_install "ivt_wx64_staticstl"
+gen_mingw_nostl i686 | cross_install "ivt_wx32_nostl"
+gen_mingw_nostl x86_64 | cross_install "ivt_wx64_nostl"
+gen_mingw_staticstl i686 | cross_install "ivt_wx32_staticstl"
+gen_mingw_staticstl x86_64 | cross_install "ivt_wx64_staticstl"
 # linux
 gen_distrobox "scout-i386" | cross_install "ivt_lgx32_scout"
 gen_distrobox "scout" | cross_install "ivt_lgx64_scout"

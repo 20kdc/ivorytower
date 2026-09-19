@@ -12,8 +12,12 @@ itsetup_decldep wine
 ITSETUP_DEPS="distrobox meson wine"
 
 # XDG_DATA_DIRS is multiple-dir, which is awkward, so just assume this is included. This is all we can do
-MESON_SHARE="$HOME/.local/share/meson"
-MESON_CROSS="$MESON_SHARE/cross"
+if [ "$ITSETUP_MESON_SHARE"= "" ]; then
+	ITSETUP_MESON_SHARE="$HOME/.local/share/meson"
+fi
+if [ "$ITSETUP_MESON_CROSS"= "" ]; then
+	ITSETUP_MESON_CROSS="$ITSETUP_MESON_SHARE/cross"
+fi
 
 diagnostic() {
 	itsetup_whatami
@@ -26,8 +30,8 @@ diagnostic() {
 	echo
 	echo "Other:"
 	echo
-	itsetup_printvar MESON_SHARE
-	itsetup_printvar MESON_CROSS
+	itsetup_printvar ITSETUP_MESON_SHARE
+	itsetup_printvar ITSETUP_MESON_CROSS
 	echo
 }
 
