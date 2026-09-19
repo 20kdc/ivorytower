@@ -1,10 +1,5 @@
-diagnostic
-
-cross_install() {
-	mkdir -p "$MESON_CROSS"
-	cat > "$MESON_CROSS/$1"
-	echo "  $1"
-}
+# Code is still being moved out of this file into separate components.
+# This process will take some time.
 
 # -- Windows strategy --
 
@@ -69,28 +64,6 @@ c_args = []
 c_link_args = ['-static-libgcc']
 cpp_args = []
 cpp_link_args = ['-static-libgcc', '-static-libstdc++']
-EOF
-}
-
-# -- Linux strategy --
-
-gen_distrobox() {
-cat <<EOF
-[binaries]
-c = [ 'distrobox', 'enter', '$1', '--', 'gcc' ]
-cpp = [ 'distrobox', 'enter', '$1', '--', 'g++' ]
-ar = [ 'distrobox', 'enter', '$1', '--', 'ar' ]
-strip = [ 'distrobox', 'enter', '$1', '--', 'strip' ]
-
-[host_machine]
-system = 'linux'
-cpu_family = 'x86'
-cpu = 'i686'
-endian = 'little'
-
-[built-in options]
-cpp_args = []
-cpp_link_args = []
 EOF
 }
 

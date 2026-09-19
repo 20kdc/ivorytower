@@ -1,0 +1,51 @@
+#!/bin/sh -e
+
+ITSETUP_VER="version 0.0r1"
+if [ "$BASH_SOURCE" != "" ]; then
+	# if we're being invoked by bash, use BASH_SOURCE
+	ITSETUP_WHERE="`readlink -e "$BASH_SOURCE"`"
+else
+	# alright, bet on zsh then
+	ITSETUP_WHERE="`readlink -e "$0"`"
+fi
+ITSETUP_DIR="`dirname $ITSETUP_WHERE`"
+
+# core library/structure
+
+itsetup_printvar() {
+	eval "echo \"$1=\$$1\""
+}
+
+itsetup_whatami() {
+	echo "ivorytower-setup $ITSETUP_VER"
+	itsetup_printvar ITSETUP_WHERE
+	itsetup_printvar ITSETUP_DIR
+
+	echo
+}
+
+# general stuff
+
+. "$ITSETUP_DIR/segments/crosssys.sh"
+. "$ITSETUP_DIR/segments/config.sh"
+. "$ITSETUP_DIR/segments/compsys.sh"
+
+# components
+
+. "$ITSETUP_DIR/segments/z_steamrt.sh"
+
+# arg parser. would be nice to have this as a separate thing but *shrugs*
+while [ "$#" -gt 0 ]; do
+	ITSETUP_ARG="$1"
+	if eval "\"arg_$1\""; then
+		if [ "$ITSETUP_EXIT_STATUS" != "" ]; then
+			exit "$ITSETUP_EXIT_STATUS"
+		fi
+	else
+		echo "'$1' failed to parse, consider: $0 help"
+		exit 1
+	fi
+	shift
+done
+
+itsetup_runner

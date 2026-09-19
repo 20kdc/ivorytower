@@ -1,4 +1,0 @@
-#!/bin/sh
-# Concatenates files to create Ivory Tower's setup program.
-cat segments/* > ivorytower-setup
-chmod +x ivorytower-setup
