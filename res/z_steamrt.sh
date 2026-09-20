@@ -21,20 +21,13 @@ distrobox_prepare() {
 	fi
 }
 
-distrobox_genbinaries() {
+distrobox_gencomp() {
 cat <<EOF
 [binaries]
 c = [ 'distrobox', 'enter', '$1', '--', 'gcc' ]
 cpp = [ 'distrobox', 'enter', '$1', '--', 'g++' ]
 ar = [ 'distrobox', 'enter', '$1', '--', 'ar' ]
 strip = [ 'distrobox', 'enter', '$1', '--', 'strip' ]
-EOF
-}
-
-distrobox_gencomp() {
-distrobox_genbinaries "$1"
-cross_meson_mach linux "$2"
-cat <<EOF
 
 [built-in options]
 cpp_args = []
@@ -44,15 +37,15 @@ EOF
 
 comp_scout() {
 	distrobox_prepare registry.gitlab.steamos.cloud/steamrt/scout/sdk scout
-	distrobox_gencomp "scout" "x86_64" | cross_install "ivt_lgx64_scout"
+	distrobox_gencomp "scout" | cross_install lgx64 stl_scout
 }
 
 comp_scout_i386() {
 	distrobox_prepare registry.gitlab.steamos.cloud/steamrt/scout/sdk/i386 scout-i386
-	distrobox_gencomp "scout-i386" "i686" | cross_install "ivt_lgx32_scout"
+	distrobox_gencomp "scout-i386" | cross_install lgx32 stl_scout
 }
 
 comp_sniper() {
 	distrobox_prepare registry.gitlab.steamos.cloud/steamrt/sniper/sdk sniper
-	distrobox_gencomp "sniper" "x86_64" | cross_install "ivt_lgx64_sniper"
+	distrobox_gencomp "sniper" | cross_install lgx64 stl_sniper
 }

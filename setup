@@ -26,13 +26,13 @@ itsetup_whatami() {
 
 # general stuff
 
-. "$ITSETUP_DIR/segments/crosssys.sh"
-. "$ITSETUP_DIR/segments/config.sh"
-. "$ITSETUP_DIR/segments/compsys.sh"
+. "$ITSETUP_DIR/res/crosssys.sh"
+. "$ITSETUP_DIR/res/config.sh"
+. "$ITSETUP_DIR/res/compsys.sh"
 
 # components
 
-. "$ITSETUP_DIR/segments/z_steamrt.sh"
+. "$ITSETUP_DIR/res/z_steamrt.sh"
 
 # arg parser. would be nice to have this as a separate thing but *shrugs*
 while [ "$#" -gt 0 ]; do
