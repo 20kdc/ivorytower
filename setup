@@ -14,6 +14,6 @@ setupcore_build() {
 	meson compile -C "$ITSETUP_DIR/build"
 }
 
-setupcore_build > "$ITSETUP_DIR/setupcore_build.log" || (echo "Error during ivorytower setup, check setupcore_build.log" ; exit 1)
+setupcore_build > "$ITSETUP_DIR/setupcore_build.log" || (echo "Error during ivorytower setup:" ; cat "$ITSETUP_DIR/setupcore_build.log" ; exit 1)
 
 exec "$ITSETUP_DIR/build/setupcore" "$@"
