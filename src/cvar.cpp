@@ -42,11 +42,11 @@ bool CvarBool::parse(const char * val) {
 	return false;
 }
 
-CString CvarBool::get() {
-	return CString(value ? "1" : "0");
+std::string CvarBool::get() {
+	return std::string(value ? "1" : "0");
 }
 
-CvarStr::CvarStr(const char * name, const char * purpose, CStr def) : Cvar(name, purpose), value(def) {
+CvarStr::CvarStr(const char * name, const char * purpose, std::string def) : Cvar(name, purpose), value(def) {
 }
 
 bool CvarStr::parse(const char * val) {
@@ -54,8 +54,8 @@ bool CvarStr::parse(const char * val) {
 	return true;
 }
 
-CString CvarStr::get() {
-	return CString(value);
+std::string CvarStr::get() {
+	return value;
 }
 
 Component::Component(const char * name, const char * purpose, bool def) : CvarBool(name, purpose, def) {

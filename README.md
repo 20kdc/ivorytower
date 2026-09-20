@@ -37,9 +37,12 @@ A toolchain is specified as a set of four components, separated by `_`:
 			* `a64`: aarch64
 3. _C++ STL disposition,_ Among other things, some toolchains have ABI or licensing complexity associated with their C++ standard library.
 	* `stl`: The toolchain STL is used in its default mode.
+		* For Linux, use this.
+			* I am aware <https://mesonbuild.com/Creating-Linux-binaries.html> says that different Linux distributions have binary-incompatible STLs.
+			* Valve uses dynamic STL (insofaras they use the STL at all), and more to the point, shadowing the system STL is a realistic risk that will break Mesa if it happens.
 	* `staticstl`: The toolchain STL is used in an explicitly static mode.
-		* Remember that you can disable RTTI and exceptions. If your project is multi-module, do this if at all possible.
-		* In this mode, you should take care to use _as little of the STL as possible_ if your project is multi-module. `dynamic_cast` is potentially a mismatch hazard.
+		* Remember that you can disable RTTI and exceptions. If your project is multi-module, strongly consider doing this.
+		* In this mode, you should take care to use _as little of the STL as possible_ at interface boundaries. `dynamic_cast` is potentially a mismatch hazard.
 		* An alternative was considered, but the nature of pure/deleted virtuals meant running a build for every toolchain during SDK install.
 	* `none`: The toolchain STL is suppressed. RTTI and exceptions are disabled. There is no replacement.
 		* For realistic C++ use, you will need to supply the following functions yourself:

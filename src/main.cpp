@@ -32,7 +32,8 @@ public:
 				continue;
 			if (dynamic_cast<Component *>(cvar))
 				continue;
-			printf(" %s: %s (currently '%s')\n", reg->name, reg->purpose, cvar->get().ptr);
+			auto val = cvar->get();
+			printf(" %s: %s (currently '%s')\n", reg->name, reg->purpose, val.c_str());
 		}
 		puts("");
 		return 0;

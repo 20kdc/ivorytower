@@ -12,6 +12,8 @@ setupcore = executable('setupcore',
 	'src/cvar.cpp',
 	'src/main.cpp',
 	'src/meson.cpp',
+	'src/names.cpp',
 	'src/util.cpp',
+	'src/z_distrobox.cpp',
 	version_cpp
 )

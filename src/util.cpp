@@ -1,23 +1,38 @@
+#include <alloca.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <spawn.h>
+#include <unistd.h>
+#include <wait.h>
 
 #include "iblis.h"
 
-char * iblis::strdup_checked(const char * src) {
-	char * res = strdup(src);
-	if (!res) {
-		puts("failed strdup");
-		exit(1);
+int iblis::runCmd(const std::string & cmd, const std::vector<std::string> & args) {
+	const char ** argv = (const char **) alloca(sizeof(char *) * (args.size() + 2));
+	size_t p = 0;
+	argv[p++] = cmd.c_str();
+	for (size_t i = 0; i < args.size(); i++)
+		argv[p++] = args[i].c_str();
+	argv[p++] = nullptr;
+	pid_t pid;
+	if (posix_spawnp(&pid, cmd.c_str(), nullptr, nullptr, (char * const *) argv, environ))
+		return 127;
+	while (1) {
+		int status;
+		if (waitpid(pid, &status, WUNTRACED) == -1)
+			return 127;
+		if (WIFEXITED(status) || WIFSIGNALED(status))
+			return WEXITSTATUS(status);
 	}
-	return res;
 }
 
-iblis::CString::CString(const iblis::CStr & a, const iblis::CStr & b) : CStr((char *) malloc(a.len() + b.len() + 1)) {
-	if (!ptr) {
-		puts("failed strcatdup");
-		exit(1);
-	}
-	strcpy((char *) ptr, a.ptr);
-	strcat((char *) ptr, b.ptr);
+// Writes a file.
+bool iblis::writeFile(const std::string & path, const std::string & content) {
+	FILE * data = fopen(path.c_str(), "wb");
+	if (!data)
+		return false;
+	fwrite(content.c_str(), content.length(), 1, data);
+	fclose(data);
+	return true;
 }

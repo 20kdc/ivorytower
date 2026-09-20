@@ -2,43 +2,16 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
+#include <string>
 
 /* ivorytower build initialization system */
 
 namespace iblis {
-	// util.cpp
-
-	char * strdup_checked(const char * src);
-
-	class CStr {
-	public:
-		const char * ptr;
-		CStr(const char * ptr) : ptr(ptr) {}
-		size_t len() const {
-			return strlen(ptr);
-		}
-	};
-
-	class CString : public CStr {
-	private:
-		explicit CString(char * give) : CStr(give) {}
-	public:
-		static CString takeown(char * alloc) {
-			return CString(alloc);
-		}
-		CString(const CString & other) : CStr(strdup_checked(other.ptr)) {}
-		CString(const CStr & other) : CStr(strdup_checked(other.ptr)) {}
-		CString(const CStr & a, const CStr & b);
-		CString & operator=(const CStr & other) {
-			char * newptr = strdup_checked(other.ptr);
-			free((char *) ptr);
-			ptr = newptr;
-			return *this;
-		}
-		~CString() {
-			free((char *) ptr);
-		}
-	};
+	// Runs a command, returns exit status.
+	int runCmd(const std::string & cmd, const std::vector<std::string> & args);
+	// Writes a file.
+	bool writeFile(const std::string & path, const std::string & content);
 
 	// cvar.cpp
 
@@ -73,10 +46,9 @@ namespace iblis {
 
 	class Cvar : public Registerable {
 	public:
-		const char * name;
 		Cvar(const char * name, const char * purpose);
 		virtual bool parse(const char * value) = 0;
-		virtual CString get() = 0;
+		virtual std::string get() = 0;
 	};
 
 	class CvarBool : public Cvar {
@@ -84,15 +56,15 @@ namespace iblis {
 		bool value;
 		CvarBool(const char * name, const char * purpose, bool def);
 		virtual bool parse(const char * value) override;
-		virtual CString get() override;
+		virtual std::string get() override;
 	};
 
 	class CvarStr : public Cvar {
 	public:
-		CString value;
-		CvarStr(const char * name, const char * purpose, CStr def);
+		std::string value;
+		CvarStr(const char * name, const char * purpose, std::string def);
 		virtual bool parse(const char * value) override;
-		virtual CString get() override;
+		virtual std::string get() override;
 	};
 
 	class Component : public CvarBool {
