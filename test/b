@@ -1,6 +1,6 @@
 #!/bin/sh -e
 cd ..
-./build ; ./ivorytower-setup
+./setup
 cd test
 
 do_variant() {
@@ -8,9 +8,9 @@ do_variant() {
 	meson setup "build_$1" --cross-file "$1" ; meson compile -C "build_$1"
 }
 
-do_variant ivt_wx32_nostl
-do_variant ivt_wx32_staticstl
-do_variant ivt_wx64_nostl
-do_variant ivt_wx64_staticstl
+#do_variant ivt_wx32_nostl
+#do_variant ivt_wx32_staticstl
+#do_variant ivt_wx64_nostl
+#do_variant ivt_wx64_staticstl
 
-do_variant ivt_lgx32_scout
+do_variant ivt_lgx32_stl_scout

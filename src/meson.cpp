@@ -119,23 +119,32 @@ std::string iblis::meson::makeCrossFile(const iblis::Machine & mach, const iblis
 
 static bool hasDoneCrossFileMkdir = false;
 
-bool iblis::meson::installCrossFile(const iblis::Machine & mach, const iblis::STLDisposition & disposition, const std::string & variant, const iblis::CompilerCfg & comp) {
-	auto iniContent = makeCrossFile(mach, disposition, comp);
-	std::string referent = "ivt_";
-	referent += mach.ivtName;
-	referent += "_";
-	referent += disposition.ivtName;
-	if (variant.length() > 0) {
+bool iblis::meson::installCrossFiles(const iblis::Machine & mach, const std::string & variant, const iblis::CompilerCfg & comp) {
+	bool allOk = false;
+	for (auto disposition = comp.dispositions.begin(); disposition != comp.dispositions.end(); disposition++) {
+		auto iniContent = makeCrossFile(mach, **disposition, comp);
+		std::string referent = "ivt_";
+		referent += mach.ivtName;
 		referent += "_";
-		referent += variant;
+		referent += (*disposition)->ivtName;
+		if (variant.length() > 0) {
+			referent += "_";
+			referent += variant;
+		}
+		auto path = crossPath.value;
+		path += "/";
+		path += referent;
+		if (!hasDoneCrossFileMkdir) {
+			hasDoneCrossFileMkdir = true;
+			std::vector<std::string> args = {"-p", crossPath.value};
+			runCmd("mkdir", args);
+		}
+		printf(" Installing Meson crossfile '%s'.\n", referent.c_str());
+		bool res = writeFile(path, iniContent);
+		if (!res) {
+			printf("  ...failed\n");
+			allOk = false;
+		}
 	}
-	auto path = crossPath.value;
-	path += referent;
-	if (!hasDoneCrossFileMkdir) {
-		hasDoneCrossFileMkdir = true;
-		std::vector<std::string> args = {"-p", crossPath.value};
-		runCmd("mkdir", args);
-	}
-	printf(" Installing Meson crossfile '%s'.\n", referent.c_str());
-	return writeFile(path, iniContent);
+	return allOk;
 }

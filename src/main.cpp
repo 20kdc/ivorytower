@@ -59,6 +59,8 @@ public:
 			Component * comp = dynamic_cast<Component *>(reg);
 			if (!comp)
 				continue;
+			if (comp->isMeta())
+				continue;
 			if (!comp->value)
 				continue;
 			printf("%s (%s):\n", comp->name, comp->purpose);

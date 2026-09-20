@@ -105,3 +105,13 @@ void iblis::CompilerArgs::merge(const CompilerArgs & other) {
 	if (other.cppRtti)
 		cppRtti = other.cppRtti;
 }
+
+std::vector<std::vector<std::string> *> iblis::CompilerCfg::allCommands() {
+	return {
+		&c,
+		&cpp,
+		&ar,
+		&windres,
+		&strip
+	};
+}

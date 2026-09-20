@@ -35,15 +35,6 @@ namespace iblis {
 		void merge(const CompilerArgs & other);
 	};
 
-	struct CompilerCfg {
-		std::vector<std::string> c;
-		std::vector<std::string> cpp;
-		std::vector<std::string> ar;
-		std::vector<std::string> windres;
-		std::vector<std::string> strip;
-		CompilerArgs args;
-	};
-
 	struct STLDisposition {
 		const char * ivtName;
 		CompilerArgs compilerArgs;
@@ -51,5 +42,16 @@ namespace iblis {
 		static const STLDisposition stl;
 		static const STLDisposition staticstl;
 		static const STLDisposition none;
+	};
+
+	struct CompilerCfg {
+		std::vector<std::string> c;
+		std::vector<std::string> cpp;
+		std::vector<std::string> ar;
+		std::vector<std::string> windres;
+		std::vector<std::string> strip;
+		std::vector<const STLDisposition *> dispositions;
+		CompilerArgs args;
+		std::vector<std::vector<std::string> *> allCommands();
 	};
 }

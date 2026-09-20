@@ -16,6 +16,6 @@ namespace iblis::meson {
 	std::string iniArg(const std::string & prop, const std::vector<std::string> & src);
 	std::string machineIni(const iblis::Machine & mach);
 	std::string makeCrossFile(const iblis::Machine & mach, const iblis::STLDisposition & disposition, const iblis::CompilerCfg & comp);
-	// Creates and installs a cross-file.
-	bool installCrossFile(const iblis::Machine & mach, const iblis::STLDisposition & disposition, const std::string & variant, const iblis::CompilerCfg & comp);
+	// Creates and installs cross-files.
+	bool installCrossFiles(const iblis::Machine & mach, const std::string & variant, const iblis::CompilerCfg & comp);
 }

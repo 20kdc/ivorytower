@@ -30,16 +30,20 @@ Cvar::Cvar(const char * name, const char * purpose) : Registerable(name, purpose
 CvarBool::CvarBool(const char * name, const char * purpose, bool def) : Cvar(name, purpose), value(def) {
 }
 
-bool CvarBool::parse(const char * val) {
+static bool boolParseInner(bool * value, const char * val) {
 	if ((!strcmp(val, "off")) || (!strcmp(val, "0"))) {
-		value = false;
+		*value = false;
 		return true;
 	}
 	if ((!strcmp(val, "on")) || (!strcmp(val, "1"))) {
-		value = true;
+		*value = true;
 		return true;
 	}
 	return false;
+}
+
+bool CvarBool::parse(const char * val) {
+	return boolParseInner(&value, val);
 }
 
 std::string CvarBool::get() {
@@ -60,3 +64,36 @@ std::string CvarStr::get() {
 
 Component::Component(const char * name, const char * purpose, bool def) : CvarBool(name, purpose, def) {
 }
+
+bool Component::isMeta() {
+	return false;
+}
+
+class ComponentAll : public iblis::Component {
+public:
+	ComponentAll() : Component("all", "Shorthand to enable/disable all components.", false) {
+
+	}
+	bool parse(const char * val) override {
+		if (Component::parse(val)) {
+			// switch *all* components to this value
+			for (Registerable * reg = regFirst; reg; reg = reg->regNext) {
+				Component * comp = dynamic_cast<Component *>(reg);
+				if (!comp)
+					continue;
+				comp->value = value;
+			}
+			return true;
+		}
+		return false;
+	}
+	bool isMeta() override {
+		return true;
+	}
+	bool install() override {
+		// do absolutely nothing, we're a meta component
+		return true;
+	}
+};
+
+ComponentAll theComponentAll;
