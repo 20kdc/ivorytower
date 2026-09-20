@@ -35,13 +35,16 @@ A toolchain is specified as a set of four components, separated by `_`:
 			* `x64`: x86\_64
 			* `av7`: armv7l
 			* `a64`: aarch64
-3. _Build disposition,_ Among other things, some toolchains have ABI or licensing complexity associated with their C++ standard library.
+3. _C++ STL disposition,_ Among other things, some toolchains have ABI or licensing complexity associated with their C++ standard library.
 	* `stl`: The toolchain STL is used in its default mode.
 	* `staticstl`: The toolchain STL is used in an explicitly static mode.
-	* `ivt`: The toolchain STL is suppressed. ivorytower's internal 'mini STL' is used.
-		* The mini STL, like all of ivorytower, is released into the public domain.
-		* The scope of the mini STL is to provide _language feature-relevant_ tools only. In essence, it exists to expose compiler-specific builtins via a standardized interface.
-	* `none`: The toolchain STL is suppressed. There is no replacement.
+		* Remember that you can disable RTTI and exceptions. If your project is multi-module, do this if at all possible.
+		* In this mode, you should take care to use _as little of the STL as possible_ if your project is multi-module. `dynamic_cast` is potentially a mismatch hazard.
+		* An alternative was considered, but the nature of pure/deleted virtuals meant running a build for every toolchain during SDK install.
+	* `none`: The toolchain STL is suppressed. RTTI and exceptions are disabled. There is no replacement.
+		* For realistic C++ use, you will need to supply the following functions yourself:
+			* `__cxa_pure_virtual`
+			* `__cxa_deleted_virtual`
 4. _Variant._ Sometimes there are multiple toolchains for a given platform. This is typically used as a proxy to control target OS version.
 
 ## the name
