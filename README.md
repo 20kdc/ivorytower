@@ -8,9 +8,7 @@ It installs a set of crossfiles (presently just for Meson) that are then globall
 
 `ivorytower` is a tool to mostly setup 'mostly default' compilation environments.
 
-It is not intended to provide it's own foundational library or other such tools.
-
-However, it may provide an _extremely limited_ C++ `std::` subset for the purposes of enabling 'compiler-bound' language features.
+It is _extremely_ opinionated, but it isn't intended to provide it's own foundational library or other such tools.
 
 ## use of global crossfile caches
 

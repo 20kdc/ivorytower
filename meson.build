@@ -15,5 +15,7 @@ setupcore = executable('setupcore',
 	'src/names.cpp',
 	'src/util.cpp',
 	'src/z_distrobox.cpp',
+	'src/z_mingw.cpp',
+	'src/z_osxcross.cpp',
 	version_cpp
 )

@@ -56,12 +56,11 @@ public:
 				*baseCmd = newCmd;
 			}
 		}
-		iblis::meson::installCrossFiles(*machine, variant, cfg);
+		looksSuccessful &= iblis::meson::installCrossFiles(*machine, variant, cfg);
 		return looksSuccessful;
 	}
 };
 
-// TODO migrate to CompilerCfg or have a generator or like both
 static iblis::CompilerCfg sensibleDefaultGCC = {
 	.c = {"gcc"},
 	.cpp = {"g++"},

@@ -120,7 +120,7 @@ std::string iblis::meson::makeCrossFile(const iblis::Machine & mach, const iblis
 static bool hasDoneCrossFileMkdir = false;
 
 bool iblis::meson::installCrossFiles(const iblis::Machine & mach, const std::string & variant, const iblis::CompilerCfg & comp) {
-	bool allOk = false;
+	bool allOk = true;
 	for (auto disposition = comp.dispositions.begin(); disposition != comp.dispositions.end(); disposition++) {
 		auto iniContent = makeCrossFile(mach, **disposition, comp);
 		std::string referent = "ivt_";
