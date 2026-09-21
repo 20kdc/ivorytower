@@ -1,9 +1,7 @@
 #include "iblis.h"
 #include "meson.h"
 #include "names.h"
-
-iblis::CvarBool cvar_distrobox_create("distrobox_create", "Enables/disables running 'distrobox create' to prepare containers for distrobox-based toolchains.", true);
-iblis::CvarStr cvar_distrobox_prefix("distrobox_prefix", "Prefix for distrobox containers created/used by ivorytower.", "");
+#include "y_boxenrunner.h"
 
 class DistroboxComponent : public iblis::Component {
 public:
@@ -22,22 +20,18 @@ public:
 		container(container), image(image) {
 	}
 	bool install() override {
-		std::string containerResolved = cvar_distrobox_prefix.value + container;
+		auto boxSys = iblis::boxenrunnerSys.get();
+		if (!boxSys) {
+			IBLIS_WARN("BoxenrunnerSys dead");
+			return false;
+		}
 		bool looksSuccessful = true;
 		// do distrobox create if necessary
-		if (cvar_distrobox_create.value) {
-			std::vector<std::string> dbargs;
-			bool shouldCreate = true;
-			/*
-			dbargs.push_back("enter");
-			dbargs.push_back(container);
-			dbargs.push_back("--");
-			dbargs.push_back("true");
-			if (iblis::runCmd("distrobox", dbargs)) {
-			}
-			*/
-			if (shouldCreate)
-				if (iblis::runCmd({"distrobox", "create", "-i", image, containerResolved}))
+		// we skip the test entirely if we won't create it anyways
+		if (iblis::cvar_box_create.value) {
+			bool exists = boxSys->test(container);
+			if (!exists)
+				if (!boxSys->create(container, image))
 					looksSuccessful = false;
 		}
 		// setup
@@ -46,7 +40,7 @@ public:
 		for (auto x = cfgCmds.begin(); x != cfgCmds.end(); x++) {
 			std::vector<std::string> * baseCmd = *x;
 			if (baseCmd->size()) {
-				std::vector<std::string> newCmd = {"distrobox", "enter", containerResolved, "--"};
+				std::vector<std::string> newCmd = boxSys->prefix(container);
 				for (auto y = baseCmd->begin(); y != baseCmd->end(); y++)
 					newCmd.push_back(*y);
 				*baseCmd = newCmd;

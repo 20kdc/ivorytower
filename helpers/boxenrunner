@@ -19,6 +19,20 @@ fail_nocmd() {
 	exit 1
 }
 
+distrobox_get_container_manager() {
+	# test if container "$1" exists
+	# it's easiest to do this by going 'around', because distrobox won't tell us and it just wraps its container manager anyway
+	# Find which container manager is used by the boxenrunner.
+	# We first try not to be 'too clever'. If the user set $DBX_CONTAINER_MANAGER, we know distrobox listens to that *always*.
+	if [ "$DBX_CONTAINER_MANAGER" != "" ]; then
+		container_manager="$DBX_CONTAINER_MANAGER"
+	else
+		# Pick an arbitrary container name that shouldn't exist, just to try and be safe about it.
+		# In the event it does do something in a container we shouldn't have even though we told it not to, the command we tell it to run should do no harm.
+		container_manager="`distrobox enter -d __too-much-for-zblock -- true 2>/dev/null | head -n 1 | grep -E -o "^[^ ]+"`"
+	fi
+}
+
 if [ "$boxenrunner" = "distrobox" ]; then
 	if [ "$subcmd" = "enter" ]; then
 		container="$1"
@@ -29,19 +43,17 @@ if [ "$boxenrunner" = "distrobox" ]; then
 		shift
 		image="$1"
 		shift
-		exec distrobox create --name "$container" --image "$image"
+		# The Scout container seems to act funny. Or distrobox 1.7.0 is broken. Feel free to pick.
+		# Creates container but does not init it.
+		# This pre-init-hook's job is to deliberately sabotage distrobox's upgrade process.
+		# This is because distrobox doesn't have a way to politely say 'please don't thrash the package servers, I literally JUST want you to do mounts'.
+		# So we just stop being polite.
+		distrobox create --name "$container" --image "$image" --pre-init-hooks "upgrade=0 ; touch /.containersetupdone ; chmod -x \`which apt-get\` \`which apt-cache\` ; alias apt-get=true ; alias apt-cache=true" || true
+		distrobox enter "$container" -- true
 	elif [ "$subcmd" = "test" ]; then
 		# test if container "$1" exists
 		# it's easiest to do this by going 'around', because distrobox won't tell us and it just wraps its container manager anyway
-		# Find which container manager is used by the boxenrunner.
-		# We first try not to be 'too clever'. If the user set $DBX_CONTAINER_MANAGER, we know distrobox listens to that *always*.
-		if [ "$DBX_CONTAINER_MANAGER" != "" ]; then
-			container_manager="$DBX_CONTAINER_MANAGER"
-		else
-			# Pick an arbitrary container name that shouldn't exist, just to try and be safe about it.
-			# In the event it does do something in a container we shouldn't have even though we told it not to, the command we tell it to run should do no harm.
-			container_manager="`distrobox enter -d __too-much-for-zblock -- true 2>/dev/null | head -n 1 | grep -E -o "^[^ ]+"`"
-		fi
+		distrobox_get_container_manager
 		exec "$container_manager" inspect "$1" 2>/dev/null >/dev/null
 	elif [ "$subcmd" = "check" ]; then
 		exec distrobox version > /dev/null

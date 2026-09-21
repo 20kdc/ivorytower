@@ -13,4 +13,6 @@ namespace iblis {
 		BoxenrunnerSys(std::string helper, std::string runner) : helper(helper), runner(runner) {}
 	};
 	extern Subsystem<BoxenrunnerSys> boxenrunnerSys;
+	// BoxenrunnerSys will silently fail if this is true; code may need to be aware of this.
+	extern CvarBool cvar_box_create;
 }

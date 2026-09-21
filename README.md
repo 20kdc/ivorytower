@@ -14,15 +14,13 @@ It, along with these install instructions, results in a set of crossfiles (prese
 
 ## how to use it
 
-1. For Windows support, `x86_64-w64-mingw32-gcc-win32` is required.
-2. For Linux support, `distrobox` is required.
-	* You should probably install `lilipod` from <https://github.com/89luca89/lilipod>. Note that I've only tested with a build from main branch.
-	* I recommend doing something like `ln -s $(pwd)/lilipod ~/.local/bin/lilipod` with your source tree.
-	* Using `lilipod` here is a hack to force preventing unnecessary cgroup management, which `podman` will try to do.
-	* You should also set `DBX_CONTAINER_MANAGER=lilipod` in your environment if you're doing this.
-	* For reference: `podman` doing cgroup stuff as non-root lead to policykit issues for me, so I switched to using `docker`, which lets the container root-escalate with impunity (LIKELY BAD).
-	* This is to say, any issues caused by `lilipod` not doing cgroup stuff _cannot_ be worse than the issues caused by `docker`.
-	* We're not even using this for security isolation anyways, we just want a rootless chroot!
+1. For Windows target support, `x86_64-w64-mingw32-gcc-win32` is required.
+2. For Linux target support, `docker` is required, along with `distrobox`.
+	* _Set `DBX_CONTAINER_MANAGER=docker` in your environment!_ `distrobox` likes to prefer `podman`, but it's not actually a good idea to use podman for this.
+		* I am considering the merits of simply _making_ `distrobox` use `docker`.
+	* **DO NOT USE `podman` FOR THIS.** `podman` will download 800MB then throw it all away because you don't have subuid/subgid setup.
+		* Rootlessness isn't even _possible_ here because `distrobox` will run your container `--privileged`. This will cause `podman` to require authentication.
+	* **DO NOT USE `lilipod` FOR THIS.** `lilipod` has bad diagnostics; I _think_ this was also the subuid/subgid thing (I tried `podman` after).
 3. Install `osxcross` from <https://github.com/tpoechtrager/osxcross>. I went with `stable` tooling.
 	* Notably, **`osxcross` is the real cross-compiler here**. ivorytower is meant to be a unified bundling.
 	* You have to pick and get an SDK. There are two versions I consider 'worth keeping around'.

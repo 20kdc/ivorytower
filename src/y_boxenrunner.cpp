@@ -3,7 +3,12 @@
 
 using namespace iblis;
 
-static CvarStr cvar_boxenrunner("box", "The 'box wrapper' used for crosscompilation.", "distrobox");
+static CvarStr cvar_boxenrunner("box",
+	"The 'box wrapper' used for crosscompilation.\n"
+	"  distrobox: one of the steamrt recommended boxes, but runs --privileged. Recommend export DBX_CONTAINER_MANAGER=docker in profile.\n"
+	"  ", "distrobox");
+static iblis::CvarStr cvar_box_prefix("box_prefix", "Prefix for containers created/used by ivorytower.", "");
+iblis::CvarBool iblis::cvar_box_create("box_create", "Control creating containers. If false, operations which create containers will proceed as if they were created if possible.", true);
 
 BoxenrunnerSys * iblis::BoxenrunnerSys::build() {
 	auto helpy = helperSys.get();
@@ -21,19 +26,24 @@ BoxenrunnerSys * iblis::BoxenrunnerSys::build() {
 }
 
 bool iblis::BoxenrunnerSys::create(const std::string & container, const std::string & image) {
-	return iblis::runCmd({helper, runner, "create", container, image}) == 0;
+	if (!cvar_box_create.value)
+		return true;
+	std::string containerRes = cvar_box_prefix.value + container;
+	return iblis::runCmd({helper, runner, "create", containerRes, image}) == 0;
 }
 
 bool iblis::BoxenrunnerSys::test(const std::string & container) {
-	return iblis::runCmd({helper, runner, "test", container}) == 0;
+	std::string containerRes = cvar_box_prefix.value + container;
+	return iblis::runCmd({helper, runner, "test", containerRes}) == 0;
 }
 
 std::vector<std::string> iblis::BoxenrunnerSys::prefix(const std::string & container) {
+	std::string containerRes = cvar_box_prefix.value + container;
 	if (runner == "distrobox") {
 		// decouple generated files from boxenrunner if on distrobox
-		return {"distrobox", "enter", container, "--"};
+		return {"distrobox", "enter", containerRes, "--"};
 	} else {
-		return {helper, runner, "enter", container};
+		return {helper, runner, "enter", containerRes};
 	}
 }
 
