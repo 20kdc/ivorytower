@@ -36,15 +36,9 @@ public:
 			if (iblis::runCmd("distrobox", dbargs)) {
 			}
 			*/
-			if (shouldCreate) {
-				dbargs.clear();
-				dbargs.push_back("create");
-				dbargs.push_back("-i");
-				dbargs.push_back(image);
-				dbargs.push_back(containerResolved);
-				if (iblis::runCmd("distrobox", dbargs))
+			if (shouldCreate)
+				if (iblis::runCmd({"distrobox", "create", "-i", image, containerResolved}))
 					looksSuccessful = false;
-			}
 		}
 		// setup
 		iblis::CompilerCfg cfg = *compiler;

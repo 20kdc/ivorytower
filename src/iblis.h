@@ -7,11 +7,51 @@
 
 /* ivorytower build initialization system */
 
+// Immovable (rule of three)
+#define IBLIS_IMMOVABLE(T) T(const T &) = delete; T & operator=(const T &) = delete;
+#define IBLIS_WARN(str) iblis::warn(__PRETTY_FUNCTION__, str)
+
 namespace iblis {
+	// Environ abstraction.
+	struct Environ {
+		std::vector<std::string> inner;
+		static Environ get();
+	};
+
 	// Runs a command, returns exit status.
-	int runCmd(const std::string & cmd, const std::vector<std::string> & args);
+	int runCmd(const std::vector<std::string> & argv, const Environ & environ = Environ::get());
 	// Writes a file.
 	bool writeFile(const std::string & path, const std::string & content);
+	void warn(const char * subsystem, const std::string & message);
+
+	// A subsystem activates when requested by explicit reference.
+	template <class T>
+	class Subsystem {
+	public:
+		Subsystem() : content(nullptr) {}
+		~Subsystem() {
+			if (content)
+				delete content;
+		}
+		IBLIS_IMMOVABLE(Subsystem);
+		T * get() {
+			if (!content)
+				content = T::build();
+			return content;
+		}
+	private:
+		T * content;
+	};
+
+	class HelperSys {
+	public:
+		HelperSys(std::string itsetupDir) : itsetupDir(itsetupDir) {}
+		IBLIS_IMMOVABLE(HelperSys);
+		static HelperSys * build();
+		std::string itsetupDir;
+		std::string helper(const char * name);
+	};
+	extern Subsystem<HelperSys> helperSys;
 
 	// cvar.cpp
 
@@ -21,6 +61,7 @@ namespace iblis {
 		const char * name;
 		const char * purpose;
 		Registerable(const char * name, const char * purpose);
+		IBLIS_IMMOVABLE(Registerable);
 		virtual ~Registerable();
 		Registerable * regNext;
 		static Registerable * regFirst;

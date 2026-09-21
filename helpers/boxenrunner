@@ -1,0 +1,54 @@
+#!/bin/sh -e
+# 'Boxenrunner' abstraction.
+# This is to let ivorytower be semi-independent of distrobox.
+# boxenrunner RUNNER enter NAME COMMAND...
+# boxenrunner RUNNER create CONTAINER IMAGE
+# boxenrunner RUNNER test CONTAINER
+# boxenrunner RUNNER check
+# Note that for reliability of the resulting crossfiles, iblis::BoxenrunnerSys::prefix bypasses boxenrunner for some runners.
+# RUNNER can be...
+#  distrobox [bypass]
+
+boxenrunner="$1"
+shift
+subcmd="$1"
+shift
+
+fail_nocmd() {
+	echo "boxenrunner command '$subcmd' is unknown!"
+	exit 1
+}
+
+if [ "$boxenrunner" = "distrobox" ]; then
+	if [ "$subcmd" = "enter" ]; then
+		container="$1"
+		shift
+		exec distrobox enter "$container" -- "$@"
+	elif [ "$subcmd" = "create" ]; then
+		container="$1"
+		shift
+		image="$1"
+		shift
+		exec distrobox create --name "$container" --image "$image"
+	elif [ "$subcmd" = "test" ]; then
+		# test if container "$1" exists
+		# it's easiest to do this by going 'around', because distrobox won't tell us and it just wraps its container manager anyway
+		# Find which container manager is used by the boxenrunner.
+		# We first try not to be 'too clever'. If the user set $DBX_CONTAINER_MANAGER, we know distrobox listens to that *always*.
+		if [ "$DBX_CONTAINER_MANAGER" != "" ]; then
+			container_manager="$DBX_CONTAINER_MANAGER"
+		else
+			# Pick an arbitrary container name that shouldn't exist, just to try and be safe about it.
+			# In the event it does do something in a container we shouldn't have even though we told it not to, the command we tell it to run should do no harm.
+			container_manager="`distrobox enter -d __too-much-for-zblock -- true 2>/dev/null | head -n 1 | grep -E -o "^[^ ]+"`"
+		fi
+		exec "$container_manager" inspect "$1" 2>/dev/null >/dev/null
+	elif [ "$subcmd" = "check" ]; then
+		exec distrobox version > /dev/null
+	else
+		fail_nocmd
+	fi
+else
+	echo "boxenrunner '$boxenrunner' is unknown!"
+	exit 1
+fi

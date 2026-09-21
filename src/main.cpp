@@ -1,5 +1,6 @@
-#include "iblis.h"
 #include <stdio.h>
+#include "iblis.h"
+#include "y_boxenrunner.h"
 
 using namespace iblis;
 
@@ -102,5 +103,7 @@ int main(int argc, char ** argv) {
 			}
 		}
 	}
+	// for testing reasons
+	boxenrunnerSys.get();
 	return queuedAct->execute();
 }

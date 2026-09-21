@@ -10,7 +10,7 @@ using namespace iblis;
 std::string findMesonCrossPath() {
 	const char * home = getenv("HOME");
 	if (!home) {
-		puts("missing HOME environment variable");
+		IBLIS_WARN("missing HOME environment variable");
 		exit(1);
 	}
 	return std::string(home) + "/.local/share/meson/cross";
@@ -136,8 +136,7 @@ bool iblis::meson::installCrossFiles(const iblis::Machine & mach, const std::str
 		path += referent;
 		if (!hasDoneCrossFileMkdir) {
 			hasDoneCrossFileMkdir = true;
-			std::vector<std::string> args = {"-p", crossPath.value};
-			runCmd("mkdir", args);
+			runCmd({"mkdir", "-p", crossPath.value});
 		}
 		printf(" Installing Meson crossfile '%s'.\n", referent.c_str());
 		bool res = writeFile(path, iniContent);
