@@ -5,8 +5,9 @@ using namespace iblis;
 
 static CvarStr cvar_boxenrunner("box",
 	"The 'box wrapper' used for crosscompilation.\n"
+	"  ivt_docker: uses Docker to manage unprivileged containers.\n"
 	"  distrobox: one of the steamrt recommended boxes, but runs --privileged. Recommend export DBX_CONTAINER_MANAGER=docker in profile.\n"
-	"  ", "distrobox");
+	"  ", "ivt_docker");
 static iblis::CvarStr cvar_box_prefix("box_prefix", "Prefix for containers created/used by ivorytower.", "");
 iblis::CvarBool iblis::cvar_box_create("box_create", "Control creating containers. If false, operations which create containers will proceed as if they were created if possible.", true);
 
@@ -41,6 +42,7 @@ std::vector<std::string> iblis::BoxenrunnerSys::prefix(const std::string & conta
 	std::string containerRes = cvar_box_prefix.value + container;
 	if (runner == "distrobox") {
 		// decouple generated files from boxenrunner if on distrobox
+		// we can't do this for ivt_docker, since boxenrunner manages that.
 		return {"distrobox", "enter", containerRes, "--"};
 	} else {
 		return {helper, runner, "enter", containerRes};

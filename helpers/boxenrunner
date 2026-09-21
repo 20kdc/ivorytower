@@ -8,6 +8,10 @@
 # Note that for reliability of the resulting crossfiles, iblis::BoxenrunnerSys::prefix bypasses boxenrunner for some runners.
 # RUNNER can be...
 #  distrobox [bypass]
+#  ivt_docker
+
+ITSETUP_BOX_WHERE="`readlink -e "$0"`"
+ITSETUP_BOX_DIR="`dirname $ITSETUP_BOX_WHERE`"
 
 boxenrunner="$1"
 shift
@@ -49,6 +53,7 @@ if [ "$boxenrunner" = "distrobox" ]; then
 		# This is because distrobox doesn't have a way to politely say 'please don't thrash the package servers, I literally JUST want you to do mounts'.
 		# So we just stop being polite.
 		distrobox create --name "$container" --image "$image" --pre-init-hooks "upgrade=0 ; touch /.containersetupdone ; chmod -x \`which apt-get\` \`which apt-cache\` ; alias apt-get=true ; alias apt-cache=true" || true
+		# This should make sure the container is actually inited.
 		distrobox enter "$container" -- true
 	elif [ "$subcmd" = "test" ]; then
 		# test if container "$1" exists
@@ -57,6 +62,65 @@ if [ "$boxenrunner" = "distrobox" ]; then
 		exec "$container_manager" inspect "$1" 2>/dev/null >/dev/null
 	elif [ "$subcmd" = "check" ]; then
 		exec distrobox version > /dev/null
+	else
+		fail_nocmd
+	fi
+elif [ "$boxenrunner" = "ivt_docker" ]; then
+	if [ "$subcmd" = "enter" ]; then
+		container="$1"
+		shift
+		# ensure container is running
+		docker start "$container" >/dev/null
+		# create env file
+		if [ "$XDG_RUNTIME_DIR" != "" ]; then
+			envtemp="`mktemp -p "$XDG_RUNTIME_DIR"`"
+		else
+			envtemp="`mktemp`"
+		fi
+		env > "$envtemp"
+		# this is the part where things get very awkward, since we need to pipeline the exit status through somehow.
+		set +e
+		if tty >/dev/null ; then
+			execflag="-it"
+		else
+			execflag="-i"
+		fi
+		docker exec $execflag --env-file "$envtemp" -w "`pwd`" "$container" "$@"
+		execstatus="$?"
+		rm "$envtemp"
+		exit "$execstatus"
+	elif [ "$subcmd" = "create" ]; then
+		container="$1"
+		shift
+		image="$1"
+		shift
+		# We create a container which will eternally sleep.
+		# Hierarchy:
+		# ITSETUP_BOX_MOUNTS: Which directories are exposed. Note this undergoes eval.
+		# ITSETUP_BOX_ETCFILES: Which /etc/ files are exposed. Note this undergoes eval.
+		if [ "$ITSETUP_BOX_MOUNTS" = "" ]; then
+			ITSETUP_BOX_MOUNTS="-v /home:/home -v /media:/media"
+		fi
+		if [ "$ITSETUP_BOX_ETCFILES" = "" ]; then
+			ITSETUP_BOX_ETCFILES="-v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro"
+		fi
+		# ITSETUP_BOX_OPTS: Non-overridable. Merges all options into a soup.
+		ITSETUP_BOX_OPTS="$ITSETUP_BOX_MOUNTS $ITSETUP_BOX_ETCFILES"
+		if [ "$XDG_RUNTIME_DIR" != "" ]; then
+			# Dynamically throw in a few more mounts.
+			ITSETUP_BOX_OPTS="$ITSETUP_BOX_OPTS -v \"\$XDG_RUNTIME_DIR:\$XDG_RUNTIME_DIR\""
+		fi
+		ITSETUP_BOX_OPTS="$ITSETUP_BOX_OPTS --network host --userns host --pid host"
+		ITSETUP_BOX_OPTS="$ITSETUP_BOX_OPTS -u \"\`id -u\`:\`id -g\`\""
+		# ITSETUP_BOX_CMD: Outer framework, actual configuration of container.
+		ITSETUP_BOX_CMD="docker create --name \"\$container\" $ITSETUP_BOX_OPTS -- \"\$image\" sh -c \"while true; do sleep 1d; done\""
+		eval "echo $ITSETUP_BOX_CMD"
+		eval "$ITSETUP_BOX_CMD >/dev/null"
+		echo "Created Docker container '$container'"
+	elif [ "$subcmd" = "test" ]; then
+		exec docker inspect "$1" 2>/dev/null >/dev/null
+	elif [ "$subcmd" = "check" ]; then
+		exec docker version > /dev/null
 	else
 		fail_nocmd
 	fi

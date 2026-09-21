@@ -1,12 +1,6 @@
 #!/bin/sh -e
 
-if [ "$BASH_SOURCE" != "" ]; then
-	# if we're being invoked by bash, use BASH_SOURCE
-	ITSETUP_WHERE="`readlink -e "$BASH_SOURCE"`"
-else
-	# alright, bet on zsh then
-	ITSETUP_WHERE="`readlink -e "$0"`"
-fi
+ITSETUP_WHERE="`readlink -e "$0"`"
 export ITSETUP_DIR="`dirname $ITSETUP_WHERE`"
 
 setupcore_build() {
