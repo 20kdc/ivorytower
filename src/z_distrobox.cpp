@@ -3,6 +3,7 @@
 #include "names.h"
 
 iblis::CvarBool cvar_distrobox_create("distrobox_create", "Enables/disables running 'distrobox create' to prepare containers for distrobox-based toolchains.", true);
+iblis::CvarStr cvar_distrobox_prefix("distrobox_prefix", "Prefix for distrobox containers created/used by ivorytower.", "");
 
 class DistroboxComponent : public iblis::Component {
 public:
@@ -21,6 +22,7 @@ public:
 		container(container), image(image) {
 	}
 	bool install() override {
+		std::string containerResolved = cvar_distrobox_prefix.value + container;
 		bool looksSuccessful = true;
 		// do distrobox create if necessary
 		if (cvar_distrobox_create.value) {
@@ -39,7 +41,7 @@ public:
 				dbargs.push_back("create");
 				dbargs.push_back("-i");
 				dbargs.push_back(image);
-				dbargs.push_back(container);
+				dbargs.push_back(containerResolved);
 				if (iblis::runCmd("distrobox", dbargs))
 					looksSuccessful = false;
 			}
@@ -50,7 +52,7 @@ public:
 		for (auto x = cfgCmds.begin(); x != cfgCmds.end(); x++) {
 			std::vector<std::string> * baseCmd = *x;
 			if (baseCmd->size()) {
-				std::vector<std::string> newCmd = {"distrobox", "enter", container, "--"};
+				std::vector<std::string> newCmd = {"distrobox", "enter", containerResolved, "--"};
 				for (auto y = baseCmd->begin(); y != baseCmd->end(); y++)
 					newCmd.push_back(*y);
 				*baseCmd = newCmd;
