@@ -50,6 +50,10 @@ namespace iblis {
 		static HelperSys * build();
 		std::string itsetupDir;
 		std::string helper(const char * name);
+		/**
+		 * A symlink is placed here. That symlink points to osxcross.
+		 */
+		std::string osxcrossLink();
 	};
 	extern Subsystem<HelperSys> helperSys;
 

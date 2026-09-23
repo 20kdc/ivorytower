@@ -1,0 +1,6 @@
+#!/bin/sh -e
+
+ITSETUP_OXW_WHERE="`readlink -e "$0"`"
+ITSETUP_OXW_DIR="`dirname $ITSETUP_OXW_WHERE`"
+
+# step 1: attempt to find osxcross already on the system

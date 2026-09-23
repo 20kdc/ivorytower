@@ -1,6 +1,6 @@
 #!/bin/sh -e
 cd ..
-./setup --install
+./setup --install scout_i386=on
 echo "(passed install)"
 cd test
 

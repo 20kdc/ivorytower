@@ -75,4 +75,8 @@ std::string iblis::HelperSys::helper(const char * name) {
 	return itsetupDir + "/helpers/" + name;
 }
 
+std::string iblis::HelperSys::osxcrossLink() {
+	return itsetupDir + "/osxcross";
+}
+
 Subsystem<HelperSys> iblis::helperSys;
