@@ -17,10 +17,15 @@ namespace iblis {
 
 		static const Machine lgx32;
 		static const Machine lgx64;
-		static const Machine ma64;
+		static const Machine lga64;
+
+		static const Machine mx32;
 		static const Machine mx64;
+		static const Machine ma64;
+
 		static const Machine wx32;
 		static const Machine wx64;
+		static const Machine wa64;
 	};
 
 	// Common config between STLDisposition and CompilerCfg

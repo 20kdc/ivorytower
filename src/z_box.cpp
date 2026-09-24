@@ -3,14 +3,14 @@
 #include "names.h"
 #include "y_boxenrunner.h"
 
-class DistroboxComponent : public iblis::Component {
+class ContainerCCComponent : public iblis::Component {
 public:
 	const iblis::Machine * machine;
 	const char * variant;
 	const iblis::CompilerCfg * compiler;
 	const char * container;
 	const char * image;
-	DistroboxComponent(
+	ContainerCCComponent(
 		const char * name, const char * purpose, bool def,
 		const iblis::Machine * machine, const char * variant, const iblis::CompilerCfg * compiler,
 		const char * container, const char * image
@@ -63,18 +63,18 @@ static iblis::CompilerCfg sensibleDefaultGCC = {
 	}
 };
 
-DistroboxComponent theSteamRTScoutComponent(
-	"scout", "'scout' SteamRT Distrobox (most/all x86_64 glibc Linuxes)", true,
+ContainerCCComponent theSteamRTScoutComponent(
+	"scout", "'scout' SteamRT (most/all x86_64 glibc Linuxes)", true,
 	&iblis::Machine::lgx64, "scout", &sensibleDefaultGCC,
 	"scout", "registry.gitlab.steamos.cloud/steamrt/scout/sdk"
 );
-DistroboxComponent theSteamRTScouti686Component(
-	"scout_i386", "'scout-i386' SteamRT Distrobox (most/all x86 glibc Linuxes)", false,
+ContainerCCComponent theSteamRTScouti686Component(
+	"scout_i386", "'scout-i386' SteamRT (most/all x86 glibc Linuxes)", false,
 	&iblis::Machine::lgx32, "scout", &sensibleDefaultGCC,
 	"scout-i386", "registry.gitlab.steamos.cloud/steamrt/scout/sdk/i386"
 );
-DistroboxComponent theSteamRTSniperComponent(
-	"sniper", "'sniper' SteamRT Distrobox (most newer x86_64 glibc Linuxes)", false,
+ContainerCCComponent theSteamRTSniperComponent(
+	"sniper", "'sniper' SteamRT (most newer x86_64 glibc Linuxes)", false,
 	&iblis::Machine::lgx64, "sniper", &sensibleDefaultGCC,
 	"sniper", "registry.gitlab.steamos.cloud/steamrt/sniper/sdk"
 );

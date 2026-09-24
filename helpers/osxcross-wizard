@@ -1,6 +1,42 @@
 #!/bin/sh -e
 
 ITSETUP_OXW_WHERE="`readlink -e "$0"`"
-ITSETUP_OXW_DIR="`dirname $ITSETUP_OXW_WHERE`"
+ITSETUP_OXW_DIR="`dirname $ITSETUP_OXW_WHERE`/.."
 
-# step 1: attempt to find osxcross already on the system
+osxcross_checkpath="$1"
+shift
+
+# do we already have this set?
+if "$ITSETUP_OXW_DIR/osxcross_bin/osxcross" >/dev/null 2>/dev/null ; then
+	echo " cached osxcross_bin: `readlink "$ITSETUP_OXW_DIR/osxcross_bin"`"
+	exit
+fi
+
+# it isn't set properly, begin anew
+if [ -h "$ITSETUP_OXW_DIR/osxcross_bin" ]; then
+	rm -f "$ITSETUP_OXW_DIR/osxcross_bin"
+fi
+
+# if we can find it in PATH or via env vars it sets, we consider that good
+if [ "$osxcross_checkpath" != "0" ]; then
+	eval `osxcross-conf || true` >/dev/null 2>/dev/null
+	if "$OSXCROSS_CCTOOLS_PATH/osxcross" >/dev/null 2>/dev/null ; then
+		echo " installed osxcross found at: $OSXCROSS_CCTOOLS_PATH"
+		ln -s -T "$OSXCROSS_CCTOOLS_PATH" "$ITSETUP_OXW_DIR/osxcross_bin"
+		exit
+	fi
+	if "$OSXCROSS_TARGET_DIR/bin/osxcross" >/dev/null 2>/dev/null ; then
+		echo " installed osxcross found at: $OSXCROSS_TARGET_DIR/bin"
+		ln -s -T "$OSXCROSS_TARGET_DIR/bin" "$ITSETUP_OXW_DIR/osxcross_bin"
+		exit
+	fi
+fi
+
+echo " osxcross is NOT INSTALLED"
+echo " here would lay an installer for it"
+echo " you will instead receive pertinent links"
+echo " OSXCross itself: https://github.com/tpoechtrager/osxcross"
+echo " XCode tools .tar.gz: https://github.com/joseluisq/macosx-sdks/releases/tag/11.1"
+echo " once done, adding target/bin to PATH as osxcross instructs will let it be picked up"
+
+exit 1

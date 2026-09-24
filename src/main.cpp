@@ -64,8 +64,11 @@ public:
 			if (!comp->value)
 				continue;
 			printf("%s (%s):\n", comp->name, comp->purpose);
-			if (!comp->install())
+			if (!comp->install()) {
+				puts("");
+				printf("Component %s (%s) failed.\nYou may correct the issue and retry, or disable this component by passing `%s=off`.\n", reg->name, reg->purpose, reg->name);
 				return 1;
+			}
 		}
 		return 0;
 	}

@@ -15,11 +15,13 @@ namespace iblis {
 	// Environ abstraction.
 	struct Environ {
 		std::vector<std::string> inner;
-		static Environ get();
+		static Environ readProcess();
+		void del(const std::string & key);
+		void set(const std::string & key, const std::string & val);
 	};
 
 	// Runs a command, returns exit status.
-	int runCmd(const std::vector<std::string> & argv, const Environ & environ = Environ::get());
+	int runCmd(const std::vector<std::string> & argv, const Environ & environ = Environ::readProcess());
 	// Writes a file.
 	bool writeFile(const std::string & path, const std::string & content);
 	void warn(const char * subsystem, const std::string & message);
@@ -50,10 +52,7 @@ namespace iblis {
 		static HelperSys * build();
 		std::string itsetupDir;
 		std::string helper(const char * name);
-		/**
-		 * A symlink is placed here. That symlink points to osxcross.
-		 */
-		std::string osxcrossLink();
+		std::string osxcrossBinLink();
 	};
 	extern Subsystem<HelperSys> helperSys;
 

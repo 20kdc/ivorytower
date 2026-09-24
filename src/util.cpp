@@ -10,7 +10,7 @@
 
 using namespace iblis;
 
-Environ iblis::Environ::get() {
+Environ iblis::Environ::readProcess() {
 	std::vector<std::string> inner;
 	char ** ptr = environ;
 	while (*ptr) {
@@ -20,6 +20,27 @@ Environ iblis::Environ::get() {
 	return Environ {
 		.inner = inner
 	};
+}
+
+void iblis::Environ::del(const std::string & key) {
+	for (auto i = inner.begin(); i != inner.end(); i++) {
+		// startswith? what's that?
+		auto eq = i->find('=');
+		if (eq == std::string::npos)
+			continue;
+		if (eq != key.length())
+			continue;
+		if (i->substr(0, key.length()) != key)
+			continue;
+		inner.erase(i);
+		return;
+	}
+	// not found!
+}
+
+void iblis::Environ::set(const std::string & key, const std::string & val) {
+	del(key);
+	inner.push_back(key + "=" + val);
 }
 
 static void fireArgTeg(const char ** argva, const std::vector<std::string> & argv) {
@@ -75,8 +96,10 @@ std::string iblis::HelperSys::helper(const char * name) {
 	return itsetupDir + "/helpers/" + name;
 }
 
-std::string iblis::HelperSys::osxcrossLink() {
-	return itsetupDir + "/osxcross";
+std::string iblis::HelperSys::osxcrossBinLink() {
+	// A symlink is placed here. That symlink points to osxcross/target/bin OR potentially to something like /usr/local/bin.
+	// This allows portable osxcross installs and some hypothetical future global osxcross install to be used.
+	return itsetupDir + "/osxcross_bin";
 }
 
 Subsystem<HelperSys> iblis::helperSys;

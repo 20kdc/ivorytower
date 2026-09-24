@@ -18,14 +18,23 @@ const iblis::Machine iblis::Machine::lgx64 = {
 	.cpu = "x86_64",
 	.endian = "little",
 };
-const iblis::Machine iblis::Machine::ma64 = {
-	.ivtName = "ma64",
+const iblis::Machine iblis::Machine::lga64 = {
+	.ivtName = "lga64",
+
+	.system = "linux",
+	.cpu_family = "aarch64",
+	.cpu = "aarch64",
+	.endian = "little",
+};
+
+const iblis::Machine iblis::Machine::mx32 = {
+	.ivtName = "mx32",
 
 	.system = "darwin",
 	.subsystem = "macos",
 	.kernel = "xnu",
-	.cpu_family = "aarch64",
-	.cpu = "aarch64",
+	.cpu_family = "x86",
+	.cpu = "i686",
 	.endian = "little",
 };
 const iblis::Machine iblis::Machine::mx64 = {
@@ -38,6 +47,17 @@ const iblis::Machine iblis::Machine::mx64 = {
 	.cpu = "x86_64",
 	.endian = "little",
 };
+const iblis::Machine iblis::Machine::ma64 = {
+	.ivtName = "ma64",
+
+	.system = "darwin",
+	.subsystem = "macos",
+	.kernel = "xnu",
+	.cpu_family = "aarch64",
+	.cpu = "aarch64",
+	.endian = "little",
+};
+
 const iblis::Machine iblis::Machine::wx32 = {
 	.ivtName = "wx32",
 
@@ -56,6 +76,16 @@ const iblis::Machine iblis::Machine::wx64 = {
 	.kernel = "nt",
 	.cpu_family = "x86_64",
 	.cpu = "x86_64",
+	.endian = "little",
+};
+const iblis::Machine iblis::Machine::wa64 = {
+	.ivtName = "wa64",
+
+	.system = "windows",
+	.subsystem = "windows",
+	.kernel = "nt",
+	.cpu_family = "aarch64",
+	.cpu = "aarch64",
 	.endian = "little",
 };
 
