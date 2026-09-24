@@ -17,8 +17,8 @@ public:
 		// OSXCross has a few different binary arrangements.
 		// My favorite is the `o64`/`oa64` series.
 		iblis::CompilerCfg compilerMX32 = {
-			.c = {osxcross->toolPath("o64-clang")},
-			.cpp = {osxcross->toolPath("o64-clang++")},
+			.c = {osxcross->toolPath("o32-clang")},
+			.cpp = {osxcross->toolPath("o32-clang++")},
 			// We know through testing that for cctools stable:
 			// 'ar' and 'strip' only have one implementation, not per-architecture
 			.ar = {osxcross->toolPath("xcrun"), "ar"},
