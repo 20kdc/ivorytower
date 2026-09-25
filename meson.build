@@ -3,21 +3,31 @@ project('ivorytower-driver', 'cpp')
 version_str = run_command(['git', 'describe', '--all', '--long'], capture : true, check : true).stdout().splitlines()[0]
 
 version_cpp = configure_file(
-  input : 'src/version.cpp.in',
+  input : 'src/common/version.cpp.in',
   output : 'version.cpp',
   configuration : {'PLACEHOLDER' : version_str}
 )
 
+lib_iblis = static_library('iblis',
+	'src/common/cvar.cpp',
+	'src/common/util.cpp',
+	'src/common/main.cpp',
+	version_cpp,
+	include_directories: include_directories('src')
+)
+
 setupcore = executable('setupcore',
-	'src/cvar.cpp',
-	'src/main.cpp',
-	'src/meson.cpp',
-	'src/names.cpp',
-	'src/util.cpp',
-	'src/y_boxenrunner.cpp',
-	'src/y_osxcross.cpp',
-	'src/z_box.cpp',
-	'src/z_mingw.cpp',
-	'src/z_osxcross.cpp',
-	version_cpp
+	'src/setupcore/install.cpp',
+	'src/setupcore/main.cpp',
+	'src/setupcore/meson.cpp',
+	'src/setupcore/names.cpp',
+	'src/setupcore/y_boxenrunner.cpp',
+	'src/setupcore/y_osxcross.cpp',
+	'src/setupcore/z_box.cpp',
+	'src/setupcore/z_mingw.cpp',
+	'src/setupcore/z_osxcross.cpp',
+	link_with: [
+		lib_iblis
+	],
+	include_directories: include_directories('src')
 )

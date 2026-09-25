@@ -80,8 +80,6 @@ namespace iblis {
 		}
 	};
 
-	extern Registerable * first;
-
 	class Act : public Registerable {
 	public:
 		Act(const char * name, const char * purpose);
@@ -111,14 +109,9 @@ namespace iblis {
 		virtual std::string get() override;
 	};
 
-	class Component : public CvarBool {
-	public:
-		Component(const char * name, const char * purpose, bool def);
-		// 'meta component' flag (false, is for "all" only)
-		virtual bool isMeta();
-		virtual bool install() = 0;
-	};
-
 	// version.cpp
 	extern const char * version;
+
+	// application code
+	extern Act * theDefaultAct;
 }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "iblis.h"
-#include "src/names.h"
+#include "common/iblis.h"
+#include "names.h"
 
 namespace iblis {
 	struct Machine;

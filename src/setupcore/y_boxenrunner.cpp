@@ -1,5 +1,4 @@
 #include "y_boxenrunner.h"
-#include "src/iblis.h"
 
 using namespace iblis;
 

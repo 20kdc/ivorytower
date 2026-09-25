@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "iblis.h"
+#include "common/iblis.h"
 #include "names.h"
 #include "meson.h"
 

@@ -1,4 +1,4 @@
-#include "iblis.h"
+#include "common/iblis.h"
 
 namespace iblis {
 	class BoxenrunnerSys {
