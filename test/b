@@ -1,34 +1,30 @@
 #!/bin/sh -e
-../setup --install scout_i386=on
+../setup --install scout_i386=on sniper=on
 echo "(passed install)"
 
 rm -rf build
 mkdir -p build
 
 do_variant() {
-	meson setup "build/$1" --cross-file "$1" > "build/$1_setup.log" || (echo "error in setup $1" ; exit 1)
+	meson setup "build/$1" --cross-file "ivt/$1" > "build/$1_setup.log" || (echo "error in setup $1" ; exit 1)
 	meson compile -C "build/$1"
+}
+
+do_stlp() {
+	do_variant "$1default$2"
+	do_variant "$1static$2"
+	do_variant "$1zero$2"
 }
 
 # Test most things reasonably available to Ubuntu 24.04.
 # (We can't pull in aarch64 Windows.)
 
-do_variant ivt_lgx32_default_scout
-do_variant ivt_lgx32_static_scout
-do_variant ivt_lgx32_zero_scout
+do_stlp lgx32_ _scout
+do_stlp lgx64_ _scout
+do_stlp lgx64_ _sniper
 
-do_variant ivt_wx32_default
-do_variant ivt_wx32_static
-do_variant ivt_wx32_zero
+do_stlp wx32_ ""
+do_stlp wx64_ ""
 
-do_variant ivt_wx64_default
-do_variant ivt_wx64_static
-do_variant ivt_wx64_zero
-
-do_variant ivt_mx64_default
-do_variant ivt_mx64_static
-do_variant ivt_mx64_zero
-
-do_variant ivt_ma64_default
-do_variant ivt_ma64_static
-do_variant ivt_ma64_zero
+do_stlp mx64_ ""
+do_stlp ma64_ ""

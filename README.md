@@ -1,5 +1,7 @@
 # ivorytower
 
+![](doc/obligatorylogo.png)
+
 `ivorytower` is an attempt at providing something kind of almost _vaguely_ like a mixture of `rustup` and `zig cc` for C++ from a Linux workstation.
 
 It doesn't take the 'we do it all ourselves' approach of `zig cc` (with the associated problems that brings).
@@ -35,9 +37,14 @@ It, along with these install instructions, results in a set of crossfiles (prese
 
 ## scope
 
-`ivorytower` is a tool to mostly setup 'mostly default' compilation environments.
+`ivorytower` is a tool to mostly setup 'mostly default' compilation environments for use with Meson.
 
 It is _extremely_ opinionated, but it isn't intended to provide it's own foundational library or other such tools.
+
+## caveats
+
+* Running the build system outside a container and the compiler inside is not, strictly speaking, the fastest way of running a compiler. This will be slower than not doing that.
+* Because the Windows builds are based on MinGW, the GNU ABI is used.
 
 ## use of global crossfile caches
 
