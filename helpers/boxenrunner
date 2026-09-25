@@ -52,6 +52,7 @@ if [ "$boxenrunner" = "distrobox" ]; then
 		# This pre-init-hook's job is to deliberately sabotage distrobox's upgrade process.
 		# This is because distrobox doesn't have a way to politely say 'please don't thrash the package servers, I literally JUST want you to do mounts'.
 		# So we just stop being polite.
+		distrobox rm -f "$container" || true
 		distrobox create --name "$container" --image "$image" --pre-init-hooks "upgrade=0 ; touch /.containersetupdone ; chmod -x \`which apt-get\` \`which apt-cache\` ; alias apt-get=true ; alias apt-cache=true" || true
 		# This should make sure the container is actually inited.
 		distrobox enter "$container" -- true
@@ -116,6 +117,7 @@ elif [ "$boxenrunner" = "ivt_docker" ]; then
 		ITSETUP_BOX_OPTS="$ITSETUP_BOX_OPTS -u \"\`id -u\`:\`id -g\`\""
 		# ITSETUP_BOX_CMD: Outer framework, actual configuration of container.
 		ITSETUP_BOX_CMD="docker create --name \"\$container\" $ITSETUP_BOX_OPTS -- \"\$image\" sh -c \"while true; do sleep 1d; done\""
+		docker rm -f "$container" || true
 		eval "echo $ITSETUP_BOX_CMD"
 		eval "$ITSETUP_BOX_CMD >/dev/null"
 		echo "Created Docker container '$container'"

@@ -1,5 +1,5 @@
 #!/bin/sh -e
-../setup --install scout_i386=on sniper=on
+../setup --install all=on
 echo "(passed install)"
 
 rm -rf build
@@ -23,8 +23,8 @@ do_stlp lgx32_ _scout
 do_stlp lgx64_ _scout
 do_stlp lgx64_ _sniper
 
-do_stlp wx32_ ""
-do_stlp wx64_ ""
+do_stlp wx32_ _mingw
+do_stlp wx64_ _mingw
 
 do_stlp mx64_ ""
 do_stlp ma64_ ""

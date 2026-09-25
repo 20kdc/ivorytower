@@ -4,7 +4,7 @@ ITSETUP_DIR="`readlink -e "$0"`"
 export ITSETUP_DIR="`dirname $ITSETUP_DIR`"
 
 setupcore_build() {
-	meson setup "$ITSETUP_DIR/build" "$ITSETUP_DIR"
+	meson setup --reconfigure "$ITSETUP_DIR/build" "$ITSETUP_DIR"
 	meson compile -C "$ITSETUP_DIR/build"
 }
 

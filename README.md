@@ -1,48 +1,63 @@
 # ![](doc/obligatorylogo.png) ivorytower
 
-`ivorytower` is an attempt at providing something kind of almost _vaguely_ like a mixture of `rustup` and `zig cc` for C++ from a Linux workstation.
+Compiling C++ across multiple platforms is hard.
+
+Many of those problems are unfixable. But one of those problems is _toolchain configuration,_ and that one is at least fixable for some build systems.
+
+[Meson](https://mesonbuild.com/) is a pretty neat build system. It has a reasonably sensible arrangement and doesn't seem to make too many assumptions about your setup.
+
+But its 'crossfiles' system is obviously dependent on you supplying it with crossfiles.
+
+ivorytower is an attempt at providing something kind of almost _vaguely_ like a mixture of `rustup` and `zig cc` for C++ from a Linux workstation.
 
 It doesn't take the 'we do it all ourselves' approach of `zig cc` (with the associated problems that brings).
 
 Instead, it intends to provide a unified setup tool for various cross-compilation environments produced by others, namely:
 
 * MinGW-w64: <https://www.mingw-w64.org/>
-* `osxcross`: <https://github.com/tpoechtrager/osxcross>
-* Valve's 'Steam Runtime' build environment (via `distrobox`): <https://gitlab.steamos.cloud/steamrt/scout/sdk> (etc.)
+* OSXCross: <https://github.com/tpoechtrager/osxcross>
+* Valve's 'Steam Runtime' build environment (via Distrobox): <https://gitlab.steamos.cloud/steamrt/scout/sdk> (etc.)
 
-It, along with these install instructions, results in a set of crossfiles (presently just for Meson) that are then globally available for use in projects.
+It, along with these install instructions, results in a set of crossfiles that are then globally available for use in projects.
 
 ## how to use it
 
-1. For Windows target support, `x86_64-w64-mingw32-gcc-win32` is required.
-2. For Linux target support, `docker` is required. There are two methods here, selected via the `box=` config option on the command line:
-	* `box=ivt_docker`: Uses `docker` directly. I've found this is the best experience and thus it's the default.
-		* This is implemented in `helpers/boxenrunner`.
-		* The environment variable `ITSETUP_BOX_MOUNTS` defaults to `-v /home:/home -v /media:/media` and can be used to adjust exposed mounts.
-		* The environment variable `ITSETUP_BOX_ETCFILES` defaults to `-v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro` and adjusts exposed etcfiles.
-	* `box=distrobox`: Uses `distrobox`.
-		* _Set `DBX_CONTAINER_MANAGER=docker` in your environment!_ `distrobox` likes to prefer `podman`, but it's not actually a good idea to use podman for this.
-			* I am considering the merits of simply _making_ `distrobox` use `docker`.
-		* **DO NOT USE `podman` FOR THIS.** `podman` will download 800MB then throw it all away because you don't have subuid/subgid setup.
-			* Rootlessness isn't even _possible_ here because `distrobox` will run your container `--privileged`. This will cause `podman` to require authentication.
-		* **DO NOT USE `lilipod` FOR THIS.** `lilipod` has bad diagnostics; I _think_ this was also the subuid/subgid thing (I tried `podman` after).
-3. Install `osxcross` from <https://github.com/tpoechtrager/osxcross>. I went with `stable` tooling.
-	* Notably, **`osxcross` is the real cross-compiler here**. ivorytower is meant to be a unified bundling.
-	* You have to pick and get an SDK. There are two versions I consider 'worth keeping around'.
-		* `MacOSX10.9.tar.xz` contains i386 and x86_64 OSX support. Technically you can use 10.13, but if you care about old hardware compatibility this much you probably want 10.9.
-		* `MacOSX11.1.tar.xz` contains x86_64 and aarch64 support.
-		* Realistically, unless you want really inflated binaries, you should probably only be picking one of these pairs anyway.
+Start with a Linux system that has at least these things:
 
-## scope
+* A reasonably sensible `/bin/sh`
+* `git`
+* For portable Linux support:
+	* `docker`
+		* Actual Docker is recommended, but there's nothing that _strictly_ requires it (i.e. anything that fails under `podman-docker` is a bug there, not in `ivorytower`, unless you have a very good reason to say otherwise).
+* `meson`, with a working host C++ compiler
+* A reasonably sensible filesystem layout
+	* All source code you intend to compile must be visible from `/home`, `/media`, `$XDG_RUNTIME_DIR` or `/tmp`. Workarounds are possible, see [options](doc/OPTIONS.md)
+* For Windows support:
+	* Either/both of `i686-w64-mingw32-gcc-win32` and `x86_64-w64-mingw32-gcc-win32` (also `g++`, etc.)
+* For Mac OS X support:
+	* `wget`
+	* Generally 'a system that OSXCross supports'
 
-`ivorytower` is a tool to mostly setup 'mostly default' compilation environments for use with Meson.
+Then proceed to clone this repository with the usual `git clone --depth=1`.
 
-It is _extremely_ opinionated, but it isn't intended to provide it's own foundational library or other such tools.
+ivorytower defaults to setting up the following targets:
+
+* MinGW-w64 (assumed to be provided by your distribution)
+	* This target is installed even if the underlying executables do not exist, as the binary names are well-standardized.
+	* There may in future be added a Clang-MSVC target. This is highly preferrable for various fun reasons, like interop with existing code.
+		* For anyone curious: `clang -fuse-ld=lld-link -target i686-windows-msvc test.cpp -Xlinker /safeseh:no -o test.exe -I /media/ramdisk/msvc600/vc98/include -L /media/ramdisk/msvc600/vc98/Lib` works, but the filesystem must be case-insensitive. The primary challenge will be determining a similar strategy to OSXCross for a more modern SDK. More realistically, Clang 'wants' to be run as `clang-cl-18` or such and Meson should be told to pretend it's MSVC...
+* OSXCross (will be downloaded if necessary)
+* and SteamRT Scout x86\_64 in a container (via Docker).
+
+Additional targets that can be selected are:
+
+* SteamRT Scout i386 (`scout_i386=on`)
+* SteamRT Sniper x86\_64 (`sniper=on`)
 
 ## caveats
 
 * Running the build system outside a container and the compiler inside is not, strictly speaking, the fastest way of running a compiler. This will be slower than not doing that.
-* Because the Windows builds are based on MinGW, the GNU ABI is used.
+* Because the Windows builds are based on MinGW right now, the GNU ABI is used. `w32cross` will be where work on solving this is done.
 
 ## use of global crossfile caches
 
@@ -84,7 +99,7 @@ A toolchain is specified as the prefix `ivt/`, followed by three components sepa
 			* `__cxa_deleted_virtual`
 3. _Variant._ Sometimes there are multiple toolchains for a given platform. This is typically used as a proxy to control target OS version.
 
-Therefore, `ivt/lgx64_default_scout` is SteamRT Scout x86\_64
+Therefore, `ivt/lgx64_default_scout` is SteamRT Scout x86\_64.
 
 ## the name
 

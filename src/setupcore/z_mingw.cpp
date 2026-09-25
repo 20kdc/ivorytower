@@ -24,7 +24,7 @@ public:
 	bool subinstall(InstallData * prepare, const Machine & mach, const char * archpfx) {
 		CompilerCfg compiler;
 		compiler.machine = &mach,
-		compiler.variant = "",
+		compiler.variant = "mingw",
 		compiler.c = {formatCompCom(archpfx, "gcc", 1)},
 		compiler.cpp = {formatCompCom(archpfx, "g++", 1)},
 		compiler.ar = {formatCompCom(archpfx, "ar", 0)},

@@ -19,6 +19,8 @@ public:
 	}
 	int execute() override {
 		printf("ivorytower %s\n", iblis::version);
+		puts("Usage: ./setup --ACT <example=VALUE...>");
+		puts("If multiple ACTs are specified, last wins.");
 		for (Registerable * reg = Registerable::regFirst; reg; reg = reg->regNext) {
 			if (reg->getKind() != HelpCategory::kind)
 				continue;

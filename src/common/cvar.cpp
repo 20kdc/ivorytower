@@ -39,11 +39,11 @@ CvarBool::CvarBool(const char * name, const char * purpose, bool def) : Cvar(nam
 }
 
 static bool boolParseInner(bool * value, const char * val) {
-	if ((!strcmp(val, "off")) || (!strcmp(val, "0"))) {
+	if ((!strcmp(val, "off")) || (!strcmp(val, "0")) || (!strcmp(val, "false"))) {
 		*value = false;
 		return true;
 	}
-	if ((!strcmp(val, "on")) || (!strcmp(val, "1"))) {
+	if ((!strcmp(val, "on")) || (!strcmp(val, "1")) || (!strcmp(val, "true"))) {
 		*value = true;
 		return true;
 	}

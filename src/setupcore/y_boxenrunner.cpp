@@ -8,7 +8,7 @@ static CvarStr cvar_boxenrunner("box",
 	"  distrobox: one of the steamrt recommended boxes, but runs --privileged. Recommend export DBX_CONTAINER_MANAGER=docker in profile.\n"
 	"  ", "ivt_docker");
 static iblis::CvarStr cvar_box_prefix("box_prefix", "Prefix for containers created/used by ivorytower.", "");
-iblis::CvarBool iblis::cvar_box_create("box_create", "Control creating containers. If false, operations which create containers will proceed as if they were created if possible.", true);
+iblis::CvarBool iblis::cvar_box_create("box_create", "Control creating containers. If 0, operations which create containers will proceed as if they were created if possible.", true);
 
 BoxenrunnerSys * iblis::BoxenrunnerSys::build() {
 	auto helpy = helperSys.get();

@@ -6,6 +6,8 @@
 using namespace iblis;
 using namespace setupcore;
 
+static iblis::CvarBool cvar_box_rebuild("box_rebuild", "If 1, containers will be removed and rebuilt if they already exist.", false);
+
 class ContainerCCComponent : public Component {
 public:
 	const Machine * machine;
@@ -32,7 +34,7 @@ public:
 		// do distrobox create if necessary
 		// we skip the test entirely if we won't create it anyways
 		if (iblis::cvar_box_create.value) {
-			bool exists = boxSys->test(container);
+			bool exists = cvar_box_rebuild.value ? false : boxSys->test(container);
 			if (!exists)
 				if (!boxSys->create(container, image))
 					looksSuccessful = false;
