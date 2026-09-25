@@ -4,11 +4,15 @@
 #include <stdlib.h>
 #include <spawn.h>
 #include <unistd.h>
+#ifndef __MACH__
 #include <wait.h>
+#endif
 
 #include "iblis.h"
 
 using namespace iblis;
+
+extern char **environ;
 
 Environ iblis::Environ::readProcess() {
 	std::vector<std::string> inner;
