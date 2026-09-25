@@ -1,6 +1,4 @@
-# ivorytower
-
-![](doc/obligatorylogo.png)
+# ![](doc/obligatorylogo.png) ivorytower
 
 `ivorytower` is an attempt at providing something kind of almost _vaguely_ like a mixture of `rustup` and `zig cc` for C++ from a Linux workstation.
 
