@@ -1,7 +1,8 @@
 #!/bin/sh -e
 
-ITSETUP_OXW_WHERE="`readlink -e "$0"`"
-ITSETUP_OXW_DIR="`dirname $ITSETUP_OXW_WHERE`/.."
+ITSETUP_OXW_DIR="`readlink -e "$0"`"
+ITSETUP_OXW_DIR="`dirname $ITSETUP_OXW_DIR`"
+ITSETUP_OXW_DIR="`dirname $ITSETUP_OXW_DIR`"
 
 osxcross_checkpath="$1"
 shift
@@ -17,26 +18,139 @@ if [ -h "$ITSETUP_OXW_DIR/osxcross_bin" ]; then
 	rm -f "$ITSETUP_OXW_DIR/osxcross_bin"
 fi
 
-# if we can find it in PATH or via env vars it sets, we consider that good
-if [ "$osxcross_checkpath" != "0" ]; then
-	eval `osxcross-conf || true` >/dev/null 2>/dev/null
-	if "$OSXCROSS_CCTOOLS_PATH/osxcross" >/dev/null 2>/dev/null ; then
-		echo " installed osxcross found at: $OSXCROSS_CCTOOLS_PATH"
-		ln -s -T "$OSXCROSS_CCTOOLS_PATH" "$ITSETUP_OXW_DIR/osxcross_bin"
+test_candidate() {
+	if "$1/osxcross" >/dev/null 2>/dev/null ; then
+		echo " $2 osxcross found at: $1"
+		ln -s -T "$1" "$ITSETUP_OXW_DIR/osxcross_bin"
 		exit
 	fi
-	if "$OSXCROSS_TARGET_DIR/bin/osxcross" >/dev/null 2>/dev/null ; then
-		echo " installed osxcross found at: $OSXCROSS_TARGET_DIR/bin"
-		ln -s -T "$OSXCROSS_TARGET_DIR/bin" "$ITSETUP_OXW_DIR/osxcross_bin"
-		exit
+}
+
+linked_break="if [ -h \"\$ITSETUP_OXW_DIR/osxcross_bin\" ]; then exit; fi"
+
+# if we can find it in PATH or via env vars it sets, we consider that good
+if [ "$osxcross_checkpath" != "0" ]; then
+	eval `osxcross-conf || true` >/dev/null 2>/dev/null || true
+	test_candidate "$OSXCROSS_CCTOOLS_PATH" "installed"
+	eval "$linked_break"
+	test_candidate "$OSXCROSS_TARGET_DIR/bin" "installed"
+	eval "$linked_break"
+fi
+
+test_candidate "$ITSETUP_OXW_DIR/osxcross/target/bin" "subtree"
+eval "$linked_break"
+
+if [ "$ITSETUP_OSXCROSS_URL" = "" ]; then
+	ITSETUP_OSXCROSS_URL="https://github.com/tpoechtrager/osxcross.git"
+fi
+if [ "$ITSETUP_OSXSDK_URL" = "" ]; then
+	if [ "$ITSETUP_OSXSDK_NAME" = "" ]; then
+		ITSETUP_OSXSDK_URL="https://github.com/joseluisq/macosx-sdks/releases/download/11.1/MacOSX11.1.sdk.tar.xz"
+		ITSETUP_OSXSDK_NAME="MacOSX11.1.sdk.tar.xz"
+		ITSETUP_OSXSDK_SHA256SUM="97a916b0b68aae9dcd32b7d12422ede3e5f34db8e169fa63bfb18ec410b8f5d9"
 	fi
 fi
 
-echo " osxcross is NOT INSTALLED"
-echo " here would lay an installer for it"
-echo " you will instead receive pertinent links"
-echo " OSXCross itself: https://github.com/tpoechtrager/osxcross"
-echo " XCode tools .tar.gz: https://github.com/joseluisq/macosx-sdks/releases/tag/11.1"
-echo " once done, adding target/bin to PATH as osxcross instructs will let it be picked up"
+if [ -e "$ITSETUP_OXW_DIR/osxcross" ]; then
+	if [ -e "$ITSETUP_OXW_DIR/osxcross/build.sh" ]; then
+		# OSXCross is already extracted and thus we can skip download step later
+		osxcross_extracted=1
+		true
+	else
+		echo "CRITICAL: OSXCross directory exists but is damaged."
+		echo "Please delete or repair $ITSETUP_OXW_DIR/osxcross"
+		exit 1
+	fi
+fi
+
+echo ""
+echo "osxcross is not installed!"
+echo "continuing may automatically download:"
+echo " $ITSETUP_OSXCROSS_URL"
+echo " $ITSETUP_OSXSDK_URL"
+echo "this will require (at time of writing) 'git' and 'wget'"
+echo "if NOT in UNATTENDED mode, osxcross/tools/get_dependencies.sh will be run with sudo; if this fails, dependency gathering will be ignored"
+echo "be aware of relevant XCode licensing terms at: https://www.apple.com/legal/sla/docs/xcode.pdf"
+echo "in order to continue, type 'accept'"
+echo "(alternatively, you may cancel now and install manually i.e. to pick SDK version)"
+echo ""
+if [ "$UNATTENDED" = "1" ]; then
+	echo "!!! UNATTENDED is set - assuming OK !!!"
+else
+	echo -n "> "
+	read accept_bs
+	if [ "$accept_bs" = "accept" ]; then
+		break
+	else
+		echo "declined automatic installation"
+		exit 1
+	fi
+fi
+
+# User has accepted terms.
+echo "-- OSXCross install begin --"
+
+# STAGE1 ensure osxcross extracted
+
+if [ "$osxcross_extracted" != "1" ]; then
+	echo "Downloading OSXCross."
+	git clone --depth=1 --recursive "$ITSETUP_OSXCROSS_URL" "$ITSETUP_OXW_DIR/osxcross"
+else
+	echo "OSXCross was found to already be downloaded."
+fi
+
+cd "$ITSETUP_OXW_DIR/osxcross"
+
+# STAGE2 get dependencies
+
+if [ "$UNATTENDED" = "1" ]; then
+	echo "UNATTENDED; skipping sudo get_dependencies"
+else
+	echo "sudo ./tools/get_dependencies.sh {"
+	if sudo ./tools/get_dependencies.sh ; then
+		echo "} Dependency setup OK"
+	else
+		echo "} Dependency setup FAIL, continuing anyway"
+	fi
+fi
+
+# STAGE3 ensure tarball available and correct
+
+if [ -e "tarballs/$ITSETUP_OSXSDK_NAME" ]; then
+	echo "The tarball $ITSETUP_OSXSDK_NAME is already present."
+else
+	wget "$ITSETUP_OSXSDK_URL" -O "tarballs/$ITSETUP_OSXSDK_NAME"
+fi
+
+
+if [ "$ITSETUP_OSXSDK_SHA256SUM" != "" ]; then
+	if echo "$ITSETUP_OSXSDK_SHA256SUM tarballs/$ITSETUP_OSXSDK_NAME" | sha256sum -c; then
+		true
+	else
+		echo "$ITSETUP_OSXSDK_NAME was found to be corrupted."
+		echo "Expected sha256: $ITSETUP_OSXSDK_SHA256SUM"
+		echo -n "Got: "
+		sha256sum "tarballs/$ITSETUP_OSXSDK_NAME"
+		echo "This SHOULD NOT HAPPEN and is PROBABLY EXTREMELY BAD."
+		echo "If you're sure of this tarball, run osxcross/build.sh yourself and retry."
+		echo "If the result looks like a valid SDK, ivorytower will continue from there."
+		exit 1
+	fi
+fi
+
+# STAGE4 build
+
+echo "Initiating OSXCross build. See you on the other side."
+
+./build.sh
+
+# complete
+
+echo "-- OSXCross install end --"
+
+test_candidate "$ITSETUP_OXW_DIR/osxcross/target/bin" "subtree"
+eval "$linked_break"
+
+echo " osxcross installation did not produce an SDK"
 
 exit 1
