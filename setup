@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
-ITSETUP_WHERE="`readlink -e "$0"`"
-export ITSETUP_DIR="`dirname $ITSETUP_WHERE`"
+ITSETUP_DIR="`readlink -e "$0"`"
+export ITSETUP_DIR="`dirname $ITSETUP_DIR`"
 
 setupcore_build() {
 	meson setup "$ITSETUP_DIR/build" "$ITSETUP_DIR"
