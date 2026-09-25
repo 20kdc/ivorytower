@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace iblis {
+namespace setupcore {
 	// All as defined by Meson, except where noted.
 
 	struct CPU {
@@ -13,8 +13,8 @@ namespace iblis {
 
 		CPU(const char * cpu_family, const char * cpu, const char * endian) : cpu_family(cpu_family), cpu(cpu), endian(endian) {}
 
-		// i686
-		static const CPU x32;
+		// i686 (we'll see if we need to add more of these?)
+		static const CPU x32_i686;
 		// x86_64
 		static const CPU x64;
 		// aarch64
@@ -68,21 +68,44 @@ namespace iblis {
 	};
 
 	struct STLDisposition {
-		const char * ivtName;
+		const char * ivtName = nullptr;
+		// Compile C++ with the C compiler. This is used to force q_zero to work on older GCC.
+		bool hackCPPWithC = false;
 		CompilerArgs compilerArgs;
 
-		static const STLDisposition stl;
-		static const STLDisposition staticstl;
-		static const STLDisposition none;
+		static const STLDisposition q_default;
+		static const STLDisposition q_static;
+		static const STLDisposition q_staticW;
+		static const STLDisposition q_zero;
+		static const STLDisposition q_zeroW;
+		static const STLDisposition q_zeroL;
 	};
 
 	struct CompilerCfg {
+		// Machine this compiler config is for.
+		const Machine * machine;
+
+		// Variant (i.e. "scout", "sniper")
+		std::string variant;
+
+		// 'Core' compilation tools.
 		std::vector<std::string> c;
 		std::vector<std::string> cpp;
 		std::vector<std::string> ar;
 		std::vector<std::string> windres;
 		std::vector<std::string> strip;
+
+		// CMake. Would be in generic but mingw etc. don't work this way, so we need to not prefix there.
+		std::vector<std::string> cmake;
+
+		// Generic prefix.
+		// This controls all *-config series programs.
+		std::vector<std::string> generic;
+
+		// STL dispositions.
 		std::vector<const STLDisposition *> dispositions;
+
+		// Compiler args.
 		CompilerArgs args;
 		std::vector<std::vector<std::string> *> allCommands();
 	};

@@ -72,7 +72,30 @@ int iblis::runCmd(const std::vector<std::string> & argv, const Environ & envp) {
 	}
 }
 
-// Writes a file.
+std::vector<std::string> iblis::readFile(const std::string & path) {
+	std::vector<std::string> data;
+	FILE * f = fopen(path.c_str(), "rb");
+	if (!f)
+		return data;
+	std::string line;
+	while (1) {
+		int c = fgetc(f);
+		if (c == EOF) {
+			break;
+		} else if (c == 13) {
+			continue;
+		} else if (c == 10) {
+			data.push_back(line);
+			line.clear();
+		} else {
+			line.push_back((char) c);
+		}
+	}
+	data.push_back(line);
+	fclose(f);
+	return data;
+}
+
 bool iblis::writeFile(const std::string & path, const std::string & content) {
 	FILE * data = fopen(path.c_str(), "wb");
 	if (!data)

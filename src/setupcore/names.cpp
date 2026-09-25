@@ -1,10 +1,10 @@
 #include "names.h"
 
-using namespace iblis;
+using namespace setupcore;
 
 /* CPU defintiions */
 
-const CPU CPU::x32("x86", "i686", "little");
+const CPU CPU::x32_i686("x86", "i686", "little");
 const CPU CPU::x64("x86_64", "x86_64", "little");
 const CPU CPU::a64("aarch64", "aarch64", "little");
 
@@ -16,33 +16,23 @@ const OS OS::w("windows", "windows", "nt");
 
 /* machine definitions */
 
-const Machine Machine::lgx32("lgx32", &OS::lg, &CPU::x32);
+const Machine Machine::lgx32("lgx32", &OS::lg, &CPU::x32_i686);
 const Machine Machine::lgx64("lgx64", &OS::lg, &CPU::x64);
 const Machine Machine::lga64("lga64", &OS::lg, &CPU::a64);
 
-const Machine Machine::mx32("mx32", &OS::m, &CPU::x32);
+// While the written name is i386, this seems more due to tooling conventions.
+// Intel Macs started with Core Duo. Assume i686.
+const Machine Machine::mx32("mx32", &OS::m, &CPU::x32_i686);
 const Machine Machine::mx64("mx64", &OS::m, &CPU::x64);
 const Machine Machine::ma64("ma64", &OS::m, &CPU::a64);
 
-const Machine Machine::wx32("wx32", &OS::w, &CPU::x32);
+const Machine Machine::wx32("wx32", &OS::w, &CPU::x32_i686);
 const Machine Machine::wx64("wx64", &OS::w, &CPU::x64);
 const Machine Machine::wa64("wa64", &OS::w, &CPU::a64);
 
-const iblis::STLDisposition iblis::STLDisposition::none = [] {
-	iblis::STLDisposition result;
-	result.ivtName = "none";
-	result.compilerArgs.addCArgs = {"-fno-exceptions"};
-	result.compilerArgs.addCLinkArgs = {"-nostdlib++"};
-	result.compilerArgs.addCppArgs = {"-nostdinc++", "-fno-rtti", "-fno-exceptions"};
-	result.compilerArgs.addCppLinkArgs = {"-nostdlib++"};
-	result.compilerArgs.cppEh = "none";
-	result.compilerArgs.cppRtti = "false";
-	return result;
-}();
-
-const iblis::STLDisposition iblis::STLDisposition::stl = [] {
-	iblis::STLDisposition result;
-	result.ivtName = "stl",
+const STLDisposition STLDisposition::q_default = [] {
+	STLDisposition result;
+	result.ivtName = "default",
 	result.compilerArgs.addCArgs = {};
 	result.compilerArgs.addCLinkArgs = {};
 	result.compilerArgs.addCppArgs = {};
@@ -50,9 +40,9 @@ const iblis::STLDisposition iblis::STLDisposition::stl = [] {
 	return result;
 }();
 
-const iblis::STLDisposition iblis::STLDisposition::staticstl = [] {
-	iblis::STLDisposition result;
-	result.ivtName = "staticstl",
+const STLDisposition STLDisposition::q_static = [] {
+	STLDisposition result;
+	result.ivtName = "static",
 	result.compilerArgs.addCArgs = {};
 	result.compilerArgs.addCLinkArgs = {};
 	result.compilerArgs.addCppArgs = {};
@@ -60,7 +50,58 @@ const iblis::STLDisposition iblis::STLDisposition::staticstl = [] {
 	return result;
 }();
 
-void iblis::CompilerArgs::merge(const CompilerArgs & other) {
+const STLDisposition STLDisposition::q_zero = [] {
+	STLDisposition result;
+	result.ivtName = "zero";
+	result.compilerArgs.addCArgs = {"-fno-exceptions"};
+	result.compilerArgs.addCLinkArgs = {};
+	result.compilerArgs.addCppArgs = {"-nostdinc++", "-fno-rtti", "-fno-exceptions"};
+	result.compilerArgs.addCppLinkArgs = {"-nostdlib++"};
+	result.compilerArgs.cppEh = "none";
+	result.compilerArgs.cppRtti = "false";
+	return result;
+}();
+
+// Recommend looking at /usr/lib/gcc/x86_64-w64-mingw32/13-win32/ for reference here.
+
+const STLDisposition STLDisposition::q_staticW = [] {
+	STLDisposition result;
+	result.ivtName = "static",
+	result.compilerArgs.addCArgs = {};
+	result.compilerArgs.addCLinkArgs = {"-static-libgcc"};
+	result.compilerArgs.addCppArgs = {};
+	result.compilerArgs.addCppLinkArgs = {"-static-libstdc++", "-static-libgcc", "-l:libatomic.a"};
+	return result;
+}();
+
+const STLDisposition STLDisposition::q_zeroW = [] {
+	STLDisposition result;
+	result.ivtName = "zero";
+	result.compilerArgs.addCArgs = {"-fno-exceptions"};
+	result.compilerArgs.addCLinkArgs = {"-static-libgcc"};
+	result.compilerArgs.addCppArgs = {"-nostdinc++", "-fno-rtti", "-fno-exceptions"};
+	result.compilerArgs.addCppLinkArgs = {"-nostdlib++", "-static-libgcc", "-l:libatomic.a"};
+	result.compilerArgs.cppEh = "none";
+	result.compilerArgs.cppRtti = "false";
+	return result;
+}();
+
+// Old Linux means old GCC. This requires we use hackCPPWithC, which was how you did this before -nostdlib++.
+
+const STLDisposition STLDisposition::q_zeroL = [] {
+	STLDisposition result;
+	result.ivtName = "zero";
+	result.hackCPPWithC = true;
+	result.compilerArgs.addCArgs = {"-fno-exceptions"};
+	result.compilerArgs.addCLinkArgs = {};
+	result.compilerArgs.addCppArgs = {"-fno-rtti", "-fno-exceptions"};
+	result.compilerArgs.addCppLinkArgs = {};
+	result.compilerArgs.cppEh = "none";
+	result.compilerArgs.cppRtti = "false";
+	return result;
+}();
+
+void CompilerArgs::merge(const CompilerArgs & other) {
 	for (auto x = other.addCArgs.begin(); x < other.addCArgs.end(); x++)
 		addCArgs.push_back(*x);
 	for (auto x = other.addCLinkArgs.begin(); x < other.addCLinkArgs.end(); x++)
@@ -75,12 +116,14 @@ void iblis::CompilerArgs::merge(const CompilerArgs & other) {
 		cppRtti = other.cppRtti;
 }
 
-std::vector<std::vector<std::string> *> iblis::CompilerCfg::allCommands() {
+std::vector<std::vector<std::string> *> CompilerCfg::allCommands() {
 	return {
 		&c,
 		&cpp,
 		&ar,
 		&windres,
-		&strip
+		&strip,
+		&cmake,
+		&generic,
 	};
 }

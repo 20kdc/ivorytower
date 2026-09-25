@@ -7,9 +7,20 @@ ITSETUP_OXW_DIR="`dirname $ITSETUP_OXW_DIR`"
 osxcross_checkpath="$1"
 shift
 
+characterize() {
+	eval "`"$ITSETUP_OXW_DIR/osxcross_bin/osxcross-conf"`"
+	if [ "$OSXCROSS_TARGET" = "" ]; then
+		echo "unable to characterize: osxcross-conf did not successfully supply OSXCROSS_TARGET"
+		exit 1
+	fi
+	echo " OSXCROSS_TARGET=$OSXCROSS_TARGET"
+	echo "$OSXCROSS_TARGET" > "$ITSETUP_OXW_DIR/osxcross.target"
+}
+
 # do we already have this set?
 if "$ITSETUP_OXW_DIR/osxcross_bin/osxcross" >/dev/null 2>/dev/null ; then
 	echo " cached osxcross_bin: `readlink "$ITSETUP_OXW_DIR/osxcross_bin"`"
+	characterize
 	exit
 fi
 
@@ -22,6 +33,7 @@ test_candidate() {
 	if "$1/osxcross" >/dev/null 2>/dev/null ; then
 		echo " $2 osxcross found at: $1"
 		ln -s -T "$1" "$ITSETUP_OXW_DIR/osxcross_bin"
+		characterize
 		exit
 	fi
 }

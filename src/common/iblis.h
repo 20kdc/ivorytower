@@ -24,7 +24,10 @@ namespace iblis {
 
 	// Runs a command, returns exit status.
 	int runCmd(const std::vector<std::string> & argv, const Environ & environ = Environ::readProcess());
-	// Writes a file.
+	// Reads a file to a series of lines.
+	// Returns empty list on error (would return an empty string if the file is empty)
+	std::vector<std::string> readFile(const std::string & path);
+	// Writes a file from a string.
 	bool writeFile(const std::string & path, const std::string & content);
 	void warn(const char * subsystem, const std::string & message);
 

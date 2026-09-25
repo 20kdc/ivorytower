@@ -47,10 +47,9 @@ This is to provide a 'setup once, use anywhere' experience.
 
 ## general toolchain specification layout
 
-A toolchain is specified as a set of four components, separated by `_`:
+A toolchain is specified as the prefix `ivt/`, followed by three components separated by `_`:
 
-1. `ivt`. This prefix isolates these specifications from other, non-ivorytower specifications to prevent conflict.
-2. _Platform,_ This is a combination of OS and architecture.
+1. _Platform,_ This is a combination of OS and architecture.
 	* Templated. This is used for all desktop platforms (and all platforms at present.)
 		* OS:
 			* `a`: Android
@@ -62,20 +61,25 @@ A toolchain is specified as a set of four components, separated by `_`:
 			* `x64`: x86\_64
 			* `av7`: armv7l
 			* `a64`: aarch64
-3. _C++ STL disposition,_ Among other things, some toolchains have ABI or licensing complexity associated with their C++ standard library.
-	* `stl`: The toolchain STL is used in its default mode.
+2. _Standard library disposition,_ \
+   This covers the C++ STL. On Windows, it also makes `libgcc` and `libatomic` static. \
+   Notably, this does _not_ staticize `libc`! That sort of thing either works with `-Dcpp_link_args=-static` or doesn't work at all.
+	* `default`: The toolchain STL is used in its default mode, which is usually/always shared library. _This never adds any compiler options._
 		* For Linux, use this.
 			* I am aware <https://mesonbuild.com/Creating-Linux-binaries.html> says that different Linux distributions have binary-incompatible STLs.
-			* Valve uses dynamic STL (insofaras they use the STL at all), and more to the point, shadowing the system STL is a realistic risk that will break Mesa if it happens.
-	* `staticstl`: The toolchain STL is used in an explicitly static mode.
+			* Valve uses dynamic STL (insofaras they use the STL at all), and more to the point, shadowing the system STL is a realistic risk **that will break Mesa if it happens.**
+			* For as much as GNU library management has caused other issues in this project, `libstdc++` maintainers seem well aware that breaking ABI here would _light everything on fire_ and have evaded that catastrophe.
+	* `static`: The toolchain STL is used in an explicitly static mode. `libgcc` is statically linked if necessary.
 		* Remember that you can disable RTTI and exceptions. If your project is multi-module, strongly consider doing this.
 		* In this mode, you should take care to use _as little of the STL as possible_ at interface boundaries. `dynamic_cast` is potentially a mismatch hazard.
 		* An alternative was considered, but the nature of pure/deleted virtuals meant running a build for every toolchain during SDK install.
-	* `none`: The toolchain STL is suppressed. RTTI and exceptions are disabled. There is no replacement.
+	* `zero`: C++ STL is suppressed. RTTI and exceptions are disabled. `libgcc` is statically linked if necessary.
 		* For realistic C++ use, you will need to supply the following functions yourself:
 			* `__cxa_pure_virtual`
 			* `__cxa_deleted_virtual`
-4. _Variant._ Sometimes there are multiple toolchains for a given platform. This is typically used as a proxy to control target OS version.
+3. _Variant._ Sometimes there are multiple toolchains for a given platform. This is typically used as a proxy to control target OS version.
+
+Therefore, `ivt/lgx64_default_scout` is SteamRT Scout x86\_64
 
 ## the name
 

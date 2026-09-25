@@ -3,23 +3,26 @@
 #include "names.h"
 #include "y_boxenrunner.h"
 
-class ContainerCCComponent : public iblis::Component {
+using namespace iblis;
+using namespace setupcore;
+
+class ContainerCCComponent : public Component {
 public:
-	const iblis::Machine * machine;
+	const Machine * machine;
 	const char * variant;
-	const iblis::CompilerCfg * compiler;
+	const CompilerCfg * compiler;
 	const char * container;
 	const char * image;
 	ContainerCCComponent(
 		const char * name, const char * purpose, bool def,
-		const iblis::Machine * machine, const char * variant, const iblis::CompilerCfg * compiler,
+		const Machine * machine, const char * variant, const CompilerCfg * compiler,
 		const char * container, const char * image
 	) :
-		iblis::Component(name, purpose, def),
+		Component(name, purpose, def),
 		machine(machine), variant(variant), compiler(compiler),
 		container(container), image(image) {
 	}
-	bool install() override {
+	bool install(InstallData * prepare) override {
 		auto boxSys = iblis::boxenrunnerSys.get();
 		if (!boxSys) {
 			IBLIS_WARN("BoxenrunnerSys dead");
@@ -35,8 +38,10 @@ public:
 					looksSuccessful = false;
 		}
 		// setup
-		iblis::CompilerCfg cfg = *compiler;
-		auto cfgCmds = cfg.allCommands();;
+		setupcore::CompilerCfg cfg = *compiler;
+		cfg.machine = machine;
+		cfg.variant = variant;
+		auto cfgCmds = cfg.allCommands();
 		for (auto x = cfgCmds.begin(); x != cfgCmds.end(); x++) {
 			std::vector<std::string> * baseCmd = *x;
 			if (baseCmd->size()) {
@@ -46,37 +51,37 @@ public:
 				*baseCmd = newCmd;
 			}
 		}
-		looksSuccessful &= iblis::meson::installCrossFiles(*machine, variant, cfg);
+		prepare->addTarget(cfg);
 		return looksSuccessful;
 	}
 };
 
-static iblis::CompilerCfg sensibleDefaultGCC = [] {
-	iblis::CompilerCfg result;
+static CompilerCfg sensibleDefaultGCC = [] {
+	CompilerCfg result;
 	result.c = {"gcc"};
 	result.cpp = {"g++"};
 	result.ar = {"ar"};
 	result.strip = {"strip"};
 	result.dispositions = {
-		&iblis::STLDisposition::stl,
-		&iblis::STLDisposition::staticstl,
-		&iblis::STLDisposition::none,
+		&STLDisposition::q_default,
+		&STLDisposition::q_static,
+		&STLDisposition::q_zeroL,
 	};
 	return result;
 }();
 
 ContainerCCComponent theSteamRTScoutComponent(
 	"scout", "'scout' SteamRT (most/all x86_64 glibc Linuxes)", true,
-	&iblis::Machine::lgx64, "scout", &sensibleDefaultGCC,
+	&Machine::lgx64, "scout", &sensibleDefaultGCC,
 	"scout", "registry.gitlab.steamos.cloud/steamrt/scout/sdk"
 );
 ContainerCCComponent theSteamRTScouti686Component(
 	"scout_i386", "'scout-i386' SteamRT (most/all x86 glibc Linuxes)", false,
-	&iblis::Machine::lgx32, "scout", &sensibleDefaultGCC,
+	&Machine::lgx32, "scout", &sensibleDefaultGCC,
 	"scout-i386", "registry.gitlab.steamos.cloud/steamrt/scout/sdk/i386"
 );
 ContainerCCComponent theSteamRTSniperComponent(
 	"sniper", "'sniper' SteamRT (most newer x86_64 glibc Linuxes)", false,
-	&iblis::Machine::lgx64, "sniper", &sensibleDefaultGCC,
+	&Machine::lgx64, "sniper", &sensibleDefaultGCC,
 	"sniper", "registry.gitlab.steamos.cloud/steamrt/sniper/sdk"
 );

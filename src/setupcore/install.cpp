@@ -1,6 +1,15 @@
 #include "install.h"
 
 using namespace iblis;
+using namespace setupcore;
+
+void InstallData::addTarget(CompilerCfg cfg) {
+	if (!cfg.machine) {
+		IBLIS_WARN("machine without target");
+		abort();
+	}
+	targets.push_back(cfg);
+}
 
 Component::Component(const char * name, const char * purpose, bool def) : CvarBool(name, purpose, def) {
 }
@@ -11,7 +20,7 @@ bool Component::isMeta() {
 	return false;
 }
 
-class ComponentAll : public iblis::Component {
+class ComponentAll : public Component {
 public:
 	ComponentAll() : Component("all", "Shorthand to enable/disable all components.", false) {
 
@@ -32,7 +41,7 @@ public:
 	bool isMeta() override {
 		return true;
 	}
-	bool install() override {
+	bool install(InstallData * prepare) override {
 		// do absolutely nothing, we're a meta component
 		return true;
 	}

@@ -6,6 +6,7 @@
 #include "meson.h"
 
 using namespace iblis;
+using namespace setupcore;
 
 std::string findMesonCrossPath() {
 	const char * home = getenv("HOME");
@@ -13,12 +14,12 @@ std::string findMesonCrossPath() {
 		IBLIS_WARN("missing HOME environment variable");
 		exit(1);
 	}
-	return std::string(home) + "/.local/share/meson/cross";
+	return std::string(home) + "/.local/share/meson/cross/ivt";
 }
 
-CvarStr iblis::meson::crossPath("meson_cross_path", "Path to Meson cross files directory", findMesonCrossPath());
+CvarStr setupcore::meson::crossPath("meson_cross_path", "Path to Meson cross files directory", findMesonCrossPath());
 
-std::string iblis::meson::iniEscape(const std::string & src) {
+std::string setupcore::meson::iniEscape(const std::string & src) {
 	std::string res;
 	res += "'";
 	res += src;
@@ -26,7 +27,7 @@ std::string iblis::meson::iniEscape(const std::string & src) {
 	return res;
 }
 
-std::string iblis::meson::iniStrArray(const std::vector<std::string> & src) {
+std::string setupcore::meson::iniStrArray(const std::vector<std::string> & src) {
 	std::string res;
 	res += "[";
 	for (auto i = src.begin(); i != src.end(); i++) {
@@ -38,7 +39,7 @@ std::string iblis::meson::iniStrArray(const std::vector<std::string> & src) {
 	return res;
 }
 
-std::string iblis::meson::iniProp(const std::string & prop, const char * src) {
+std::string setupcore::meson::iniProp(const std::string & prop, const char * src) {
 	std::string res;
 	if (!src)
 		return res;
@@ -49,7 +50,7 @@ std::string iblis::meson::iniProp(const std::string & prop, const char * src) {
 	return res;
 }
 
-std::string iblis::meson::iniCmd(const std::string & prop, const std::vector<std::string> & src) {
+std::string setupcore::meson::iniCmd(const std::string & prop, const std::vector<std::string> & src) {
 	std::string res;
 	if (src.size() == 0)
 		return res;
@@ -64,7 +65,25 @@ std::string iblis::meson::iniCmd(const std::string & prop, const std::vector<std
 	return res;
 }
 
-std::string iblis::meson::iniArg(const std::string & prop, const std::vector<std::string> & src) {
+std::string setupcore::meson::iniGenCmd(const std::string & prop, const std::vector<std::string> & src) {
+	std::string res;
+	if (src.size() == 0)
+		return res;
+	std::vector<std::string> dst = src;
+	auto & last = dst[dst.size() - 1];
+	last += prop;
+	res += prop;
+	res += " = ";
+	if (dst.size() == 1) {
+		res += iniEscape(dst[0]);
+	} else {
+		res += iniStrArray(dst);
+	}
+	res += "\n";
+	return res;
+}
+
+std::string setupcore::meson::iniArg(const std::string & prop, const std::vector<std::string> & src) {
 	std::string res;
 	if (src.size() == 0)
 		return res;
@@ -75,7 +94,7 @@ std::string iblis::meson::iniArg(const std::string & prop, const std::vector<std
 	return res;
 }
 
-std::string iblis::meson::machineIni(const iblis::Machine & mach) {
+std::string setupcore::meson::machineIni(const Machine & mach) {
 	std::string base;
 	base += iniProp("system", mach.os->system);
 	base += iniProp("subsystem", mach.os->subsystem);
@@ -86,10 +105,10 @@ std::string iblis::meson::machineIni(const iblis::Machine & mach) {
 	return base;
 }
 
-std::string iblis::meson::makeCrossFile(const iblis::Machine & mach, const iblis::STLDisposition & disposition, const iblis::CompilerCfg & comp) {
+std::string setupcore::meson::makeCrossFile(const CompilerCfg & comp, const STLDisposition & disposition) {
 	std::string base;
 	base += "[host_machine]\n";
-	base += machineIni(mach);
+	base += machineIni(*comp.machine);
 	base += "[properties]\n";
 	// By doing this and not setting an EXE wrapper, we disable Meson's sanity checker.
 	// This matters a LOT for cases like mingw dynamic STL, which we'd need to somehow locate and then sneakily install DLL copy commands into Meson to fix.
@@ -101,10 +120,30 @@ std::string iblis::meson::makeCrossFile(const iblis::Machine & mach, const iblis
 	base += "needs_exe_wrapper = true\n";
 	base += "[binaries]\n";
 	base += iniCmd("c", comp.c);
-	base += iniCmd("cpp", comp.cpp);
+	if (disposition.hackCPPWithC) {
+		// SteamRT Scout needs this as a workaround for no -nostdlib++
+		base += iniCmd("cpp", comp.c);
+	} else {
+		base += iniCmd("cpp", comp.cpp);
+	}
 	base += iniCmd("ar", comp.ar);
 	base += iniCmd("windres", comp.windres);
 	base += iniCmd("strip", comp.strip);
+	base += iniCmd("cmake", comp.cmake);
+	// https://mesonbuild.com/Machine-files.html#binaries
+	base += iniGenCmd("cups-config", comp.generic);
+	base += iniGenCmd("gnustep-config", comp.generic);
+	base += iniGenCmd("gpgme-config", comp.generic);
+	base += iniGenCmd("libgcrypt-config", comp.generic);
+	base += iniGenCmd("libwmf-config", comp.generic);
+	base += iniGenCmd("llvm-config", comp.generic);
+	base += iniGenCmd("pcap-config", comp.generic);
+	base += iniGenCmd("pkg-config", comp.generic);
+	base += iniGenCmd("sdl2-config", comp.generic);
+	base += iniGenCmd("wx-config", comp.generic);
+	base += iniGenCmd("wx-3.0-config", comp.generic);
+	base += iniGenCmd("wx-config-gtk", comp.generic);
+
 	base += "[built-in options]\n";
 	CompilerArgs mergedArgs = comp.args;
 	mergedArgs.merge(disposition.compilerArgs);
@@ -119,17 +158,17 @@ std::string iblis::meson::makeCrossFile(const iblis::Machine & mach, const iblis
 
 static bool hasDoneCrossFileMkdir = false;
 
-bool iblis::meson::installCrossFiles(const iblis::Machine & mach, const std::string & variant, const iblis::CompilerCfg & comp) {
+bool setupcore::meson::installCrossFiles(const CompilerCfg & comp) {
 	bool allOk = true;
 	for (auto disposition = comp.dispositions.begin(); disposition != comp.dispositions.end(); disposition++) {
-		auto iniContent = makeCrossFile(mach, **disposition, comp);
-		std::string referent = "ivt_";
-		referent += mach.ivtName;
+		auto iniContent = makeCrossFile(comp, **disposition);
+		std::string referent = "";
+		referent += comp.machine->ivtName;
 		referent += "_";
 		referent += (*disposition)->ivtName;
-		if (variant.length() > 0) {
+		if (comp.variant.length() > 0) {
 			referent += "_";
-			referent += variant;
+			referent += comp.variant;
 		}
 		auto path = crossPath.value;
 		path += "/";
@@ -138,7 +177,7 @@ bool iblis::meson::installCrossFiles(const iblis::Machine & mach, const std::str
 			hasDoneCrossFileMkdir = true;
 			runCmd({"mkdir", "-p", crossPath.value});
 		}
-		printf(" Installing Meson crossfile '%s'.\n", referent.c_str());
+		printf(" Installing Meson crossfile 'ivt/%s'.\n", referent.c_str());
 		bool res = writeFile(path, iniContent);
 		if (!res) {
 			printf("  ...failed\n");
