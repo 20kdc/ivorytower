@@ -99,15 +99,17 @@ elif [ "$boxenrunner" = "ivt_docker" ]; then
 		# ITSETUP_BOX_MOUNTS: Which directories are exposed. Note this undergoes eval.
 		# ITSETUP_BOX_ETCFILES: Which /etc/ files are exposed. Note this undergoes eval.
 		if [ "$ITSETUP_BOX_MOUNTS" = "" ]; then
-			ITSETUP_BOX_MOUNTS="-v /home:/home -v /media:/media"
+			# /home and /media make sense for user data.
+			# Meson uses /tmp for 'feature tests'.
+			ITSETUP_BOX_MOUNTS="-v /home:/home -v /media:/media -v /tmp:/tmp"
 		fi
 		if [ "$ITSETUP_BOX_ETCFILES" = "" ]; then
 			ITSETUP_BOX_ETCFILES="-v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro"
 		fi
 		# ITSETUP_BOX_OPTS: Non-overridable. Merges all options into a soup.
 		ITSETUP_BOX_OPTS="$ITSETUP_BOX_MOUNTS $ITSETUP_BOX_ETCFILES"
+		# Dynamically throw in XDG_RUNTIME_DIR if we have it as it's often used similarly to /tmp.
 		if [ "$XDG_RUNTIME_DIR" != "" ]; then
-			# Dynamically throw in a few more mounts.
 			ITSETUP_BOX_OPTS="$ITSETUP_BOX_OPTS -v \"\$XDG_RUNTIME_DIR:\$XDG_RUNTIME_DIR\""
 		fi
 		ITSETUP_BOX_OPTS="$ITSETUP_BOX_OPTS --network host --userns host --pid host"

@@ -1,0 +1,5 @@
+#!/bin/sh -e
+rm -rf build_portchk
+meson setup --cross-file=ivt_lgx64_stl_scout -Dcpp_std=c++11 build_portchk
+cd build_portchk
+ninja

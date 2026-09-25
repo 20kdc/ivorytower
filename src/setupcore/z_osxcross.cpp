@@ -7,6 +7,21 @@ class OSXCrossComponent : public iblis::Component {
 public:
 	OSXCrossComponent() : iblis::Component("osxcross", "OSXCross", true) {
 	}
+	bool subinstall(iblis::OSXCrossSys * osxcross, const iblis::Machine & mach, const std::string & archpfx) {
+		iblis::CompilerCfg compiler;
+		compiler.c = {osxcross->toolPath(archpfx + "-clang")},
+		compiler.cpp = {osxcross->toolPath(archpfx + "-clang++")},
+		// We know through testing that for cctools stable:
+		// 'ar' and 'strip' only have one implementation, not per-architecture
+		compiler.ar = {osxcross->toolPath("xcrun"), "ar"},
+		compiler.strip = {osxcross->toolPath("xcrun"), "strip"},
+		compiler.dispositions = {
+			&iblis::STLDisposition::stl,
+			&iblis::STLDisposition::staticstl,
+			&iblis::STLDisposition::none,
+		};
+		return iblis::meson::installCrossFiles(iblis::Machine::mx32, "", compiler);
+	}
 	bool install() override {
 		iblis::OSXCrossSys * osxcross = iblis::osxCrossSys.get();
 		if (!osxcross) {
@@ -16,49 +31,10 @@ public:
 		// Ok, so, here's the deal.
 		// OSXCross has a few different binary arrangements.
 		// My favorite is the `o64`/`oa64` series.
-		iblis::CompilerCfg compilerMX32 = {
-			.c = {osxcross->toolPath("o32-clang")},
-			.cpp = {osxcross->toolPath("o32-clang++")},
-			// We know through testing that for cctools stable:
-			// 'ar' and 'strip' only have one implementation, not per-architecture
-			.ar = {osxcross->toolPath("xcrun"), "ar"},
-			.strip = {osxcross->toolPath("xcrun"), "strip"},
-			.dispositions = {
-				&iblis::STLDisposition::stl,
-				&iblis::STLDisposition::staticstl,
-				&iblis::STLDisposition::none,
-			}
-		};
-		iblis::CompilerCfg compilerMX64 = {
-			.c = {osxcross->toolPath("o64-clang")},
-			.cpp = {osxcross->toolPath("o64-clang++")},
-			// We know through testing that for cctools stable:
-			// 'ar' and 'strip' only have one implementation, not per-architecture
-			.ar = {osxcross->toolPath("xcrun"), "ar"},
-			.strip = {osxcross->toolPath("xcrun"), "strip"},
-			.dispositions = {
-				&iblis::STLDisposition::stl,
-				&iblis::STLDisposition::staticstl,
-				&iblis::STLDisposition::none,
-			}
-		};
-		iblis::CompilerCfg compilerMA64 = {
-			.c = {osxcross->toolPath("oa64-clang")},
-			.cpp = {osxcross->toolPath("oa64-clang++")},
-			// We know through testing that for cctools stable:
-			// 'ar' and 'strip' only have one implementation, not per-architecture
-			.ar = {osxcross->toolPath("xcrun"), "ar"},
-			.strip = {osxcross->toolPath("xcrun"), "strip"},
-			.dispositions = {
-				&iblis::STLDisposition::stl,
-				&iblis::STLDisposition::staticstl,
-				&iblis::STLDisposition::none,
-			}
-		};
 		bool looksSuccessful = true;
-		looksSuccessful &= iblis::meson::installCrossFiles(iblis::Machine::mx32, "", compilerMX32);
-		looksSuccessful &= iblis::meson::installCrossFiles(iblis::Machine::mx64, "", compilerMX64);
-		looksSuccessful &= iblis::meson::installCrossFiles(iblis::Machine::ma64, "", compilerMA64);
+		looksSuccessful &= subinstall(osxcross, iblis::Machine::mx32, "o32");
+		looksSuccessful &= subinstall(osxcross, iblis::Machine::mx64, "o64");
+		looksSuccessful &= subinstall(osxcross, iblis::Machine::ma64, "oa64");
 		return looksSuccessful;
 	}
 };

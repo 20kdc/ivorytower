@@ -4,16 +4,43 @@
 #include <vector>
 
 namespace iblis {
-	struct Machine {
-		const char * ivtName = 0;
+	// All as defined by Meson, except where noted.
 
-		// All as defined by Meson:
-		const char * system = 0;
-		const char * subsystem = 0;
-		const char * kernel = 0;
+	struct CPU {
 		const char * cpu_family = 0;
 		const char * cpu = 0;
 		const char * endian = 0;
+
+		CPU(const char * cpu_family, const char * cpu, const char * endian) : cpu_family(cpu_family), cpu(cpu), endian(endian) {}
+
+		// i686
+		static const CPU x32;
+		// x86_64
+		static const CPU x64;
+		// aarch64
+		static const CPU a64;
+	};
+
+	struct OS {
+		const char * system = 0;
+		const char * subsystem = 0;
+		const char * kernel = 0;
+
+		OS(const char * system, const char * subsystem, const char * kernel) : system(system), subsystem(subsystem), kernel(kernel) {}
+
+		static const OS lg;
+		static const OS m;
+		static const OS w;
+	};
+
+	struct Machine {
+		// Custom
+		const char * ivtName = 0;
+
+		const OS * os;
+		const CPU * cpu;
+
+		Machine(const char * ivtName, const OS * os, const CPU * cpu) : ivtName(ivtName), os(os), cpu(cpu) {}
 
 		static const Machine lgx32;
 		static const Machine lgx64;

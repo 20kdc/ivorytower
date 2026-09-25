@@ -51,17 +51,19 @@ public:
 	}
 };
 
-static iblis::CompilerCfg sensibleDefaultGCC = {
-	.c = {"gcc"},
-	.cpp = {"g++"},
-	.ar = {"ar"},
-	.strip = {"strip"},
-	.dispositions = {
+static iblis::CompilerCfg sensibleDefaultGCC = [] {
+	iblis::CompilerCfg result;
+	result.c = {"gcc"};
+	result.cpp = {"g++"};
+	result.ar = {"ar"};
+	result.strip = {"strip"};
+	result.dispositions = {
 		&iblis::STLDisposition::stl,
 		&iblis::STLDisposition::staticstl,
 		&iblis::STLDisposition::none,
-	}
-};
+	};
+	return result;
+}();
 
 ContainerCCComponent theSteamRTScoutComponent(
 	"scout", "'scout' SteamRT (most/all x86_64 glibc Linuxes)", true,

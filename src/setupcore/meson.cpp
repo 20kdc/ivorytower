@@ -77,12 +77,12 @@ std::string iblis::meson::iniArg(const std::string & prop, const std::vector<std
 
 std::string iblis::meson::machineIni(const iblis::Machine & mach) {
 	std::string base;
-	base += iniProp("system", mach.system);
-	base += iniProp("subsystem", mach.subsystem);
-	base += iniProp("kernel", mach.kernel);
-	base += iniProp("cpu_family", mach.cpu_family);
-	base += iniProp("cpu", mach.cpu);
-	base += iniProp("endian", mach.endian);
+	base += iniProp("system", mach.os->system);
+	base += iniProp("subsystem", mach.os->subsystem);
+	base += iniProp("kernel", mach.os->kernel);
+	base += iniProp("cpu_family", mach.cpu->cpu_family);
+	base += iniProp("cpu", mach.cpu->cpu);
+	base += iniProp("endian", mach.cpu->endian);
 	return base;
 }
 

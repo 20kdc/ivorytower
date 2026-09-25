@@ -1,125 +1,64 @@
 #include "names.h"
 
+using namespace iblis;
+
+/* CPU defintiions */
+
+const CPU CPU::x32("x86", "i686", "little");
+const CPU CPU::x64("x86_64", "x86_64", "little");
+const CPU CPU::a64("aarch64", "aarch64", "little");
+
+/* OS defintiions */
+
+const OS OS::lg("linux", nullptr, "linux");
+const OS OS::m("darwin", "macos", "xnu");
+const OS OS::w("windows", "windows", "nt");
+
 /* machine definitions */
 
-const iblis::Machine iblis::Machine::lgx32 = {
-	.ivtName = "lgx32",
+const Machine Machine::lgx32("lgx32", &OS::lg, &CPU::x32);
+const Machine Machine::lgx64("lgx64", &OS::lg, &CPU::x64);
+const Machine Machine::lga64("lga64", &OS::lg, &CPU::a64);
 
-	.system = "linux",
-	.cpu_family = "x86",
-	.cpu = "i686",
-	.endian = "little",
-};
-const iblis::Machine iblis::Machine::lgx64 = {
-	.ivtName = "lgx64",
+const Machine Machine::mx32("mx32", &OS::m, &CPU::x32);
+const Machine Machine::mx64("mx64", &OS::m, &CPU::x64);
+const Machine Machine::ma64("ma64", &OS::m, &CPU::a64);
 
-	.system = "linux",
-	.cpu_family = "x86_64",
-	.cpu = "x86_64",
-	.endian = "little",
-};
-const iblis::Machine iblis::Machine::lga64 = {
-	.ivtName = "lga64",
+const Machine Machine::wx32("wx32", &OS::w, &CPU::x32);
+const Machine Machine::wx64("wx64", &OS::w, &CPU::x64);
+const Machine Machine::wa64("wa64", &OS::w, &CPU::a64);
 
-	.system = "linux",
-	.cpu_family = "aarch64",
-	.cpu = "aarch64",
-	.endian = "little",
-};
+const iblis::STLDisposition iblis::STLDisposition::none = [] {
+	iblis::STLDisposition result;
+	result.ivtName = "none";
+	result.compilerArgs.addCArgs = {"-fno-exceptions"};
+	result.compilerArgs.addCLinkArgs = {"-nostdlib++"};
+	result.compilerArgs.addCppArgs = {"-nostdinc++", "-fno-rtti", "-fno-exceptions"};
+	result.compilerArgs.addCppLinkArgs = {"-nostdlib++"};
+	result.compilerArgs.cppEh = "none";
+	result.compilerArgs.cppRtti = "false";
+	return result;
+}();
 
-const iblis::Machine iblis::Machine::mx32 = {
-	.ivtName = "mx32",
+const iblis::STLDisposition iblis::STLDisposition::stl = [] {
+	iblis::STLDisposition result;
+	result.ivtName = "stl",
+	result.compilerArgs.addCArgs = {};
+	result.compilerArgs.addCLinkArgs = {};
+	result.compilerArgs.addCppArgs = {};
+	result.compilerArgs.addCppLinkArgs = {};
+	return result;
+}();
 
-	.system = "darwin",
-	.subsystem = "macos",
-	.kernel = "xnu",
-	.cpu_family = "x86",
-	.cpu = "i686",
-	.endian = "little",
-};
-const iblis::Machine iblis::Machine::mx64 = {
-	.ivtName = "mx64",
-
-	.system = "darwin",
-	.subsystem = "macos",
-	.kernel = "xnu",
-	.cpu_family = "x86_64",
-	.cpu = "x86_64",
-	.endian = "little",
-};
-const iblis::Machine iblis::Machine::ma64 = {
-	.ivtName = "ma64",
-
-	.system = "darwin",
-	.subsystem = "macos",
-	.kernel = "xnu",
-	.cpu_family = "aarch64",
-	.cpu = "aarch64",
-	.endian = "little",
-};
-
-const iblis::Machine iblis::Machine::wx32 = {
-	.ivtName = "wx32",
-
-	.system = "windows",
-	.subsystem = "windows",
-	.kernel = "nt",
-	.cpu_family = "x86",
-	.cpu = "i686",
-	.endian = "little",
-};
-const iblis::Machine iblis::Machine::wx64 = {
-	.ivtName = "wx64",
-
-	.system = "windows",
-	.subsystem = "windows",
-	.kernel = "nt",
-	.cpu_family = "x86_64",
-	.cpu = "x86_64",
-	.endian = "little",
-};
-const iblis::Machine iblis::Machine::wa64 = {
-	.ivtName = "wa64",
-
-	.system = "windows",
-	.subsystem = "windows",
-	.kernel = "nt",
-	.cpu_family = "aarch64",
-	.cpu = "aarch64",
-	.endian = "little",
-};
-
-const iblis::STLDisposition iblis::STLDisposition::none = {
-	.ivtName = "none",
-	.compilerArgs = {
-		.addCArgs = {"-fno-exceptions"},
-		.addCLinkArgs = {"-nostdlib++"},
-		.addCppArgs = {"-nostdinc++", "-fno-rtti", "-fno-exceptions"},
-		.addCppLinkArgs = {"-nostdlib++"},
-		.cppEh = "none",
-		.cppRtti = "false",
-	}
-};
-
-const iblis::STLDisposition iblis::STLDisposition::stl = {
-	.ivtName = "stl",
-	.compilerArgs = {
-		.addCArgs = {},
-		.addCLinkArgs = {},
-		.addCppArgs = {},
-		.addCppLinkArgs = {},
-	}
-};
-
-const iblis::STLDisposition iblis::STLDisposition::staticstl = {
-	.ivtName = "staticstl",
-	.compilerArgs = {
-		.addCArgs = {},
-		.addCLinkArgs = {},
-		.addCppArgs = {},
-		.addCppLinkArgs = {"-static-libstdc++"},
-	}
-};
+const iblis::STLDisposition iblis::STLDisposition::staticstl = [] {
+	iblis::STLDisposition result;
+	result.ivtName = "staticstl",
+	result.compilerArgs.addCArgs = {};
+	result.compilerArgs.addCLinkArgs = {};
+	result.compilerArgs.addCppArgs = {};
+	result.compilerArgs.addCppLinkArgs = {"-static-libstdc++"};
+	return result;
+}();
 
 void iblis::CompilerArgs::merge(const CompilerArgs & other) {
 	for (auto x = other.addCArgs.begin(); x < other.addCArgs.end(); x++)
