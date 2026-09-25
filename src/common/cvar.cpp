@@ -17,6 +17,10 @@ Registerable::Registerable(const char * name, const char * purpose) : name(name)
 	*insertRef = this;
 }
 
+const char * Registerable::getKind() {
+	return "Registerable";
+}
+
 Registerable::~Registerable() {
 	// technically, this should probably unlink the Registerable, but we don't.
 }
@@ -24,8 +28,12 @@ Registerable::~Registerable() {
 Act::Act(const char * name, const char * purpose) : Registerable(name, purpose) {
 }
 
+IBLIS_KIND(Act, "Act");
+
 Cvar::Cvar(const char * name, const char * purpose) : Registerable(name, purpose) {
 }
+
+IBLIS_KIND(Cvar, "Cvar");
 
 CvarBool::CvarBool(const char * name, const char * purpose, bool def) : Cvar(name, purpose), value(def) {
 }
@@ -62,13 +70,7 @@ std::string CvarStr::get() {
 	return value;
 }
 
-class VersionAct : public Act {
-public:
-	VersionAct() : Act("--version", "Give version.") {
-	}
-	int execute() override {
-		printf("ivorytower %s\n", iblis::version);
-		return 0;
-	}
-};
-static VersionAct theVersionAct;
+HelpCategory::HelpCategory(const char * name, const char * purpose) :Registerable(name, purpose) {
+}
+
+IBLIS_KIND(HelpCategory, "HelpCategory");

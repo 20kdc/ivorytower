@@ -4,42 +4,20 @@
 
 using namespace iblis;
 
-class HelpAct : public Act {
+class ComponentHelpCategory : public HelpCategory {
 public:
-	HelpAct() : Act("--help", "Shows helpful information.") {
+	ComponentHelpCategory() : HelpCategory("components", "Components (specified as 'component=on' or 'component=off')") {
 	}
-	int execute() override {
-		printf("ivorytower %s\n", iblis::version);
-		puts("");
-		puts("Actions:");
+	void execute() override {
 		for (Registerable * reg = Registerable::regFirst; reg; reg = reg->regNext) {
-			if (!dynamic_cast<Act *>(reg))
+			if (reg->getKind() != Component::kind)
 				continue;
-			printf(" %s: %s\n", reg->name, reg->purpose);
-		}
-		puts("");
-		puts("Components (specified as 'component=on' or 'component=off'):");
-		for (Registerable * reg = Registerable::regFirst; reg; reg = reg->regNext) {
-			Component * comp = dynamic_cast<Component *>(reg);
-			if (!comp)
-				continue;
+			Component * comp = static_cast<Component *>(reg);
 			printf(" %s: %s (currently %s)\n", reg->name, reg->purpose, comp->value ? "on" : "off");
 		}
-		puts("");
-		puts("Options (specified as 'option=value'):");
-		for (Registerable * reg = Registerable::regFirst; reg; reg = reg->regNext) {
-			Cvar * cvar = dynamic_cast<Cvar *>(reg);
-			if (!cvar)
-				continue;
-			if (dynamic_cast<Component *>(cvar))
-				continue;
-			auto val = cvar->get();
-			printf(" %s: %s (currently '%s')\n", reg->name, reg->purpose, val.c_str());
-		}
-		puts("");
-		return 0;
 	}
 };
+static ComponentHelpCategory theComponentHelpCategory;
 
 class InstallAct : public Act {
 public:
@@ -65,7 +43,8 @@ public:
 	}
 };
 
-static HelpAct theHelpAct;
 static InstallAct theInstallAct;
 
-Act * iblis::theDefaultAct = &theHelpAct;
+int main(int argc, char ** argv) {
+	return iblis::main(argc, argv);
+}

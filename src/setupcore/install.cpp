@@ -5,6 +5,8 @@ using namespace iblis;
 Component::Component(const char * name, const char * purpose, bool def) : CvarBool(name, purpose, def) {
 }
 
+IBLIS_KIND(Component, "Component");
+
 bool Component::isMeta() {
 	return false;
 }

@@ -10,6 +10,8 @@
 // Immovable (rule of three)
 #define IBLIS_IMMOVABLE(T) T(const T &) = delete; T & operator=(const T &) = delete;
 #define IBLIS_WARN(str) iblis::warn(__PRETTY_FUNCTION__, str)
+#define IBLIS_HAS_KIND static const char * kind; virtual const char * getKind() override;
+#define IBLIS_KIND(T, value) const char * T::kind = value; const char * T::getKind() { return T::kind; }
 
 namespace iblis {
 	// Environ abstraction.
@@ -58,6 +60,8 @@ namespace iblis {
 
 	// cvar.cpp
 
+	class Kind;
+
 	// The Registerable linked-list is a singleton, to which things are attached.
 	class Registerable {
 	public:
@@ -65,6 +69,7 @@ namespace iblis {
 		const char * purpose;
 		Registerable(const char * name, const char * purpose);
 		IBLIS_IMMOVABLE(Registerable);
+		virtual const char * getKind();
 		virtual ~Registerable();
 		Registerable * regNext;
 		static Registerable * regFirst;
@@ -83,12 +88,14 @@ namespace iblis {
 	class Act : public Registerable {
 	public:
 		Act(const char * name, const char * purpose);
+		IBLIS_HAS_KIND;
 		virtual int execute() = 0;
 	};
 
 	class Cvar : public Registerable {
 	public:
 		Cvar(const char * name, const char * purpose);
+		IBLIS_HAS_KIND;
 		virtual bool parse(const char * value) = 0;
 		virtual std::string get() = 0;
 	};
@@ -109,9 +116,16 @@ namespace iblis {
 		virtual std::string get() override;
 	};
 
+	class HelpCategory : public Registerable {
+	public:
+		HelpCategory(const char * name, const char * purpose);
+		IBLIS_HAS_KIND;
+		virtual void execute() = 0;
+	};
+
 	// version.cpp
 	extern const char * version;
 
-	// application code
-	extern Act * theDefaultAct;
+	// main.cpp
+	int main(int argc, char ** argv);
 }

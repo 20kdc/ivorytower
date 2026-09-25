@@ -8,7 +8,7 @@ version_cpp = configure_file(
   configuration : {'PLACEHOLDER' : version_str}
 )
 
-lib_iblis = static_library('iblis',
+lib_iblis = shared_library('iblis',
 	'src/common/cvar.cpp',
 	'src/common/util.cpp',
 	'src/common/main.cpp',
