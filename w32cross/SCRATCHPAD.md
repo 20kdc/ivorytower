@@ -48,3 +48,19 @@ void mainCRTStartup() { main(); }
 ```
 
 it built and ran
+
+we apparently need to pass `-fms_compatibility_version` or else `va_defs` won't take us seriously
+
+after crt-va enablement
+
+```
+#include <stdio.h>
+
+void main() { puts("Hello, world!"); }
+
+void mainCRTStartup() { main(); }
+
+/* there are reports of this being both 32-bit and 64-bit. that makes uintptr_t */
+void * __security_cookie;
+void __security_check_cookie(void * cookie) {}
+```

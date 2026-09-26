@@ -7,9 +7,14 @@
 
 #pragma once
 
+#ifndef _MSC_VER
+#error "You may need to pass -fms-compatibility-version, Clang isn't taking you seriously"
+#endif
+
 #include <stdint.h>
 #include <stddef.h>
-#include <stdarg.h>
+/* So we need to get Clang to use Clang's vadefs.h */
+#include <vadefs.h>
 
 #define _CRT_BEGIN_C_HEADER
 #define _CRT_END_C_HEADER
@@ -53,6 +58,3 @@
 #define _CRT_DEPRECATE_TEXT(p)
 #define _Inout_updates_opt_(s)
 #define _Post_readable_size_(s)
-
-#define __crt_va_start(a, b)
-#define __crt_va_end(a)
