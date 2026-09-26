@@ -13,13 +13,14 @@ ln -s ../sdkcfg/10.0.19041.0.sh stages/sdk.sh
 
 . stages/sdk.sh
 
-./stages/download.sh
+./stages/0download.sh
 
 rm -rf build target
 
-./stages/isoextract.sh
-./stages/msiextract.sh
-./stages/fixerupper.sh
-./stages/fixclangcl.sh
+./stages/1fixclangcl.sh
+./stages/2isoextract.sh
+./stages/3msiextract.sh
+./stages/4fixsdk.sh
+./stages/5vcruntime.sh
 
 exit 1

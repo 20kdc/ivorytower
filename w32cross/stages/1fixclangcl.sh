@@ -48,7 +48,8 @@ connect() {
 
 connect clang-cl cl
 connect llvm-ml ml
-connect llvm-link link
+# note the LLD! llvm-link is something different
+connect lld-link link
 connect llvm-rc rc
 connect llvm-cvtres cvtres
 connect llvm-lib lib
