@@ -2,7 +2,9 @@
 
 W32Cross is basically intended to be 'like OSXCross, but targetting Windows'.
 
-It _doesn't exist yet,_ but here's the key points on which this all stands:
+While it is used in ivorytower for now, it may get split given popular request.
+
+W32Cross _'doesn't exist yet,'_ but here's the key points on which this all stands:
 
 * From <https://learn.microsoft.com/en-us/windows/apps/windows-sdk/downloads>: `Windows SDK for Windows 10 2004 (10.0.19041.0)` ISO aka <https://go.microsoft.com/fwlink/?linkid=2312004÷
 	* Has the useful property of _not being a Visual Studio SDK,_ and thus not subject to 'profit-cap licensing'.
