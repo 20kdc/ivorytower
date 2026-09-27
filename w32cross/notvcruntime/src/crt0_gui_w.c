@@ -5,11 +5,12 @@
  * For more information, please refer to <http://unlicense.org>, supplied as COPYING in the W32Cross source code.
  */
 
-#include "nvcr_con.h"
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
-int main();
+#include "nvcr_con.h"
 
 // TODO: This is horrible. You know it's horrible. I know it's horrible.
 int wWinMainCRTStartup() {
-	return main();
+	return wWinMain(NULL, NULL, NULL, 0);
 }

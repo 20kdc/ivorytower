@@ -40,3 +40,7 @@ for arch in x86 x64 arm64; do
 		"${IVTW_LIB}" "/machine:$arch" "${SDK_MSVCPFX}/obj/$arch/$version/"* "/out:${SDK_MSVCPFX}/lib/$arch/$version.lib"
 	done
 done
+
+# -- STL --
+
+cp -r "${IVTW_DLPFX}stl16/stl/inc/"* "${SDK_MSVCPFX}/include/"

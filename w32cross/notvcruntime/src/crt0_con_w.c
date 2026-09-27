@@ -5,11 +5,16 @@
  * For more information, please refer to <http://unlicense.org>, supplied as COPYING in the W32Cross source code.
  */
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #include "nvcr_con.h"
 
-int main();
+int wmain(int argc, wchar_t ** argv);
 
 // TODO: This is horrible. You know it's horrible. I know it's horrible.
 int wmainCRTStartup() {
-	return main();
+	int argc = 0;
+	wchar_t ** argv = NULL;
+	ExitProcess(wmain(argc, argv));
 }

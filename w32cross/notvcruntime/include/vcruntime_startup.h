@@ -7,8 +7,14 @@
 
 #pragma once
 
+#include <vcruntime.h>
+
+_CRT_BEGIN_C_HEADER
+
 typedef enum _crt_argv_mode {
 	_crt_argv_no_arguments,
 	_crt_argv_unexpanded_arguments,
 	_crt_argv_expanded_arguments
 } _crt_argv_mode;
+
+_CRT_END_C_HEADER

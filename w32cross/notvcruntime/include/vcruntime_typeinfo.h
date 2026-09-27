@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <vcruntime.h>
+
 // The symbols here are really, _really_ weird.
 class type_info {
 private:

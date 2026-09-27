@@ -5,12 +5,19 @@
  * For more information, please refer to <http://unlicense.org>, supplied as COPYING in the W32Cross source code.
  */
 
+/* We could define WIN32_LEAN_AND_MEAN here, but it's more useful to exercise the includes. */
+#include <windows.h>
+
 #include "nvcr_con.h"
 
 int __stdcall DllMain(void * a, int reason, void * c);
 
 int __stdcall _DllMainCRTStartup(void * a, int reason, void * c) {
-	/* TODO: Responsibly init the CRT */
+	if (reason == DLL_PROCESS_ATTACH) {
+		if (_initterm_e(__xi_a, __xi_z))
+			return 0;
+		_initterm(__xc_a, __xc_z);
+	}
 	return DllMain(a, reason, c);
 }
 

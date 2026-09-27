@@ -7,12 +7,16 @@
 
 #pragma once
 
-#define _CRTIMP __declspec(dllimport)
-#define _VCRTIMP _CRTIMP
+#include <vcruntime.h>
+
+_CRT_BEGIN_C_HEADER
 
 typedef enum _EXCEPTION_DISPOSITION {
 	ExceptionContinueExecution = 0,
 	ExceptionContinueSearch = 1,
 	ExceptionNestedException = 2,
-	ExceptionCollidedUnwind = 3
+	ExceptionCollidedUnwind = 3,
+	ExceptionExecuteHandler = 4
 } EXCEPTION_DISPOSITION;
+
+_CRT_END_C_HEADER
