@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-. stages/sdk.sh
+. common/cbase.sh
 
 rm -rf build/isoextract
 mkdir -p build/isoextract

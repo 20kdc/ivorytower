@@ -1,4 +1,7 @@
 #!/bin/sh
+
+. common/cbase.sh
+
 # find which caused what
 msiextract_all() {
 	while read line; do

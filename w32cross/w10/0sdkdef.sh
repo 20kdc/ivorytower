@@ -1,6 +1,6 @@
 # Characterization for Windows SDK 10.0.19041.0, downloadable as a single ISO file.
 
-ISO_PATH="downloaded/19041.5609.250311-1926.vb_release_svc_im_WindowsSDK.iso"
+ISO_PATH="${IVTW_DLPFX}19041.5609.250311-1926.vb_release_svc_im_WindowsSDK.iso"
 ISO_URL="https://go.microsoft.com/fwlink/?linkid=2312004"
 
 ADDARGS_CL="/winsysroot \"`readlink -f target`\""
@@ -40,4 +40,12 @@ sdk_msiextract() {
 	ln -s "Windows Kits/10/Lib/10.0.19041.0" "target/lib"
 	ln -s "Windows Kits/10/Include/10.0.19041.0" "target/inc"
 	ln -s "Windows Kits/10/Redist/10.0.19041.0" "target/redist"
+}
+
+sdk_build() {
+	ivtw_stage 1download
+	#ivtw_stage 2isoextract
+	#ivtw_stage 3msiextract
+	#ivtw_stage 4fixsdk
+	#ivtw_stage 5vcruntime
 }

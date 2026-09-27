@@ -1,26 +1,17 @@
 #!/bin/sh -e
 
-WINCROSS_DIR="`readlink -e "$0"`"
-export WINCROSS_DIR="`dirname $WINCROSS_DIR`"
+cd "$(dirname "$(readlink -e "$0")")"
 
-cd "$WINCROSS_DIR"
+if [ "$W32CROSS_SDKID" = "" ]; then
+	export W32CROSS_SDKID=w10
+fi
 
-# This script will need rearrangement for any other SDK.
-# Maybe it would be better to have different scripts for different arrangements, idk.
+. common/cbase.sh
 
-rm -f stages/sdk.sh
-ln -s ../sdkcfg/10.0.19041.0.sh stages/sdk.sh
+echo "-- w32cross build $W32CROSS_SDKID --"
 
-. stages/sdk.sh
+rm -rf "sdk_$W32CROSS_SDKID"
+mkdir -p "$IVTW_SDKPFX"
+common/compilerinit.sh
 
-./stages/0download.sh
-
-rm -rf build target
-
-./stages/1fixclangcl.sh
-./stages/2isoextract.sh
-./stages/3msiextract.sh
-./stages/4fixsdk.sh
-./stages/5vcruntime.sh
-
-exit 1
+sdk_build

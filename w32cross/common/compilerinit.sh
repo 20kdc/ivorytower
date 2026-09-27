@@ -1,5 +1,9 @@
 #!/bin/sh -e
 
+. common/cbase.sh
+
+mkdir -p "${IVTW_SDKPFX}bin"
+
 # clang-cl is only linked by version on at least Ubuntu 24.04 for clang-cl-18.
 # Technically, we could rely on regular Clang and just pass GNU args only.
 # However, this is likely to be 'mildly upsetting' to wrappers like Meson which we really need to convince to operate in MSVC mode for our faux MSVC toolchain.
@@ -22,43 +26,29 @@
 # We also-also pretend to be an "old style" SDK even though we use VC2019.
 # This is because the new SDKs contain spaces and we don't want brittleness as a result of that.
 
-get_path() {
-	# We do a really silly trick here to get each PATH entry.
-	# This is so that PATH entries with spaces are respected.
-	whereis -bl | grep ^bin | sed "s/^[^:]*: //"
-}
-
-# get_candidates_inner PATTERN
-get_candidates_inner() {
-	while read get_candidates_inner_candidate; do
-		# this intentionally returns just 'raw command names'
-		ls "$get_candidates_inner_candidate" | grep "$1"
-	done
-}
-
-# Returns sorted candidates.
-get_candidates() {
-	get_path | get_candidates_inner "$1" | sort -u
-}
-
 # connect FULL SUB OPTS
 connect() {
-	true
+	ivtw_find_command "$1"
+	cat <<EOF > "${IVTW_SDKPFX}bin/w32cross-$2"
+#!/bin/sh -e
+exec "$ivtw_find_command_result" "\$@"
+EOF
+	chmod +x "${IVTW_SDKPFX}bin/w32cross-$2"
 }
 
-connect clang-cl cl
-connect llvm-ml ml
+connect clang-cl cl ""
+connect llvm-ml ml ""
 # note the LLD! llvm-link is something different
-connect lld-link link
-connect llvm-rc rc
-connect llvm-cvtres cvtres
-connect llvm-lib lib
+connect lld-link link ""
+connect llvm-rc rc ""
+connect llvm-cvtres cvtres ""
+connect llvm-lib lib ""
 
 # Create w32cross-conf.
 absolute_target="`readlink -f target`"
-cat <<EOF > target/bin/w32cross-conf
+cat <<EOF > "${IVTW_SDKPFX}bin/w32cross-conf"
 #!/bin/sh -e
 # W32Cross-generated configuration file.
 echo export VCINSTALLDIR=\"$absolute_target\"
 EOF
-chmod +x target/bin/w32cross-conf
+chmod +x "${IVTW_SDKPFX}bin/w32cross-conf"

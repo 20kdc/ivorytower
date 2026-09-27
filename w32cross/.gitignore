@@ -1,7 +1,3 @@
-/build
-/target
-/stl16
+/sdk_*
 /dev_scavenger.log
-/fixerupper
-/stages/sdk.sh
-/downloaded/*
+/downloaded
