@@ -64,3 +64,33 @@ void mainCRTStartup() { main(); }
 void * __security_cookie;
 void __security_check_cookie(void * cookie) {}
 ```
+
+## analysis of how to get UCRT to autolink
+
+* <https://github.com/llvm/llvm-project/blob/6909c17f14683203621f5a3d8fbf04dfd5d9c623/clang/lib/Driver/ToolChains/MSVC.cpp>
+	* contains the _default_ `-defaultlib:` entries and lots of hints as to how to drive the toolchain
+	* indicates we can use `-fuse-ld=link` as an oracle to debug MSVC layout
+	* implies that `ucrt.lib` needs to be implicitly added. can this be checked with CL? do we simply 'fake it' in wrapper layer?
+* <https://github.com/llvm/llvm-project/blob/6909c17f14683203621f5a3d8fbf04dfd5d9c623/llvm/lib/WindowsDriver/MSVCPaths.cpp>
+	* part of how `clang-cl` detects MSVC stuff.
+	* it's important we query `llvm::useUniversalCRT`. luckily, we know if this is set via `-v` as the `ucrt` includes only appear if this is set.
+
+## Definitive Reference of LLVM Paths By Proof
+
+* <https://github.com/llvm/llvm-project/blob/57630fd809ca4964f887dd531e1a09618d962b10/lld/COFF/Driver.cpp#L839>
+	* `UniversalCRTSdkPath = Program Files/Windows Kits/10`
+	* `UCRTVersion = 10.0.19041.0`
+* <https://github.com/llvm/llvm-project/blob/main/llvm/lib/WindowsDriver/MSVCPaths.cpp#L468C12-L468C33>
+	* getUniversalCRTSdkDir **only works using cmdline sysroot on Linux cross**. UCRT is expected to be part of Windows SDK and 'UCRT' variables are 1:1 w/ Windows SDK ones.
+* <https://github.com/llvm/llvm-project/blob/main/llvm/lib/WindowsDriver/MSVCPaths.cpp#L99C13-L99C43>
+	* `WinSysRoot = Program Files`
+	* `WinSdkDir = Program Files/Windows Kits/10`
+* <https://github.com/llvm/llvm-project/blob/main/llvm/lib/WindowsDriver/MSVCPaths.cpp#L314>
+	* arch append
+	* Windows 7 SDK has 32-bit libs in a directory and then 64-bit in `x64`
+	* Newer SDKs use `x86`/`x64`/`arm`/`arm64` layout
+* <https://github.com/llvm/llvm-project/blob/main/clang/lib/Driver/ToolChains/MSVC.cpp#L696>
+	* Note version-sensitive logic, also keep in mind arch append
+	* 7: `WindowsSDKLibraryPath = WinSdkDir/Lib/`
+	* 8: `WindowsSDKLibraryPath = WinSdkDir/Lib/um/x86`
+	* Special logic for 10 but seems to be for versioning only?
