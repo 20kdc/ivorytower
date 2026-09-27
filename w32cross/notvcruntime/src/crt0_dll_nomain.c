@@ -5,8 +5,6 @@
  * For more information, please refer to <http://unlicense.org>, supplied as COPYING in the W32Cross source code.
  */
 
-void * __security_cookie = 0;
-
-void __security_check_cookie(void * value) {
-	// do nothing, we do not care.
+int __stdcall __NOTVCRUNTIME__DllMainCRTStartup_Default(void * a, int reason, void * c) {
+	return 1;
 }

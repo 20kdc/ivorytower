@@ -8,8 +8,10 @@ msiextract_all() {
 		echo
 		echo "$line"
 		echo
-		msiextract "build/isoextract/Installers/$line" -C build/msiextract
+		msiextract -l "${IVTW_SDKPFX}build/isoextract/Installers/$line" -C build/msiextract
 		echo
 	done
 }
-ls build/isoextract/Installers | msiextract_all > dev_scavenger.log
+
+sdk_isoextract
+ls "${IVTW_SDKPFX}build/isoextract/Installers" | msiextract_all > dev_scavenger.log

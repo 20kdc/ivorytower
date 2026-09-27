@@ -12,17 +12,24 @@
 #include <corecrt_startup.h>
 
 /* C init */
-__declspec(allocate(".CRT$XIA")) _PIFV __xi_a[0];
-__declspec(allocate(".CRT$XIZ")) _PIFV __xi_z[0];
+extern _PIFV __xi_a[1];
+extern _PIFV __xi_z[1];
 /* C++ init */
-__declspec(allocate(".CRT$XCA")) _PVFV __xc_a[0];
-__declspec(allocate(".CRT$XCZ")) _PVFV __xc_z[0];
+extern _PVFV __xc_a[1];
+extern _PVFV __xc_z[1];
 /* Pre-term */
-__declspec(allocate(".CRT$XPA")) _PVFV __xp_a[0];
-__declspec(allocate(".CRT$XPZ")) _PVFV __xp_z[0];
+extern _PVFV __xp_a[1];
+extern _PVFV __xp_z[1];
 /* Final term */
-__declspec(allocate(".CRT$XTA")) _PVFV __xt_a[0];
-__declspec(allocate(".CRT$XTZ")) _PVFV __xt_z[0];
+extern _PVFV __xt_a[1];
+extern _PVFV __xt_z[1];
+
+/*
+ * crt0 init/finalizer functions.
+ * 0 return in __NOTVCRUNTIME_init indicates mysterious failure.
+ */
+int __NOTVCRUNTIME_init();
+void __NOTVCRUNTIME_fini();
 
 /*
  * This logic will link in the correct libvcruntime and ucrt.

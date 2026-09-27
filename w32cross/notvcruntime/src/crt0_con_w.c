@@ -7,14 +7,18 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <stdlib.h>
 
-#include "nvcr_con.h"
+#include "crt0_common.h"
 
 int wmain(int argc, wchar_t ** argv);
 
 // TODO: This is horrible. You know it's horrible. I know it's horrible.
-int wmainCRTStartup() {
+void wmainCRTStartup() {
+	_set_app_type(_crt_console_app);
+	__NOTVCRUNTIME_init();
+	atexit(__NOTVCRUNTIME_fini);
 	int argc = 0;
 	wchar_t ** argv = NULL;
-	ExitProcess(wmain(argc, argv));
+	exit(wmain(argc, argv));
 }

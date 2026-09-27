@@ -13,6 +13,8 @@
  */
 #include <vcruntime.h>
 
+/* C++ guards */
+
 #ifdef __cplusplus
 #define _CRT_BEGIN_C_HEADER extern "C" {
 #define _CRT_END_C_HEADER }
@@ -21,19 +23,30 @@
 #define _CRT_END_C_HEADER
 #endif
 
+/* Imports */
+
 #define _CRTIMP __declspec(dllimport)
 #define _CRTIMP2 _CRTIMP
 #define _VCRTIMP _CRTIMP
 #define _MRTIMP2 _CRTIMP
 
+/* Calling conventions */
+
 #define __CLR_OR_THIS_CALL __thiscall
 #define __CLRCALL_PURE_OR_CDECL __cdecl
 #define __CLRCALL_OR_CDECL __cdecl
 
-#define __CRTDECL
+#define __CRTDECL __cdecl
+
+/* Deprecation notices */
+
 #define _CRT_INSECURE_DEPRECATE(f)
-#define _CRT_DEPRECATE_TEXT(p)
 #define _CRT_INSECURE_DEPRECATE_MEMORY(lies)
 #define _CRT_INSECURE_DEPRECATE_GLOBALS(bad)
+
+#define _CRT_DEPRECATE_TEXT(p)
 #define _CRT_SATELLITE_CODECVT_IDS_NOIMPORT
+
+/* Markers */
+
 #define _NODISCARD

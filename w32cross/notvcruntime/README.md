@@ -16,3 +16,5 @@
 * Init/Fini
 	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-initialization?view=msvc-140>
 	* `Source/10.0.19041.0/ucrt/internal/initialization.cpp`
+* Atexit behaviour
+	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/atexit?view=msvc-170>

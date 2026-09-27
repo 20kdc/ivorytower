@@ -23,4 +23,5 @@ do_test_cpp() {
 
 do_test_c hello
 do_test_c args
+do_test_cpp constructors
 do_test_cpp hellocpp

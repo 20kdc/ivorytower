@@ -7,10 +7,14 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <stdlib.h>
 
-#include "nvcr_con.h"
+#include "crt0_common.h"
 
 // TODO: This is horrible. You know it's horrible. I know it's horrible.
-int wWinMainCRTStartup() {
-	return wWinMain(NULL, NULL, NULL, 0);
+void wWinMainCRTStartup() {
+	_set_app_type(_crt_gui_app);
+	__NOTVCRUNTIME_init();
+	atexit(__NOTVCRUNTIME_fini);
+	exit(wWinMain(NULL, NULL, NULL, 0));
 }
