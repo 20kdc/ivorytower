@@ -40,16 +40,20 @@ for arch in x86 x64 arm64; do
 		"${IVTW_LIB}" "/machine:$arch" "${SDK_MSVCPFX}/obj/$arch/$version/"* "/out:${SDK_MSVCPFX}/lib/$arch/$version.lib"
 	done
 
-	# Build C++ link libraries. Note we can't build debug libs, as we don't have the defs for those STLs.
-	# We're already essentially ignoring the _DLL option.
-	for falsever in msvcprt; do
-		"${IVTW_LIB}" "/machine:$arch" \
-		"${SDK_MSVCPFX}/lib/$arch/msvcp140.lib" \
-		"${SDK_MSVCPFX}/lib/$arch/msvcp140_1.lib" \
-		"${SDK_MSVCPFX}/lib/$arch/msvcp140_atomic_wait.lib" \
-		"${SDK_MSVCPFX}/lib/$arch/msvcp140_codecvt_ids.lib" \
-		"/out:${SDK_MSVCPFX}/lib/$arch/$falsever.lib"
-	done
+	# Merge VCRuntime libraries to create the one that's needed.
+	# We ignore vcruntime140_1 for now, we may never actually end up using it.
+	"${IVTW_LIB}" "/machine:$arch" \
+	"${SDK_MSVCPFX}/lib/$arch/vcruntime140.lib" \
+	"${SDK_MSVCPFX}/lib/$arch/vcruntime140_threads.lib" \
+	"/out:${SDK_MSVCPFX}/lib/$arch/vcruntime.lib"
+
+	# Build the C++ link library. Note we can't build debug libs, as we don't have the defs for those STLs.
+	"${IVTW_LIB}" "/machine:$arch" \
+	"${SDK_MSVCPFX}/lib/$arch/msvcp140.lib" \
+	"${SDK_MSVCPFX}/lib/$arch/msvcp140_1.lib" \
+	"${SDK_MSVCPFX}/lib/$arch/msvcp140_atomic_wait.lib" \
+	"${SDK_MSVCPFX}/lib/$arch/msvcp140_codecvt_ids.lib" \
+	"/out:${SDK_MSVCPFX}/lib/$arch/msvcprt.lib"
 done
 
 # -- STL --

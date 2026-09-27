@@ -17,8 +17,14 @@ int __stdcall _DllMainCRTStartup(void * a, int reason, void * c) {
 		if (_initterm_e(__xi_a, __xi_z))
 			return 0;
 		_initterm(__xc_a, __xc_z);
+		return DllMain(a, reason, c);
+	} else if (reason == DLL_PROCESS_DETACH) {
+		int val = DllMain(a, reason, c);
+		_initterm(__xt_a, __xt_z);
+		return val;
+	} else {
+		return DllMain(a, reason, c);
 	}
-	return DllMain(a, reason, c);
 }
 
 #pragma comment(linker, "/alternatename:DllMain=_DllMainCRTStartup_Default")
