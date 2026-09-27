@@ -29,6 +29,8 @@
 #define _VCRTIMP _CRTIMP
 #define _MRTIMP2 _CRTIMP
 
+#define _HAS_CXX17 0
+
 #define _In_opt_z_
 #define _Field_range_(s, e)
 #define _Inout_
@@ -101,6 +103,7 @@
 #define _Deref_prepost_opt_valid_z
 #define _Post_equal_to_(s)
 #define _CRT_INSECURE_DEPRECATE_MEMORY(lies)
+#define _CRT_INSECURE_DEPRECATE_GLOBALS(bad)
 #define _Out_writes_all_(s)
 #define _Out_writes_all_opt_(s)
 #define _Deref_prepost_opt_valid_
@@ -112,7 +115,10 @@
 #define _Deref_post_opt_valid_
 #define _Analysis_assume_(c)
 #define _Pre_satisfies_(c)
+#define _Deref_ret_z_
 
 #define __CLR_OR_THIS_CALL __thiscall
 #define __CLRCALL_PURE_OR_CDECL __cdecl
 #define __CLRCALL_OR_CDECL __cdecl
+
+#define _CRT_SATELLITE_CODECVT_IDS_NOIMPORT

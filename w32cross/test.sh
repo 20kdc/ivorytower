@@ -14,11 +14,11 @@ rm -rf tests/bin
 mkdir -p tests/bin
 
 do_test_c() {
-	w32cross-cl "tests/$1.c" "/Fetests/bin/$1.exe" ucrt.lib kernel32.lib
+	w32cross-cl /MD "tests/$1.c" "/Fetests/bin/$1.exe" ucrt.lib kernel32.lib vcruntime140.lib
 }
 
 do_test_cpp() {
-	w32cross-cl "tests/$1.cpp" "/Fetests/bin/$1.exe" ucrt.lib kernel32.lib
+	w32cross-cl /MD "tests/$1.cpp" "/Fetests/bin/$1.exe" ucrt.lib kernel32.lib vcruntime140.lib
 }
 
 do_test_c hello

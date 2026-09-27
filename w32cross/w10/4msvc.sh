@@ -14,6 +14,8 @@ cp -r notvcruntime/* "${SDK_MSVCPFX}"
 # -- FALSE MSVC COMPILATION STARTS HERE --
 
 # Compile for all supported architectures.
+# Note that we can only compile DLL versions.
+# We do compile debug versions, but they're half-hearted.
 for arch in x86 x64 arm64; do
 	echo "compiling false MSVC for: $arch"
 	mkdir -p "${SDK_MSVCPFX}/obj/$arch"
@@ -22,22 +24,31 @@ for arch in x86 x64 arm64; do
 	ivtw_import_defs vc14_redist "$arch" "${SDK_MSVCPFX}/lib/$arch"
 	# oldnames.lib gets included by default, so we need to have it.
 	ivtw_import_defs oldnames "$arch" "${SDK_MSVCPFX}/lib/$arch"
+
 	# Compile CRT0.
-	mkdir -p "${SDK_MSVCPFX}/obj/$arch/libcmt"
-	mkdir -p "${SDK_MSVCPFX}/obj/$arch/libcmtd"
 	mkdir -p "${SDK_MSVCPFX}/obj/$arch/msvcrt"
 	mkdir -p "${SDK_MSVCPFX}/obj/$arch/msvcrtd"
 	for object in security_cookie crt0_con_w crt0_con_a crt0_gui_w crt0_gui_a crt0_dll; do
 		# Versions are mapped here from flags to lib names.
 		# Trust me, it's better this way.
-		"${IVTW_CL}-$arch" /c "/MT" "/Fo${SDK_MSVCPFX}/obj/$arch/libcmt/$object.obj" "${SDK_MSVCPFX}/src/$object.c"
-		"${IVTW_CL}-$arch" /c "/MTd" "/Fo${SDK_MSVCPFX}/obj/$arch/libcmtd/$object.obj" "${SDK_MSVCPFX}/src/$object.c"
 		"${IVTW_CL}-$arch" /c "/MD" "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt/$object.obj" "${SDK_MSVCPFX}/src/$object.c"
 		"${IVTW_CL}-$arch" /c "/MDd" "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrtd/$object.obj" "${SDK_MSVCPFX}/src/$object.c"
 	done
-	# echo "chk do version"
-	for version in libcmt libcmtd msvcrt msvcrtd; do
+
+	# Build C link libraries.
+	for version in msvcrt msvcrtd; do
 		"${IVTW_LIB}" "/machine:$arch" "${SDK_MSVCPFX}/obj/$arch/$version/"* "/out:${SDK_MSVCPFX}/lib/$arch/$version.lib"
+	done
+
+	# Build C++ link libraries. Note we can't build debug libs, as we don't have the defs for those STLs.
+	# We're already essentially ignoring the _DLL option.
+	for falsever in msvcprt; do
+		"${IVTW_LIB}" "/machine:$arch" \
+		"${SDK_MSVCPFX}/lib/$arch/msvcp140.lib" \
+		"${SDK_MSVCPFX}/lib/$arch/msvcp140_1.lib" \
+		"${SDK_MSVCPFX}/lib/$arch/msvcp140_atomic_wait.lib" \
+		"${SDK_MSVCPFX}/lib/$arch/msvcp140_codecvt_ids.lib" \
+		"/out:${SDK_MSVCPFX}/lib/$arch/$falsever.lib"
 	done
 done
 

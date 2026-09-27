@@ -14,7 +14,7 @@ _CRT_BEGIN_C_HEADER
 /* This set can be found in vcruntime140. */
 
 _ACRTIMP void* __cdecl memchr(const void * dest, int c, size_t n);
-_ACRTIMP int __cdecl memcmp(void * dest, const void * src, size_t n);
+_ACRTIMP int __cdecl memcmp(const void * a, const void * b, size_t n);
 _ACRTIMP void* __cdecl memcpy(void * dest, const void * src, size_t n);
 _ACRTIMP void* __cdecl memmove(void * dest, const void * src, size_t n);
 _ACRTIMP void* __cdecl memset(void * dest, int c, size_t n);
