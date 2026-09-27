@@ -1,0 +1,6 @@
+; We don't actually have much to run through this right now.
+; We might later, but not now.
+; The singular symbol alias is a known-documented example that also works to ensure the file is valid.
+LIBRARY "ucrtbase.dll"
+EXPORTS
+	open=_open

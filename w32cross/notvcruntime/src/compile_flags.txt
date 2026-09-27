@@ -1,0 +1,6 @@
+clang-cl-18
+--target=i686-windows-msvc
+-I../include
+-I../../sdk_w10/Windows Kits/10/Include/10.0.19041.0/ucrt
+-I../../sdk_w10/Windows Kits/10/Include/10.0.19041.0/um
+-I../../sdk_w10/Windows Kits/10/Include/10.0.19041.0/shared

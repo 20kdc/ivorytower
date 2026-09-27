@@ -56,5 +56,6 @@
 #define _Out_writes_bytes_(c)
 #define _In_reads_bytes_(c)
 #define _CRT_DEPRECATE_TEXT(p)
+#define _Inout_updates_(s)
 #define _Inout_updates_opt_(s)
 #define _Post_readable_size_(s)

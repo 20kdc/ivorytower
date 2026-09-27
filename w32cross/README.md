@@ -9,7 +9,7 @@ W32Cross _'doesn't exist yet,'_ but here's the key points on which this all stan
 * From <https://learn.microsoft.com/en-us/windows/apps/windows-sdk/downloads>: `Windows SDK for Windows 10 2004 (10.0.19041.0)` ISO aka <https://go.microsoft.com/fwlink/?linkid=2312004÷
 	* Has the useful property of _not being a Visual Studio SDK,_ and thus not subject to 'profit-cap licensing'.
 * STL: Can be gotten in code form from <https://github.com/microsoft/STL>.
-	* Can be used to bootstrap STL .lib files, including dynamic linking files; convince program compiled with our STL binary to link to the real one, VS license never entered play but will link properly.
+	* Header files have the useful property of being an STL's header files.
 
 From this we'd basically get the same situation as OSXCross.
 

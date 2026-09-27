@@ -22,21 +22,27 @@ mkdir -p "${IVTW_SDKPFX}bin"
 
 # We also need to consider https://github.com/llvm/llvm-project/blob/main/llvm/lib/WindowsDriver/MSVCPaths.cpp#L526
 # (llvm::findVCToolChainViaEnvironment, telling LLVM we're using UCRT, etc).
-# This will be the root and thus 'w32cross-conf' is required.
-# We also-also pretend to be an "old style" SDK even though we use VC2019.
-# This is because the new SDKs contain spaces and we don't want brittleness as a result of that.
 
 # connect FULL SUB OPTS
 connect() {
 	ivtw_find_command "$1"
 	cat <<EOF > "${IVTW_SDKPFX}bin/w32cross-$2"
 #!/bin/sh -e
-exec "$ivtw_find_command_result" "\$@"
+# W32Cross-generated tool configuration file.
+W32CROSS_SDKROOT="\$(dirname "\$(dirname "\$(readlink -f "\$0")")")"
+# echo "W32CROSS_SDKROOT: \$W32CROSS_SDKROOT"
+exec "$ivtw_find_command_result" $3 "\$@"
 EOF
 	chmod +x "${IVTW_SDKPFX}bin/w32cross-$2"
 }
 
-connect clang-cl cl ""
+connect clang-cl cl "-fuse-ld=w32cross-link $SDK_CL_ARGS"
+
+# These wrappers use names consistent with the architecture names used throughout the SDK.
+connect clang-cl cl-x86 "-fuse-ld=w32cross-link --target=i686-windows-msvc $SDK_CL_ARGS"
+connect clang-cl cl-x64 "-fuse-ld=w32cross-link --target=x86_64-windows-msvc $SDK_CL_ARGS"
+connect clang-cl cl-arm64 "-fuse-ld=w32cross-link --target=aarch64-windows-msvc $SDK_CL_ARGS"
+
 connect llvm-ml ml ""
 # note the LLD! llvm-link is something different
 connect lld-link link ""
@@ -44,11 +50,10 @@ connect llvm-rc rc ""
 connect llvm-cvtres cvtres ""
 connect llvm-lib lib ""
 
-# Create w32cross-conf.
-absolute_target="`readlink -f target`"
-cat <<EOF > "${IVTW_SDKPFX}bin/w32cross-conf"
-#!/bin/sh -e
-# W32Cross-generated configuration file.
-echo export VCINSTALLDIR=\"$absolute_target\"
+# prepare utilities
+clang++ common/fixerupper.cpp -o "${IVTW_SDKPFX}bin/w32cross-treecasefix"
+
+cat <<EOF > "${IVTW_SDKPFX}activate"
+PATH="$(readlink -f "${IVTW_SDKPFX}bin"):\$PATH"
 EOF
-chmod +x "${IVTW_SDKPFX}bin/w32cross-conf"
+chmod +x "${IVTW_SDKPFX}activate"

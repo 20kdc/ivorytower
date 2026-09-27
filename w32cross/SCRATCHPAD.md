@@ -94,3 +94,62 @@ void __security_check_cookie(void * cookie) {}
 	* 7: `WindowsSDKLibraryPath = WinSdkDir/Lib/`
 	* 8: `WindowsSDKLibraryPath = WinSdkDir/Lib/um/x86`
 	* Special logic for 10 but seems to be for versioning only?
+
+## `clang-cl` type\_info oracle for vcruntime\_typeinfo stub
+
+`typeinfo`:
+
+```
+namespace std { class type_info { }; }
+```
+
+`test.cpp`:
+
+```
+#include "typeinfo"
+void leak(const std::type_info * other);
+class myclass {};
+int main() { leak(&typeid(myclass)); return 1; }
+```
+
+`clang-cl-18 /c /FA1 test.cpp` spits out an assembly file
+
+```
+	lea	rcx, [rip + "??_R0?AVmyclass@@@8"]
+	call	"?leak@@YAXPEBVtype_info@std@@@Z"
+[...]
+"??_R0?AVmyclass@@@8":
+	.quad	"??_7type_info@@6B@"
+	.quad	0
+	.asciz	".?AVmyclass@@"
+	.zero	2
+```
+
+A public online demangler reports the first quad is the vtable. Therefore an acceptable class layout is:
+
+```
+class type_info {
+	// (for instance. can be ANY virtual function in theory)
+	virtual ~type_info();
+};
+```
+
+`vcruntime140` symbols suggest that code not implementing vcruntime should forward to the DLL for impls:
+
+```
+__std_type_info_compare
+__std_type_info_destroy_list
+__std_type_info_hash
+__std_type_info_name
+```
+
+I was kinda concerned about `"??_7type_info@@6B@"` being missing. A random commit message suggests we're actually supposed to supply it in the dynamic vcruntime lib.
+
+## Confirming the creation of a mixed-mode file
+
+```
+llvm-lib /machine:amd64 /def:vcruntime140.def /out:vcruntime140.lib
+llvm-lib /machine:amd64 vcruntime140.lib test.obj /out:vcruntime.lib
+```
+
+This creates a 'mixed' library with both kinds of code. This is necessary to create the vcruntime.lib with `type_info` vtable.

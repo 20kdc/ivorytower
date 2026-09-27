@@ -20,6 +20,15 @@ fi
 IVTW_DLPFX="downloaded/"
 IVTW_SDKPFX="sdk_$W32CROSS_SDKID/"
 
+IVTW_CL="${IVTW_SDKPFX}bin/w32cross-cl"
+IVTW_LIB="${IVTW_SDKPFX}bin/w32cross-lib"
+
+# -- SDK variable defaults --
+
+SDK_CL_ARGS=""
+
+# -- Core Utilities --
+
 # Runs a stage script.
 ivtw_stage() {
 	echo " - $1 -"
@@ -31,6 +40,8 @@ ivtw_get_path() {
 	# This is so that PATH entries with spaces are respected.
 	whereis -bl | grep ^bin | sed "s/^[^:]*: //"
 }
+
+# -- Command Discovery --
 
 # ivtw_get_candidates_inner PATTERN
 ivtw_get_candidates_inner() {
@@ -49,6 +60,15 @@ ivtw_get_candidates() {
 # returns in ivtw_find_command_result
 ivtw_find_command() {
 	ivtw_find_command_result="$(ivtw_get_candidates "$1" | head -n 1)"
+}
+
+# -- Bootstrapping --
+
+# ivtw_import_defs PACKAGE ARCH OUTPATH
+ivtw_import_defs() {
+	for ivtw_import_defs_def in `ls "defs/$1/$2"`; do
+		"$IVTW_LIB" "/machine:$2" "/def:defs/$1/$2/$ivtw_import_defs_def" "/out:$3/$(echo "$ivtw_import_defs_def" | sed "s/def$/lib/g")"
+	done
 }
 
 . "$W32CROSS_SDKID/0sdkdef.sh"
