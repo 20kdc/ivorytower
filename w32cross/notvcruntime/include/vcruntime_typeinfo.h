@@ -39,10 +39,10 @@ class type_info;
 extern union _SLIST_HEADER __type_info_root_node;
 
 extern "C" {
-	_MRTIMP2 int __std_type_info_destroy_list(union _SLIST_HEADER *);
-	_MRTIMP2 int __std_type_info_compare(const void *, const void *);
-	_MRTIMP2 size_t __std_type_info_hash(const void *);
-	_MRTIMP2 const char * __std_type_info_name(void *, union _SLIST_HEADER *);
+	_CRTIMP2 int __std_type_info_destroy_list(union _SLIST_HEADER *);
+	_CRTIMP2 int __std_type_info_compare(const void *, const void *);
+	_CRTIMP2 size_t __std_type_info_hash(const void *);
+	_CRTIMP2 const char * __std_type_info_name(void *, union _SLIST_HEADER *);
 }
 
 // The symbols here are really, _really_ weird.

@@ -23,12 +23,22 @@
 #define _CRT_END_C_HEADER
 #endif
 
-/* Imports */
+/* Import/Export flags */
 
+/*
+ * ucrtbase.dll/.lib
+ * '_CRTIMP' is complicated. See ucrt/corecrt.h.
+ * _ACRTIMP : Most functions go here.
+ * _DCRTIMP : Feels like non-standard/weird functions use this, i.e. _setsystime.
+ *            There's no meaningful pattern, though. If *anything* I'd maybe guess stripping from console configs?
+ */
 #define _CRTIMP __declspec(dllimport)
-#define _CRTIMP2 _CRTIMP
-#define _VCRTIMP _CRTIMP
-#define _MRTIMP2 _CRTIMP
+/* msvcp140.dll */
+#define _CRTIMP2 __declspec(dllimport)
+/* msvcp140.dll locale functions */
+#define _MRTIMP2 _CRTIMP2
+/* vcruntime140.dll (purecall handler, exposed by UCRT headers) */
+#define _VCRTIMP __declspec(dllimport)
 
 /* Calling conventions */
 

@@ -8,8 +8,6 @@ fi
 
 . common/cbase.sh
 
-PATH="$(readlink -f "${IVTW_SDKPFX}bin"):$PATH"
-
 rm -rf tests/bin
 mkdir -p tests/bin
 
@@ -19,10 +17,10 @@ do_test() {
 	shift
 	test_out="$1"
 	shift
-	if w32cross-cl /EHs /MD "$@" "/Fetests/bin/$test_out" "tests/$test_file" ; then
+	if "$IVTW_CL" /EHs /MD "$@" "/Fetests/bin/$test_out" "tests/$test_file" ; then
 		true
 	else
-		w32cross-cl /c /FA1 /EHs /MD "/Fatests/bin/$test_out.asm" "/Fotests/bin/$test_out.obj" "tests/$test_file"
+		"$IVTW_CL" /c /FA1 /EHs /MD "/Fatests/bin/$test_out.asm" "/Fotests/bin/$test_out.obj" "tests/$test_file"
 		false
 	fi
 }
