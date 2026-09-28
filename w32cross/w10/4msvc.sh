@@ -28,11 +28,18 @@ for arch in x86 x64 arm64; do
 	# Compile CRT0.
 	mkdir -p "${SDK_MSVCPFX}/obj/$arch/msvcrt"
 	mkdir -p "${SDK_MSVCPFX}/obj/$arch/msvcrtd"
-	for object in crt0_common crt0_gs crt0_app_atexit crt0_con_w crt0_con_a crt0_gui_w crt0_gui_a crt0_dll crt0_dll_nomain; do
+	# Build 'simpler' objects
+	for object in crt0_common crt0_gs crt0_app_atexit crt0_dll crt0_dll_nomain; do
 		# Versions are mapped here from flags to lib names.
 		# Trust me, it's better this way.
-		"${IVTW_CL}-$arch" /c "/MD" "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt/$object.obj" "${SDK_MSVCPFX}/src/$object.c"
-		"${IVTW_CL}-$arch" /c "/MDd" "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrtd/$object.obj" "${SDK_MSVCPFX}/src/$object.c"
+		"${IVTW_CL}-$arch" /c /MD "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt/${object}.obj" "${SDK_MSVCPFX}/src/${object}.c"
+		"${IVTW_CL}-$arch" /c /MDd "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrtd/${object}.obj" "${SDK_MSVCPFX}/src/${object}.c"
+	done
+	for object in crt0_exe_con crt0_exe_gui; do
+		"${IVTW_CL}-$arch" /c /MD "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt/${object}a.obj" "${SDK_MSVCPFX}/src/${object}.c"
+		"${IVTW_CL}-$arch" /c /MD /D_UNICODE "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt/${object}w.obj" "${SDK_MSVCPFX}/src/${object}.c"
+		"${IVTW_CL}-$arch" /c /MDd "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrtd/${object}a.obj" "${SDK_MSVCPFX}/src/${object}.c"
+		"${IVTW_CL}-$arch" /c /MDd /D_UNICODE "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrtd/${object}w.obj" "${SDK_MSVCPFX}/src/${object}.c"
 	done
 
 	# Build C link libraries.
