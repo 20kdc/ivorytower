@@ -9,7 +9,9 @@ mkdir -p "${SDK_MSVCPFX}"
 # We need a VCRuntime, and the SDK won't give us a real one.
 # Luckily, the VCRuntime is basically libgcc but for VC. It's not even the STL.
 # We *can* just write our own.
-cp -r notvcrt/* "${SDK_MSVCPFX}"
+notvcrt/ext/sync.sh
+cp -r notvcrt/include notvcrt/src "${SDK_MSVCPFX}"
+cp -r notvcrt/include_ext/* "${SDK_MSVCPFX}include"
 
 # The trick we use for vcruntime_exception.h is contingent on us using the STL headers.
 cp -r "${IVTW_DLPFX}stl16/stl/inc/"* "${SDK_MSVCPFX}/include/"

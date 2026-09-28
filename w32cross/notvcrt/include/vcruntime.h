@@ -17,7 +17,6 @@
 /* Stuff and things */
 #include <crtdefs.h>
 #include <vadefs.h>
-
 /* Critically important. _Inout_ and all the rest live here. */
 #include <sal.h>
 
@@ -26,3 +25,46 @@
 #define _HAS_CXX17 0
 #define _HAS_EXCEPTIONS 1
 #define _HAS_UNEXPECTED 0
+
+/* MinGW compatibility. */
+
+#define __MINGW_EXTENSION
+#define __MINGW_ATTRIB_NORETURN __declspec(noreturn)
+
+/* C++ guards */
+
+#ifdef __cplusplus
+#define _CRT_BEGIN_C_HEADER extern "C" {
+#define _CRT_END_C_HEADER }
+#else
+#define _CRT_BEGIN_C_HEADER
+#define _CRT_END_C_HEADER
+#endif
+
+/* Calling conventions */
+
+#define __CLR_OR_THIS_CALL __thiscall
+#define __CLRCALL_PURE_OR_CDECL __cdecl
+#define __CLRCALL_OR_CDECL __cdecl
+
+#define __CRTDECL __cdecl
+
+/* Deprecation notices */
+
+#define _CRT_INSECURE_DEPRECATE(f)
+#define _CRT_INSECURE_DEPRECATE_MEMORY(lies)
+#define _CRT_INSECURE_DEPRECATE_GLOBALS(bad)
+
+#define _CRT_DEPRECATE_TEXT(p)
+#define _CRT_SATELLITE_CODECVT_IDS_NOIMPORT
+
+/* Markers */
+
+#define _HAS_NODISCARD 1
+#define _NODISCARD [[nodiscard]]
+
+/* /GS support */
+
+extern void * __security_cookie;
+void __CRTDECL __security_init_cookie();
+void __CRTDECL __security_check_cookie(void *);

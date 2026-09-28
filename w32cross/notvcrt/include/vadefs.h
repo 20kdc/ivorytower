@@ -10,6 +10,7 @@
 /*
  * Clang does some weird things here.
  * It *has* a vadefs.h that's supposed to override this one.
+ * (In case you're wondering, this is why we aren't using MinGW's vadefs.)
  * As it is, we:
  * 1. include stdarg.h to get Clang's va_list
  * 2. Define dummies so that Clang can override them (since Clang won't override them if we don't define them).
@@ -26,3 +27,5 @@
 #define __crt_va_start __builtin_va_start
 #define __crt_va_end __builtin_va_end
 #define __crt_va_arg __builtin_va_arg
+
+/* There's no entry for copy, so there's no entry for copy. */

@@ -1,0 +1,47 @@
+--- thirdparty/mingw-w64-headers/eh.h	2026-09-28 21:58:20.717891415 +0100
++++ notvcrt/include_ext/eh.h	2026-09-29 00:08:43.298937494 +0100
+@@ -8,9 +8,13 @@
+ #error eh.h is only for C++!
+ #endif
+ 
+-#include <typeinfo>
++/*
++ * [WCX] typeinfo had to be removed.
++ * eh.h -> STL typeinfo -> exception -> eh.h = error.
++ */
+ 
+ #include <crtdefs.h>
++#include <corecrt_terminate.h>
+ 
+ #ifndef _EH_H_
+ #define _EH_H_
+@@ -19,23 +23,23 @@
+ 
+ #pragma pack(push,_CRT_PACKING)
+ 
+-typedef void (__cdecl *terminate_function)();
+-typedef void (__cdecl *terminate_handler)();
++/* [WCX] 'terminate' functions covered by <corecrt_terminate.h> */
+ typedef void (__cdecl *unexpected_function)();
+ typedef void (__cdecl *unexpected_handler)();
+ 
+ struct _EXCEPTION_POINTERS;
+ typedef void (__cdecl *_se_translator_function)(unsigned int,struct _EXCEPTION_POINTERS *);
+ 
+-_CRTIMP __MINGW_ATTRIB_NORETURN void __cdecl terminate(void);
++class type_info; /* [WCX] Compensation for removal */
++
+ _CRTIMP void __cdecl unexpected(void);
+-_CRTIMP int __cdecl _is_exception_typeof(const std::type_info &_Type,struct _EXCEPTION_POINTERS *_ExceptionPtr);
+-_CRTIMP terminate_function __cdecl set_terminate(terminate_function _NewPtFunc);
+-extern "C" _CRTIMP terminate_function __cdecl _get_terminate(void);
++_CRTIMP int __cdecl _is_exception_typeof(const type_info &_Type,struct _EXCEPTION_POINTERS *_ExceptionPtr);
+ _CRTIMP unexpected_function __cdecl set_unexpected(unexpected_function _NewPtFunc);
+ extern "C" _CRTIMP unexpected_function __cdecl _get_unexpected(void);
+ _CRTIMP _se_translator_function __cdecl _set_se_translator(_se_translator_function _NewPtFunc);
+ _CRTIMP bool __cdecl __uncaught_exception();
++/* [WCX] downloaded/stl16/stl/src/uncaught_exceptions.cpp */
++_CRTIMP int __cdecl __uncaught_exceptions();
+ 
+ #pragma pack(pop)
+ #endif

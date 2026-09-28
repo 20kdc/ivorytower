@@ -10,7 +10,7 @@ fi
 
 echo "-- w32cross build $W32CROSS_SDKID --"
 
-rm -rf "sdk_$W32CROSS_SDKID"
+rm -rf "sdk_$W32CROSS_SDKID" "notvcrt/include_ext"
 mkdir -p "$IVTW_SDKPFX"
 common/compilerinit.sh
 

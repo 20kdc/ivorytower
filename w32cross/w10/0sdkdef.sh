@@ -4,7 +4,7 @@ ISO_PATH="${IVTW_DLPFX}19041.5609.250311-1926.vb_release_svc_im_WindowsSDK.iso"
 ISO_URL="https://go.microsoft.com/fwlink/?linkid=2312004"
 
 # For safety reasons, this is duplicated in 4msvc.sh for the rm -rf
-SDK_MSVCPFX="${IVTW_SDKPFX}VC/Tools/MSVC"
+SDK_MSVCPFX="${IVTW_SDKPFX}VC/Tools/MSVC/"
 
 SDK_CL_ARGS="/winsysroot \"\$W32CROSS_SDKROOT\""
 

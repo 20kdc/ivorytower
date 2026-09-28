@@ -1,14 +1,20 @@
 # 'NotVCRuntime': Implementing what's missing
 
-'NotVCRuntime' is for a clean 'fix errors until it works' implementation of:
+'NotVCRuntime' is a 'fix errors until it works' implementation of:
 
-* _Headers for_ `vcruntime` and eventually `concrt`.
-	* The goals of the `concrt` headers will primarily be whatever makes STL compilation happy.
+* _Headers for_ `vcruntime`.
+	* `concrt` was considered, but it's not the kind of 'more or less 1:1 mapping' that's reasonably safe to create.
 * CRT initialization/shutdown code.
 	* VS 2015+ calls this `msvcrt`, although obviously this name meant something different in pre-UCRT times. (The original `msvcrt` is used to this day by MinGW, as it's a reliable cross-vendor source for `malloc`/`free`.)
 * Any 'CRT0 VCRuntime' stuff.
 
 It is **not** intended to reimplement VCRuntime itself. If you really need a non-Microsoft version of those DLLs, consider Wine's LGPL vcruntime140 and ucrtbase.
+
+Some headers come from MinGW-w64 (see `../thirdparty/mingw-w64-headers`) and are then patched (see `notvcrt/ext`) for use:
+* `eh.h`: Exception handling utility routine header
+* `excpt.h`: SEH structures, etc.
+* `setjmp.h`: `setjmp`/`longjmp`/`jmp_buf`
+* `setjmpex.h`: Fancy MS extension support header
 
 ## Useful Reference Material
 
