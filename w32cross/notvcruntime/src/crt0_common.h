@@ -17,6 +17,7 @@ extern _PIFV __xi_z[1];
 /* C++ init */
 extern _PVFV __xc_a[1];
 extern _PVFV __xc_z[1];
+
 /* Pre-term */
 extern _PVFV __xp_a[1];
 extern _PVFV __xp_z[1];

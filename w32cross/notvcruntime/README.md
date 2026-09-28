@@ -18,3 +18,12 @@
 	* `Source/10.0.19041.0/ucrt/internal/initialization.cpp`
 * Atexit behaviour
 	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/atexit?view=msvc-170>
+* Security cookie
+	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/security-init-cookie?view=msvc-140>
+* Dllmain
+	* <https://learn.microsoft.com/en-us/windows/win32/dlls/dllmain>
+	* Key points:
+	* 1. If we return FALSE in entrypoint, the system will call DLL_PROCESS_DETACH for us.
+	* 2. There's a loader lock, so we can treat this as 'thread-safe-ish'.
+	* 3. Destructors are UNSAFE TO RUN unless we are being unloaded dynamically.
+	* 4. The CRT entrypoint (*** THIS IS US ***) needs to call C++ constructors/destructors.

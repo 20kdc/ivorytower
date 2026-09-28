@@ -50,3 +50,10 @@
 /* Markers */
 
 #define _NODISCARD
+#define _CRTALLOC(s) __declspec(allocate(s))
+
+/* /GS support */
+
+extern void * __security_cookie;
+void __CRTDECL __security_init_cookie();
+void __CRTDECL __security_check_cookie(void *);

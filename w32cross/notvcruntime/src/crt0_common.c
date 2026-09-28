@@ -10,6 +10,33 @@
  */
 
 #include "crt0_common.h"
+#include "crtdefs.h"
+
+/* We waste some bytes putting dummy values in here to prevent discard. */
+
+#pragma comment(linker, "/merge:.CRT=.rdata")
+
+/* C init */
+#pragma section(".CRT$XIA", read)
+_CRTALLOC(".CRT$XIA") _PIFV __xi_a[1];
+#pragma section(".CRT$XIZ", read)
+_CRTALLOC(".CRT$XIZ") _PIFV __xi_z[1];
+/* C++ init */
+#pragma section(".CRT$XCA", read)
+_CRTALLOC(".CRT$XCA") _PVFV __xc_a[1];
+#pragma section(".CRT$XCZ", read)
+_CRTALLOC(".CRT$XCZ") _PVFV __xc_z[1];
+
+/* Pre-term */
+#pragma section(".CRT$XPA", read)
+_CRTALLOC(".CRT$XPA") _PVFV __xp_a[1];
+#pragma section(".CRT$XPZ", read)
+_CRTALLOC(".CRT$XPZ") _PVFV __xp_z[1];
+/* Final term */
+#pragma section(".CRT$XTA", read)
+_CRTALLOC(".CRT$XTA") _PVFV __xt_a[1];
+#pragma section(".CRT$XTZ", read)
+_CRTALLOC(".CRT$XTZ") _PVFV __xt_z[1];
 
 /*
  * THIS TABLE MUST BE INITIALIZED BY CRT0!
@@ -22,7 +49,6 @@ _onexit_t __cdecl _onexit(_onexit_t f) {
 	return _register_onexit_function(&__NOTVCRUNTIME_onexit_table, f) ? f : 0;
 }
 
-/* Startup/shutdown for NOTVCRUNTIME. */
 int __NOTVCRUNTIME_init() {
 	_initialize_onexit_table(&__NOTVCRUNTIME_onexit_table);
 	if (_initterm_e(__xi_a, __xi_z))
@@ -40,32 +66,3 @@ void __NOTVCRUNTIME_fini() {
  */
 #pragma comment(linker, "/alternatename:atexit=__NOTVCRUNTIME_ACRT_atexit")
 #pragma comment(linker, "/alternatename:at_quick_exit=__NOTVCRUNTIME_ACRT_at_quick_exit")
-
-void * __security_cookie = 0;
-
-void __security_check_cookie(void * value) {
-	// do nothing, we do not care.
-}
-
-/* We waste some bytes putting dummy values in here to prevent discard. */
-
-/* C init */
-#pragma section(".CRT$XIA", read)
-__declspec(allocate(".CRT$XIA")) _PIFV __xi_a[1];
-#pragma section(".CRT$XIZ", read)
-__declspec(allocate(".CRT$XIZ")) _PIFV __xi_z[1];
-/* C++ init */
-#pragma section(".CRT$XCA", read)
-__declspec(allocate(".CRT$XCA")) _PVFV __xc_a[1];
-#pragma section(".CRT$XCZ", read)
-__declspec(allocate(".CRT$XCZ")) _PVFV __xc_z[1];
-/* Pre-term */
-#pragma section(".CRT$XPA", read)
-__declspec(allocate(".CRT$XPA")) _PVFV __xp_a[1];
-#pragma section(".CRT$XPZ", read)
-__declspec(allocate(".CRT$XPZ")) _PVFV __xp_z[1];
-/* Final term */
-#pragma section(".CRT$XTA", read)
-__declspec(allocate(".CRT$XTA")) _PVFV __xt_a[1];
-#pragma section(".CRT$XTZ", read)
-__declspec(allocate(".CRT$XTZ")) _PVFV __xt_z[1];

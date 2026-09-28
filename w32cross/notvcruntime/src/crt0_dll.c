@@ -10,20 +10,34 @@
 
 #include "corecrt_startup.h"
 #include "crt0_common.h"
+#include "winnt.h"
 
-int __stdcall DllMain(void * a, int reason, void * c);
+int __stdcall DllMain(void * a, int reason, void * reserved);
 
-int __stdcall _DllMainCRTStartup(void * a, int reason, void * c) {
+int __stdcall _CRT_INIT(void * a, int reason, void * reserved) {
 	if (reason == DLL_PROCESS_ATTACH) {
-		if (__NOTVCRUNTIME_init())
-			return 0;
-		return DllMain(a, reason, c);
+		return __NOTVCRUNTIME_init();
 	} else if (reason == DLL_PROCESS_DETACH) {
-		int val = DllMain(a, reason, c);
-		__NOTVCRUNTIME_fini();
-		return val;
+		/* We're only to run destructors if dynamically loaded. */
+		if (!reserved)
+			__NOTVCRUNTIME_fini();
+	}
+	return 1;
+}
+
+int __stdcall _DllMainCRTStartup(void * a, int reason, void * reserved) {
+	static int counter = 0;
+	if (reason == DLL_PROCESS_ATTACH) {
+		if (!_CRT_INIT(a, reason, reserved))
+			return 0;
+		counter++;
+		return DllMain(a, reason, reserved);
+	} else if (reason == DLL_PROCESS_DETACH) {
+		DllMain(a, reason, reserved);
+		_CRT_INIT(a, reason, reserved);
+		return counter <= 0;
 	} else {
-		return DllMain(a, reason, c);
+		return DllMain(a, reason, reserved);
 	}
 }
 
