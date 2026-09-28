@@ -90,7 +90,9 @@ namespace setupcore {
 
 		// 'Core' compilation tools.
 		std::vector<std::string> c;
+		std::vector<std::string> c_ld;
 		std::vector<std::string> cpp;
+		std::vector<std::string> cpp_ld;
 		std::vector<std::string> ar;
 		std::vector<std::string> windres;
 		std::vector<std::string> strip;

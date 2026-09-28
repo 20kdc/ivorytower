@@ -119,7 +119,9 @@ void CompilerArgs::merge(const CompilerArgs & other) {
 std::vector<std::vector<std::string> *> CompilerCfg::allCommands() {
 	return {
 		&c,
+		&c_ld,
 		&cpp,
+		&cpp_ld,
 		&ar,
 		&windres,
 		&strip,

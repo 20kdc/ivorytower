@@ -120,11 +120,14 @@ std::string setupcore::meson::makeCrossFile(const CompilerCfg & comp, const STLD
 	base += "needs_exe_wrapper = true\n";
 	base += "[binaries]\n";
 	base += iniCmd("c", comp.c);
+	base += iniCmd("c_ld", comp.c_ld);
 	if (disposition.hackCPPWithC) {
 		// SteamRT Scout needs this as a workaround for no -nostdlib++
 		base += iniCmd("cpp", comp.c);
+		base += iniCmd("cpp_ld", comp.c_ld);
 	} else {
 		base += iniCmd("cpp", comp.cpp);
+		base += iniCmd("cpp_ld", comp.cpp_ld);
 	}
 	base += iniCmd("ar", comp.ar);
 	base += iniCmd("windres", comp.windres);
