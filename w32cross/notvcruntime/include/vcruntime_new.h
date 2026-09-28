@@ -18,40 +18,55 @@ namespace std {
 	extern const ::std::nothrow_t nothrow;
 }
 
-/* -- Unaligned base operations -- */
+/*
+ * In order to implement this mess correctly, the numbered variants for the operators on cppreference are best.
+ * https://en.cppreference.com/cpp/memory/new/operator_new
+ * https://en.cppreference.com/cpp/memory/new/operator_delete
+ */
+
+/* new: replacable allocation functions (1-4) */
 
 void * __cdecl operator new(size_t);
-void * __cdecl operator new(size_t, const ::std::nothrow_t &) noexcept;
-void __cdecl operator delete(void *) noexcept;
-
-/* -- Aligned base operations -- */
-
-void * __cdecl operator new(size_t, ::std::align_val_t);
-void * __cdecl operator new(size_t, ::std::align_val_t, const ::std::nothrow_t &) noexcept;
-void __cdecl operator delete(void *, ::std::align_val_t) noexcept;
-
-/* -- Array-to-object proxy operations -- */
-
 void * __cdecl operator new[](size_t);
-void __cdecl operator delete[](void *) noexcept;
-
-/* -- Proxy operations -- */
-
-void * __cdecl operator new[](size_t, const ::std::nothrow_t &) noexcept;
+void * __cdecl operator new(size_t, ::std::align_val_t);
 void * __cdecl operator new[](size_t, ::std::align_val_t);
+
+/* new: replacable non-throwing allocation functions (5-8) */
+
+void * __cdecl operator new(size_t, const ::std::nothrow_t &) noexcept;
+void * __cdecl operator new[](size_t, const ::std::nothrow_t &) noexcept;
+void * __cdecl operator new(size_t, ::std::align_val_t, const ::std::nothrow_t &) noexcept;
 void * __cdecl operator new[](size_t, ::std::align_val_t, const ::std::nothrow_t &) noexcept;
 
-void __cdecl operator delete(void *, const ::std::nothrow_t &) noexcept;
-void __cdecl operator delete(void *, size_t) noexcept;
-void __cdecl operator delete(void *, ::std::align_val_t, const ::std::nothrow_t &) noexcept;
-void __cdecl operator delete(void *, size_t, ::std::align_val_t) noexcept;
-void __cdecl operator delete[](void *, const ::std::nothrow_t &) noexcept;
-void __cdecl operator delete[](void *, size_t) noexcept;
+/*
+ * delete: replacable usual deallocation functions (1-8)
+ * cppref says (2,4) call (1,3)
+ */
+
+void __cdecl operator delete(void *) noexcept;
+void __cdecl operator delete[](void *) noexcept;
+void __cdecl operator delete(void *, ::std::align_val_t) noexcept;
 void __cdecl operator delete[](void *, ::std::align_val_t) noexcept;
-void __cdecl operator delete[](void *, ::std::align_val_t, const ::std::nothrow_t &) noexcept;
+
+/* cppref says (5-8) call (1-4) */
+
+void __cdecl operator delete(void *, size_t) noexcept;
+void __cdecl operator delete[](void *, size_t) noexcept;
+void __cdecl operator delete(void *, size_t, ::std::align_val_t) noexcept;
 void __cdecl operator delete[](void *, size_t, ::std::align_val_t) noexcept;
 
-/* -- Inline proxy operations -- */
+/*
+ * delete: replacable placement deallocation functions (9-12)
+ * cppref says (9,10) call (1,2) ('global replacements')
+ * nothing is said of (11,12) but elsewhere 'same as 9,10', can be assumed they call (3,4)
+ */
+
+void __cdecl operator delete(void *, const ::std::nothrow_t &) noexcept;
+void __cdecl operator delete[](void *, const ::std::nothrow_t &) noexcept;
+void __cdecl operator delete(void *, ::std::align_val_t, const ::std::nothrow_t &) noexcept;
+void __cdecl operator delete[](void *, ::std::align_val_t, const ::std::nothrow_t &) noexcept;
+
+/* -- 'Placement' (new 9-10, delete 13-14) -- */
 
 inline void * __cdecl operator new(size_t s, void * ptr) noexcept { return ptr; }
 inline void * __cdecl operator new[](size_t s, void * ptr) noexcept { return ptr; }

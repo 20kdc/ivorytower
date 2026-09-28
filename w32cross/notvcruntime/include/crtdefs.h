@@ -49,7 +49,8 @@
 
 /* Markers */
 
-#define _NODISCARD
+#define _HAS_NODISCARD 1
+#define _NODISCARD [[nodiscard]]
 #define _CRTALLOC(s) __declspec(allocate(s))
 
 /* /GS support */

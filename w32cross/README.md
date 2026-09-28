@@ -12,3 +12,9 @@ W32Cross is basically built on two key pillars:
 	* These header files are binary-compatible (or at least _enough_ with).
 
 The main key problem is the lack of the `vcruntime` headers and CRT0, which have to be synthesized.
+
+## Notes
+
+This is tested with `clang-cl-18` on Ubuntu 24.04.
+
+The `/FA1` option appears to produce code which will not assemble in some cases; the `vc_typeinfo` and `vc_new` files appear to be like this.

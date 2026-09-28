@@ -1,5 +1,7 @@
 #pragma once
 
+#include <exception>
+
 #ifndef ANIMALDECL
 #define ANIMALDECL __declspec(dllimport)
 #endif
@@ -18,3 +20,4 @@ public:
 };
 
 ANIMALDECL Animal * animalFactory();
+ANIMALDECL void animalOopsie();

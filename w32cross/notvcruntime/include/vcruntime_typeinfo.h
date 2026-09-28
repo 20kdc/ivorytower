@@ -8,6 +8,7 @@
 #pragma once
 
 #include <vcruntime.h>
+#include <vcruntime_exception.h>
 
 /*
  * Ok, so, here's a quick description of the metaphorical 'circle of life' for type_info,
@@ -81,6 +82,7 @@ private:
 
 namespace std {
 	using type_info = ::type_info;
+	__NOTVCRUNTIME_EXC_OBVIOUS(exception, bad_cast);
 }
 
 }

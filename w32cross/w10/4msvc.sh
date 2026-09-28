@@ -11,6 +11,9 @@ mkdir -p "${SDK_MSVCPFX}"
 # We *can* just write our own.
 cp -r notvcruntime/* "${SDK_MSVCPFX}"
 
+# The trick we use for vcruntime_exception.h is contingent on us using the STL headers.
+cp -r "${IVTW_DLPFX}stl16/stl/inc/"* "${SDK_MSVCPFX}/include/"
+
 # -- FALSE MSVC COMPILATION STARTS HERE --
 
 # Compile for all supported architectures.
@@ -33,16 +36,16 @@ for arch in x86 x64 arm64; do
 		for object in crt0_common crt0_gs crt0_app_atexit crt0_dll crt0_dll_nomain; do
 			# Versions are mapped here from flags to lib names.
 			# Trust me, it's better this way.
-			"${IVTW_CL}-$arch" /c "/MD${debug}" \
+			"${IVTW_CL}-$arch" /c /O1 "/MD${debug}" \
 			"/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt${debug}/${object}.obj" \
 			   "${SDK_MSVCPFX}/src/${object}.c"
 		done
 		# Dual-mode objects (Unicode and not)
 		for object in crt0_exe_con crt0_exe_gui; do
-			"${IVTW_CL}-$arch" /c "/MD${debug}" \
+			"${IVTW_CL}-$arch" /c /O1 "/MD${debug}" \
 			"/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt${debug}/${object}a.obj" \
 			   "${SDK_MSVCPFX}/src/${object}.c"
-			"${IVTW_CL}-$arch" /c "/MD${debug}" /D_UNICODE \
+			"${IVTW_CL}-$arch" /c /O1 "/MD${debug}" /D_UNICODE \
 			"/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt${debug}/${object}w.obj" \
 			   "${SDK_MSVCPFX}/src/${object}.c"
 		done
@@ -53,14 +56,18 @@ for arch in x86 x64 arm64; do
 
 	# Build VCRuntime supplement.
 	# This is NOT CRT0, this is C++ stuff.
-	# A lot of this involves very finicky symbols, so we get assembly here.
+	# Note: DO NOT USE /FA1 for actual build it breaks the compile :<
 	mkdir -p "${SDK_MSVCPFX}/obj/$arch/vcruntime"
-	for object in vcr_typeinfo vcr_new; do
+	for object in \
+	vcr_typeinfo vcr_new_nothrow \
+	vcr_new1 vcr_new2 vcr_new3 vcr_new4 vcr_new5 vcr_new6 vcr_new7 vcr_new8 \
+	vcr_del01 vcr_del02 vcr_del03 vcr_del04 vcr_del05 vcr_del06 vcr_del07 vcr_del08 vcr_del09 vcr_del10 vcr_del11 vcr_del12 \
+	; do
 		# Versions are mapped here from flags to lib names.
 		# Trust me, it's better this way.
-		"${IVTW_CL}-$arch" /c /FA1 /MD \
+		# We use /EHs here because std::bad_alloc exception has to be caught in vrc_new.
+		"${IVTW_CL}-$arch" /c /O1 /MD /EHs \
 		"/Fo${SDK_MSVCPFX}/obj/$arch/vcruntime/${object}.obj" \
-		"/Fa${SDK_MSVCPFX}/obj/$arch/vcruntime/${object}.asm" \
 		   "${SDK_MSVCPFX}/src/${object}.cpp"
 	done
 
@@ -80,7 +87,3 @@ for arch in x86 x64 arm64; do
 	"${SDK_MSVCPFX}/lib/$arch/msvcp140_codecvt_ids.lib" \
 	"/out:${SDK_MSVCPFX}/lib/$arch/msvcprt.lib"
 done
-
-# -- STL --
-
-cp -r "${IVTW_DLPFX}stl16/stl/inc/"* "${SDK_MSVCPFX}/include/"

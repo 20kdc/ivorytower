@@ -21,4 +21,8 @@
 /* Critically important. _Inout_ and all the rest live here. */
 #include <sal.h>
 
+/* Feature flags. */
+
 #define _HAS_CXX17 0
+#define _HAS_EXCEPTIONS 1
+#define _HAS_UNEXPECTED 0

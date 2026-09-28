@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <typeinfo>
+#include <exception>
 
 #define ANIMALDECL __declspec(dllexport)
 #include "c_cxxdll.hxx"
@@ -21,4 +22,8 @@ void Cat::voice() {
 
 ANIMALDECL Animal * animalFactory() {
 	return new Cat();
+}
+
+ANIMALDECL void animalOopsie() {
+	throw std::exception("oopsie!");
 }

@@ -19,10 +19,10 @@ do_test() {
 	shift
 	test_out="$1"
 	shift
-	if w32cross-cl /MD "$@" "/Fetests/bin/$test_out" "tests/$test_file" ; then
+	if w32cross-cl /EHs /MD "$@" "/Fetests/bin/$test_out" "tests/$test_file" ; then
 		true
 	else
-		w32cross-cl /c /FA1 /MD "$@" "/Fatests/bin/$test_out.asm" "/Fotests/bin/$test_out.obj" "tests/$test_file"
+		w32cross-cl /c /FA1 /EHs /MD "/Fatests/bin/$test_out.asm" "/Fotests/bin/$test_out.obj" "tests/$test_file"
 		false
 	fi
 }
@@ -32,4 +32,4 @@ do_test a_args.c args.exe
 do_test b_constructors.cpp constructors.exe
 do_test b_hellocpp.cpp hellocpp.exe
 do_test c_cxxdll.cpp cxxdll.dll /LD
-do_test c_cxxdllexe.cpp cxxdll.exe cxxdll.lib
+do_test c_cxxdllexe.cpp cxxdll.exe tests/bin/cxxdll.lib
