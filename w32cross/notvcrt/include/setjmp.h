@@ -9,6 +9,8 @@
 
 #include <vcruntime.h>
 
+_CRT_BEGIN_C_HEADER
+
 #ifdef __i386__
 typedef int jmp_buf[16];
 #elif defined(__x86_64__)
@@ -19,3 +21,14 @@ typedef __int64 jmp_buf[24];
 #else
 #error "Target architecture not supported in NOTVCRUNTIME setjmp.h"
 #endif
+
+/*
+ * For reference, _setjmp, _setjmpex, etc. are all secretly compiler intrinsics.
+ * Refer to https://github.com/llvm/llvm-project/blob/348d23c3b238016836d84ba30aa573ba3a39649d/clang/lib/CodeGen/CGBuiltin.cpp#L1798
+ */
+
+#define setjmp _setjmp
+int __cdecl setjmp(jmp_buf buf);
+__declspec(noreturn) void __cdecl longjmp(jmp_buf buf, int v);
+
+_CRT_END_C_HEADER
