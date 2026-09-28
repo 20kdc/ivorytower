@@ -8,6 +8,7 @@
 #pragma once
 
 #include <vcruntime.h>
+#include <eh.h>
 /* STL exception depends on this */
 #include <corecrt_terminate.h>
 

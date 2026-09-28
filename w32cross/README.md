@@ -17,4 +17,6 @@ The main key problem is the lack of the `vcruntime` headers and CRT0, which have
 
 This is tested with `clang-cl-18` on Ubuntu 24.04.
 
-The `/FA1` option appears to produce code which will not assemble in some cases; the `vc_typeinfo` and `vc_new` files appear to be like this.
+The `/FA1` option appears to produce code which will not assemble in some cases; `vcr_typeinfo.cpp` seems to be this way.
+
+The replica `vcruntime.h` can be gently described as _sparse._

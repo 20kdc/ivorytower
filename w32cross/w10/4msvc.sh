@@ -9,7 +9,7 @@ mkdir -p "${SDK_MSVCPFX}"
 # We need a VCRuntime, and the SDK won't give us a real one.
 # Luckily, the VCRuntime is basically libgcc but for VC. It's not even the STL.
 # We *can* just write our own.
-cp -r notvcruntime/* "${SDK_MSVCPFX}"
+cp -r notvcrt/* "${SDK_MSVCPFX}"
 
 # The trick we use for vcruntime_exception.h is contingent on us using the STL headers.
 cp -r "${IVTW_DLPFX}stl16/stl/inc/"* "${SDK_MSVCPFX}/include/"
@@ -20,7 +20,7 @@ cp -r "${IVTW_DLPFX}stl16/stl/inc/"* "${SDK_MSVCPFX}/include/"
 # Note that we can only compile DLL versions.
 # We do compile debug versions, but they're half-hearted.
 for arch in x86 x64 arm64; do
-	echo "compiling false MSVC for: $arch"
+	echo "compiling: $arch"
 	mkdir -p "${SDK_MSVCPFX}/obj/$arch"
 	mkdir -p "${SDK_MSVCPFX}/lib/$arch"
 	# Pure imports are managed here.
