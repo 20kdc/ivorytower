@@ -13,15 +13,23 @@ PATH="$(readlink -f "${IVTW_SDKPFX}bin"):$PATH"
 rm -rf tests/bin
 mkdir -p tests/bin
 
-do_test_c() {
-	w32cross-cl /MD "tests/$1.c" "/Fetests/bin/$1.exe"
+do_test() {
+	# echo "$1"
+	test_file="$1"
+	shift
+	test_out="$1"
+	shift
+	if w32cross-cl /MD "$@" "/Fetests/bin/$test_out" "tests/$test_file" ; then
+		true
+	else
+		w32cross-cl /c /FA1 /MD "$@" "/Fatests/bin/$test_out.asm" "/Fotests/bin/$test_out.obj" "tests/$test_file"
+		false
+	fi
 }
 
-do_test_cpp() {
-	w32cross-cl /MD "tests/$1.cpp" "/Fetests/bin/$1.exe"
-}
-
-do_test_c hello
-do_test_c args
-do_test_cpp constructors
-do_test_cpp hellocpp
+do_test a_hello.c hello.exe
+do_test a_args.c args.exe
+do_test b_constructors.cpp constructors.exe
+do_test b_hellocpp.cpp hellocpp.exe
+do_test c_cxxdll.cpp cxxdll.dll /LD
+do_test c_cxxdllexe.cpp cxxdll.exe cxxdll.lib

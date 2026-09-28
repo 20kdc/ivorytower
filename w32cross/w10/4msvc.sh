@@ -26,25 +26,42 @@ for arch in x86 x64 arm64; do
 	ivtw_import_defs oldnames "$arch" "${SDK_MSVCPFX}/lib/$arch"
 
 	# Compile CRT0.
-	mkdir -p "${SDK_MSVCPFX}/obj/$arch/msvcrt"
-	mkdir -p "${SDK_MSVCPFX}/obj/$arch/msvcrtd"
-	# Build 'simpler' objects
-	for object in crt0_common crt0_gs crt0_app_atexit crt0_dll crt0_dll_nomain; do
-		# Versions are mapped here from flags to lib names.
-		# Trust me, it's better this way.
-		"${IVTW_CL}-$arch" /c /MD "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt/${object}.obj" "${SDK_MSVCPFX}/src/${object}.c"
-		"${IVTW_CL}-$arch" /c /MDd "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrtd/${object}.obj" "${SDK_MSVCPFX}/src/${object}.c"
-	done
-	for object in crt0_exe_con crt0_exe_gui; do
-		"${IVTW_CL}-$arch" /c /MD "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt/${object}a.obj" "${SDK_MSVCPFX}/src/${object}.c"
-		"${IVTW_CL}-$arch" /c /MD /D_UNICODE "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt/${object}w.obj" "${SDK_MSVCPFX}/src/${object}.c"
-		"${IVTW_CL}-$arch" /c /MDd "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrtd/${object}a.obj" "${SDK_MSVCPFX}/src/${object}.c"
-		"${IVTW_CL}-$arch" /c /MDd /D_UNICODE "/Fo${SDK_MSVCPFX}/obj/$arch/msvcrtd/${object}w.obj" "${SDK_MSVCPFX}/src/${object}.c"
+	for debug in "" "d"; do
+		# echo "dbg $debug"
+		mkdir -p "${SDK_MSVCPFX}/obj/$arch/msvcrt${debug}"
+		# Build 'simpler' objects
+		for object in crt0_common crt0_gs crt0_app_atexit crt0_dll crt0_dll_nomain; do
+			# Versions are mapped here from flags to lib names.
+			# Trust me, it's better this way.
+			"${IVTW_CL}-$arch" /c "/MD${debug}" \
+			"/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt${debug}/${object}.obj" \
+			   "${SDK_MSVCPFX}/src/${object}.c"
+		done
+		# Dual-mode objects (Unicode and not)
+		for object in crt0_exe_con crt0_exe_gui; do
+			"${IVTW_CL}-$arch" /c "/MD${debug}" \
+			"/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt${debug}/${object}a.obj" \
+			   "${SDK_MSVCPFX}/src/${object}.c"
+			"${IVTW_CL}-$arch" /c "/MD${debug}" /D_UNICODE \
+			"/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt${debug}/${object}w.obj" \
+			   "${SDK_MSVCPFX}/src/${object}.c"
+		done
+		"${IVTW_LIB}" "/machine:$arch" \
+			 "${SDK_MSVCPFX}/obj/$arch/msvcrt${debug}/"*.obj \
+		"/out:${SDK_MSVCPFX}/lib/$arch/msvcrt${debug}.lib"
 	done
 
-	# Build C link libraries.
-	for version in msvcrt msvcrtd; do
-		"${IVTW_LIB}" "/machine:$arch" "${SDK_MSVCPFX}/obj/$arch/$version/"* "/out:${SDK_MSVCPFX}/lib/$arch/$version.lib"
+	# Build VCRuntime supplement.
+	# This is NOT CRT0, this is C++ stuff.
+	# A lot of this involves very finicky symbols, so we get assembly here.
+	mkdir -p "${SDK_MSVCPFX}/obj/$arch/vcruntime"
+	for object in vcr_typeinfo vcr_new; do
+		# Versions are mapped here from flags to lib names.
+		# Trust me, it's better this way.
+		"${IVTW_CL}-$arch" /c /FA1 /MD \
+		"/Fo${SDK_MSVCPFX}/obj/$arch/vcruntime/${object}.obj" \
+		"/Fa${SDK_MSVCPFX}/obj/$arch/vcruntime/${object}.asm" \
+		   "${SDK_MSVCPFX}/src/${object}.cpp"
 	done
 
 	# Merge VCRuntime libraries to create the one that's needed.
@@ -52,6 +69,7 @@ for arch in x86 x64 arm64; do
 	"${IVTW_LIB}" "/machine:$arch" \
 	"${SDK_MSVCPFX}/lib/$arch/vcruntime140.lib" \
 	"${SDK_MSVCPFX}/lib/$arch/vcruntime140_threads.lib" \
+	"${SDK_MSVCPFX}/obj/$arch/vcruntime/"*.obj \
 	"/out:${SDK_MSVCPFX}/lib/$arch/vcruntime.lib"
 
 	# Build the C++ link library. Note we can't build debug libs, as we don't have the defs for those STLs.

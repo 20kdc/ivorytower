@@ -1,0 +1,2 @@
+clang-cl-18
+--target=i686-windows-gnu

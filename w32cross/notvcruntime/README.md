@@ -2,11 +2,13 @@
 
 'NotVCRuntime' is for a clean 'fix errors until it works' implementation of:
 
-* `vcruntime` and eventually `concrt` headers
+* _Headers for_ `vcruntime` and eventually `concrt`.
 	* The goals of the `concrt` headers will primarily be whatever makes STL compilation happy.
-	* This does mean it has to partially decode `type_info`. Luckily, `clang-cl` is a `type_info` oracle.
 * CRT initialization/shutdown code.
 	* VS 2015+ calls this `msvcrt`, although obviously this name meant something different in pre-UCRT times. (The original `msvcrt` is used to this day by MinGW, as it's a reliable cross-vendor source for `malloc`/`free`.)
+* Any 'CRT0 VCRuntime' stuff.
+
+It is **not** intended to reimplement VCRuntime itself. If you really need a non-Microsoft version of those DLLs, consider Wine's LGPL vcruntime140 and ucrtbase.
 
 ## Useful Reference Material
 
@@ -27,3 +29,5 @@
 	* 2. There's a loader lock, so we can treat this as 'thread-safe-ish'.
 	* 3. Destructors are UNSAFE TO RUN unless we are being unloaded dynamically.
 	* 4. The CRT entrypoint (*** THIS IS US ***) needs to call C++ constructors/destructors.
+* `type_info`:
+	* <https://learn.microsoft.com/en-us/windows/win32/memory/stdtypeinfodestroylist>
