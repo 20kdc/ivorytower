@@ -20,7 +20,6 @@
 #define _get_t_winmain_command_line _get_narrow_winmain_command_line
 #endif
 
-// TODO: This is horrible. You know it's horrible. I know it's horrible.
 void _tWinMainCRTStartup() {
 	_set_app_type(_crt_gui_app);
 	__NOTVCRUNTIME_init();

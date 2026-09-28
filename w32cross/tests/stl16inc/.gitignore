@@ -1,0 +1,5 @@
+# ReactOS has their own version of this.
+# Since it's MIT; and since ReactOS seemingly inlined an entire UCRT source tree... somehow;
+#  ReactOS stuff is not to be used in this (Unlicense) code.
+# But it, like the STL, is good testing fodder.
+internal_shared.h

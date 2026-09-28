@@ -24,7 +24,7 @@
 #define _ARM64_
 #endif
 #else
-#error "crtdefs.h"
+#error "Unknown machine."
 #endif
 
 #include_next <winnt.h>

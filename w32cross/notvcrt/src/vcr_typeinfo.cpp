@@ -17,7 +17,7 @@ void __type_info_root_node_destructor() {
 }
 
 #pragma section(".CRT$XTY", read)
-_CRTALLOC(".CRT$XTY") static _PVFV __type_info_root_node_destructor_ptr = { __type_info_root_node_destructor };
+__declspec(allocate(".CRT$XTY")) static _PVFV __type_info_root_node_destructor_ptr = { __type_info_root_node_destructor };
 
 // I'm not sure why, but Clang is really deathly afraid of emitting "??_7type_info@@6B@".
 // Placing this here forces it to properly link to itself.

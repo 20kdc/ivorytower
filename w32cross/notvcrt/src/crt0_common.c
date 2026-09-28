@@ -16,6 +16,8 @@
 
 #pragma comment(linker, "/merge:.CRT=.rdata")
 
+#define _CRTALLOC(s) __declspec(allocate(s))
+
 /* C init */
 #pragma section(".CRT$XIA", read)
 _CRTALLOC(".CRT$XIA") _PIFV __xi_a[1];

@@ -26,7 +26,8 @@ do_test() {
 }
 
 do_test a_hello.c hello.exe
-do_test a_args.c args.exe
+do_test a_args.c args_a.exe
+do_test a_args.c args_w.exe /D_UNICODE
 do_test b_constructors.cpp constructors.exe
 do_test b_hellocpp.cpp hellocpp.exe
 do_test c_cxxdll.cpp cxxdll.dll /LD
