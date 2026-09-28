@@ -29,7 +29,11 @@ connect() {
 	cat <<EOF > "${IVTW_SDKPFX}bin/w32cross-$2"
 #!/bin/sh -e
 # W32Cross-generated tool configuration file.
-W32CROSS_SDKROOT="\$(dirname "\$(dirname "\$(readlink -f "\$0")")")"
+W32CROSS_BINDIR="\$(dirname "\$(readlink -f "\$0")")"
+# -fuse-ld=w32cross-link won't work if Clang can't find w32cross-link.
+export PATH="$W32CROSS_BINDIR:$PATH"
+W32CROSS_SDKROOT="\$(dirname "\$W32CROSS_BINDIR")"
+# echo "$PATH"
 # echo "W32CROSS_SDKROOT: \$W32CROSS_SDKROOT"
 exec "$ivtw_find_command_result" $3 "\$@"
 EOF

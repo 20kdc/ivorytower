@@ -26,6 +26,7 @@ setupcore = executable('setupcore',
 	'src/setupcore/z_box.cpp',
 	'src/setupcore/z_mingw.cpp',
 	'src/setupcore/z_osxcross.cpp',
+	'src/setupcore/z_w32cross.cpp',
 	link_with: [
 		lib_iblis
 	],
