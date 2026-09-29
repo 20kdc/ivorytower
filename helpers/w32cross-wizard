@@ -1,0 +1,39 @@
+#!/bin/sh -e
+
+ITSETUP_OXW_DIR="`readlink -e "$0"`"
+ITSETUP_OXW_DIR="`dirname $ITSETUP_OXW_DIR`"
+ITSETUP_OXW_DIR="`dirname $ITSETUP_OXW_DIR`"
+
+cd "$ITSETUP_OXW_DIR"
+
+W32CROSS_SDKID="$1"
+shift
+
+# do we already have this setup?
+if [ -e "w32cross/sdk_$W32CROSS_SDKID/bin/w32cross-link" ]; then
+	exit 0
+fi
+
+echo ""
+echo "w32cross SDK $W32CROSS_SDKID is not installed!"
+echo
+w32cross/disclaimer.sh
+echo
+echo "in order to continue, type 'accept'"
+echo "(alternatively, you may cancel now)"
+echo ""
+if [ "$UNATTENDED" = "1" ]; then
+	echo "!!! UNATTENDED is set - assuming OK !!!"
+else
+	echo -n "> "
+	read accept_bs
+	if [ "$accept_bs" = "accept" ]; then
+		break
+	else
+		echo "declined automatic installation"
+		exit 1
+	fi
+fi
+
+cd w32cross
+./build.sh

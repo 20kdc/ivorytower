@@ -32,3 +32,5 @@ setupcore = executable('setupcore',
 	],
 	include_directories: include_directories('src')
 )
+
+test('test_realpath', executable('test_realpath', 'src/tests/realpath.cpp', link_with: [lib_iblis], include_directories: include_directories('src')))

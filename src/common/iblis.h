@@ -24,6 +24,9 @@ namespace iblis {
 
 	// Runs a command, returns exit status.
 	int runCmd(const std::vector<std::string> & argv, const Environ & environ = Environ::readProcess());
+	// Canonicalizes a path. This implements a 'graceful path collapse' algorithm and thus cannot fail.
+	// However, use with extreme caution; absolute paths can be brittle if the user prefers symlinks for organizational purposes.
+	std::string realPath(const std::string & path);
 	// Reads a file to a series of lines.
 	// Returns empty list on error (would return an empty string if the file is empty)
 	std::vector<std::string> readFile(const std::string & path);
@@ -58,6 +61,7 @@ namespace iblis {
 		std::string itsetupDir;
 		std::string helper(const char * name);
 		std::string osxcrossBinLink();
+		std::string w32crossBinLink();
 	};
 	extern Subsystem<HelperSys> helperSys;
 

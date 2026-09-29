@@ -1,3 +1,4 @@
+#include <libgen.h>
 #include <alloca.h>
 #include <stdio.h>
 #include <string.h>
@@ -72,6 +73,45 @@ int iblis::runCmd(const std::vector<std::string> & argv, const Environ & envp) {
 	}
 }
 
+std::string iblis::realPath(const std::string & path) {
+	std::string left = path;
+	std::string right = "";
+	while (true) {
+		if (left == "" || left == ".") {
+			char * cwd = get_current_dir_name();
+			if (!cwd) {
+				IBLIS_WARN("get_current_dir_name failed");
+			} else {
+				left = cwd;
+				free(cwd);
+			}
+			return left + right;
+		} else if (left == "/") {
+			// the path was already absolute to begin with
+			return path;
+		}
+		char *  resolve = realpath(left.c_str(), nullptr);
+		if (!resolve) {
+			char * buf_dirname = strdup(left.c_str());
+			char * buf_basename = strdup(left.c_str());
+			if ((!buf_dirname) || (!buf_basename)) {
+				IBLIS_WARN("strdup failed");
+				abort();
+			}
+			std::string res_dirname = dirname(buf_dirname);
+			std::string res_basename = basename(buf_basename);
+			free(buf_dirname);
+			free(buf_basename);
+			left = res_dirname;
+			right = "/" + res_basename + right;
+		} else {
+			left = resolve;
+			free(resolve);
+			return left + right;
+		}
+	}
+}
+
 std::vector<std::string> iblis::readFile(const std::string & path) {
 	std::vector<std::string> data;
 	FILE * f = fopen(path.c_str(), "rb");
@@ -127,6 +167,10 @@ std::string iblis::HelperSys::osxcrossBinLink() {
 	// A symlink is placed here. That symlink points to osxcross/target/bin OR potentially to something like /usr/local/bin.
 	// This allows portable osxcross installs and some hypothetical future global osxcross install to be used.
 	return itsetupDir + "/osxcross_bin";
+}
+
+std::string iblis::HelperSys::w32crossBinLink() {
+	return itsetupDir + "/w32cross/sdk_w10/bin";
 }
 
 Subsystem<HelperSys> iblis::helperSys;
