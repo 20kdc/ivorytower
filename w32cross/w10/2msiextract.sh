@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+W32CROSS_SDKID=w10
+
 . common/cbase.sh
 
 sdk_isoextract
@@ -29,6 +31,9 @@ msiextract "${IVTW_SDKPFX}build/isoextract/Installers/Windows SDK Desktop Libs x
 msiextract "${IVTW_SDKPFX}build/isoextract/Installers/Universal CRT Headers Libraries and Sources-x86_en-us.msi" -C "${IVTW_SDKPFX}build/msiextract"
 msiextract "${IVTW_SDKPFX}build/isoextract/Installers/Universal CRT Redistributable-x86_en-us.msi" -C "${IVTW_SDKPFX}build/msiextract"
 
+# 'liability reasons'
+msiextract "${IVTW_SDKPFX}build/isoextract/Installers/Windows SDK EULA-x86_en-us.msi" -C "${IVTW_SDKPFX}build/msiextract"
+
 # So a problem here is SDK layout.
 # In short, LLVM really, REALLY wants us to give it an SDK with the 'proper layout'.
 # /winsysroot is set to Program Files, which means we get the space-containing "Windows Kits" directory involved.
@@ -36,6 +41,9 @@ msiextract "${IVTW_SDKPFX}build/isoextract/Installers/Universal CRT Redistributa
 # But we definitely need to tell LLVM we are using UCRT...
 # We will have to live with what LLVM wants us to do here, as much as I hate it, but we'll provide alternate arrangements.
 mv -T "${IVTW_SDKPFX}build/msiextract/Program Files/Windows Kits" "${IVTW_SDKPFX}Windows Kits"
+
+# Setup a consistent 'Licenses' directory without altering it in any way.
+ln -s "Windows Kits/10/Licenses/10.0.19041.0" "${IVTW_SDKPFX}licenses"
 
 # clean up nicely
 rm -rf "${IVTW_SDKPFX}build/msiextract" "${IVTW_SDKPFX}build/isoextract"

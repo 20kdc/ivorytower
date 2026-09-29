@@ -16,6 +16,16 @@ Some headers come from MinGW-w64 (see `../thirdparty/mingw-w64-headers`) and are
 * `setjmp.h`: `setjmp`/`longjmp`/`jmp_buf`
 * `setjmpex.h`: Fancy MS extension support header
 
+## Managing External Header Patches
+
+Patches to MinGW headers are managed through `notvcrt/ext/sync.sh`.
+
+If a patched file does not exist, it creates it; otherwise it syncs changes back to the patches.
+
+This allows the patches to be what's stored in Git while offering an easy development experience.
+
+**The `build.sh` script will wipe these patches.** Invoke `w10/4msvc.sh` directly.
+
 ## Useful Reference Material
 
 * <https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-140>

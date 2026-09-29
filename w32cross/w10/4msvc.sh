@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+W32CROSS_SDKID=w10
+
 . common/cbase.sh
 
 # Always regenerate this directory to prevent clobbering.
@@ -8,13 +10,15 @@ mkdir -p "${SDK_MSVCPFX}"
 
 # We need a VCRuntime, and the SDK won't give us a real one.
 # Luckily, the VCRuntime is basically libgcc but for VC. It's not even the STL.
-# We *can* just write our own.
+# We *can* just write our own, more or less.
 notvcrt/ext/sync.sh
 cp -r notvcrt/include notvcrt/src "${SDK_MSVCPFX}"
 cp -r notvcrt/include_ext/* "${SDK_MSVCPFX}include"
 
-# The trick we use for vcruntime_exception.h is contingent on us using the STL headers.
+# Setup STL.
 cp -r "${IVTW_DLPFX}stl16/stl/inc/"* "${SDK_MSVCPFX}/include/"
+cp "${IVTW_DLPFX}stl16/LICENSE.txt" "${IVTW_SDKPFX}/licenses/MicrosoftSTL_LICENSE.txt"
+cp "${IVTW_DLPFX}stl16/NOTICE.txt" "${IVTW_SDKPFX}/licenses/MicrosoftSTL_NOTICE.txt"
 
 # -- FALSE MSVC COMPILATION STARTS HERE --
 

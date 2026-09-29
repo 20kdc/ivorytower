@@ -1,5 +1,7 @@
 #!/bin/sh
 
+W32CROSS_SDKID=w10
+
 . common/cbase.sh
 
 # find which caused what

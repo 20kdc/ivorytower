@@ -6,11 +6,11 @@ ITSETUP_OXW_DIR="`dirname $ITSETUP_OXW_DIR`"
 
 cd "$ITSETUP_OXW_DIR"
 
-W32CROSS_SDKID="$1"
+export W32CROSS_SDKID="$1"
 shift
 
 # do we already have this setup?
-if [ -e "w32cross/sdk_$W32CROSS_SDKID/bin/w32cross-link" ]; then
+if [ -e "w32cross/sdk_$W32CROSS_SDKID/ready" ]; then
 	exit 0
 fi
 
