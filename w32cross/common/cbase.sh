@@ -27,6 +27,7 @@ IVTW_DLPFX="downloaded/"
 IVTW_SDKPFX="sdk_$W32CROSS_SDKID/"
 
 IVTW_CL="${IVTW_SDKPFX}bin/w32cross-cl"
+IVTW_CLANG_X64="${IVTW_SDKPFX}bin/w32cross-clang++-x64"
 IVTW_LIB="${IVTW_SDKPFX}bin/w32cross-lib"
 
 # -- Core Utilities --
@@ -100,16 +101,3 @@ ivtw_vcarch_clangtarget() {
 # -- The SDK --
 
 . "$W32CROSS_SDKID/0sdkdef.sh"
-
-# -- SDK-derived IVTW variables --
-
-# Note: "/winsysroot X" works for clang-cl but not for lld-link.
-# "/winsysroot:X" will result in prefixing ":" to everything.
-
-IVTW_CL_ARGS="/winsysroot \"\$W32CROSS_SDKROOT/fakewinsysroot\""
-IVTW_CLANG_ARGS=""
-IVTW_ML_ARGS=""
-IVTW_LINK_ARGS=""
-IVTW_RC_ARGS=""
-IVTW_CVTRES_ARGS=""
-IVTW_LIB_ARGS=""

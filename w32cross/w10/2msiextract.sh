@@ -67,6 +67,10 @@ mv -T "$kitroot/Source/$kitver/ucrt" "${IVTW_SDKPFX}ucrt/src/ucrt"
 rmdir "$kitroot/Source/$kitver"
 rmdir "$kitroot/Source"
 
+# This file gets in the way of Clang and we need it out of the way.
+# We can always put in our own sensible one later and make it include this _after_ protecting against its 'quirks'.
+mv "${IVTW_SDKPFX}ucrt/include/stddef.h" "${IVTW_SDKPFX}ucrt/include/__ucrt_stddef.h"
+
 # cppwinrt
 
 mv -T "$kitroot/Include/$kitver/cppwinrt" "${IVTW_SDKPFX}cppwinrt"

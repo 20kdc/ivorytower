@@ -52,11 +52,15 @@ xlink_compat() {
 # This means that we ABSOLUTELY need Meson to go through w32cross-link.
 # Between this and its detection logic re: link and clang-cl, bin_compat is vital to running things.
 ivtw_find_command "lld-link"
+
 OUR_FUSELD="-fuse-ld=$ivtw_find_command_result"
+# Note: "/winsysroot X" works for clang-cl but not for lld-link.
+# "/winsysroot:X" will result in prefixing ":" to everything.
+OUR_WINSYSROOT="/winsysroot \"\$W32CROSS_SDKROOT/fakewinsysroot\""
 
 # -- clang-cl --
 
-connect clang-cl clang-cl "$OUR_FUSELD $IVTW_CL_ARGS"
+connect clang-cl clang-cl "$OUR_FUSELD $OUR_WINSYSROOT"
 xlink clang-cl cl
 xlink_compat "cl" "../bin/w32cross-cl"
 
@@ -64,7 +68,7 @@ xlink_compat "cl" "../bin/w32cross-cl"
 for arch in $IVTW_VCARCHS; do
 	ivtw_vcarch_clangtarget "$arch"
 	for clanginess in "" "clang-"; do
-		connect clang-cl "${clanginess}cl-${arch}" "$OUR_FUSELD --target=$ivtw_vcarch_clangtarget_result $IVTW_CL_ARGS"
+		connect clang-cl "${clanginess}cl-${arch}" "$OUR_FUSELD --target=$ivtw_vcarch_clangtarget_result $OUR_WINSYSROOT"
 		xlink_compat "${arch}/${clanginess}cl" "../../bin/w32cross-${clanginess}cl-${arch}"
 	done
 done
@@ -87,13 +91,23 @@ ln -s "../../../../../stl/lib" "${IVTW_SDKPFX}fakewinsysroot/VC/Tools/MSVC/atlmf
 
 # -- clang --
 
-connect clang clang "$OUR_FUSELD $IVTW_CLANG_ARGS"
-xlink_compat clang ../bin/w32cross-clang
+OUR_CLANGARGS="$OUR_FUSELD -isystem \"\${W32CROSS_SDKROOT}/stl/include\" -isystem \"\${W32CROSS_SDKROOT}/ucrt/include\" -isystem \"\${W32CROSS_SDKROOT}/wsdk/include\""
+# https://github.com/llvm/llvm-project/blob/642daaf27dd0cda7127d35bad1a3fe705a267918/clang/lib/Driver/ToolChains/MSVC.cpp#L125
+# This *really* messes things up for no good reason. Luckily, we only support one configuration.
+# So we can choose to just solely support that one configuration.
+OUR_CLANGARGS="$OUR_CLANGARGS -fms-runtime-lib=dll -nostartfiles -Xlinker -defaultlib:msvcrt -Xlinker -defaultlib:msvcprt -Xlinker -defaultlib:oldnames"
 
-for arch in $IVTW_VCARCHS; do
-	ivtw_vcarch_clangtarget "$arch"
-	connect clang "clang-${arch}" "$OUR_FUSELD --target=$ivtw_vcarch_clangtarget_result $IVTW_CLANG_ARGS"
-	xlink_compat "${arch}/clang" "../../bin/w32cross-clang-${arch}"
+for plusplus in "" "++"; do
+	connect "clang${plusplus}" "clang${plusplus}" "$OUR_CLANGARGS"
+	xlink_compat "clang${plusplus}" "../bin/w32cross-clang${plusplus}"
+
+	for arch in $IVTW_VCARCHS; do
+		OUR_ARCHCLANGARGS="$OUR_CLANGARGS -L \"\${W32CROSS_SDKROOT}/stl/lib/$arch\" -L \"\${W32CROSS_SDKROOT}/ucrt/lib/$arch\" -L \"\${W32CROSS_SDKROOT}/wsdk/lib/$arch\""
+
+		ivtw_vcarch_clangtarget "$arch"
+		connect "clang${plusplus}" "clang${plusplus}-${arch}" "$OUR_ARCHCLANGARGS --target=$ivtw_vcarch_clangtarget_result"
+		xlink_compat "${arch}/clang${plusplus}" "../../bin/w32cross-clang${plusplus}-${arch}"
+	done
 done
 
 # -- llvm assorted --
