@@ -11,6 +11,13 @@ This seems to be the intended approach by Meson, and it does have the key advant
 	* Other tools also wrapped for consistency and possible also options nudging by w32cross.
 * `bin_compat/`: friendlier to compiler autodetectors (no `w32cross-` prefix, architecture-named dirs)
 * `wbin/ARCH/`: things like `dxc.exe`
+* `etc/`: Y'know, stuff.
+	* `ready`: Presence indicates readiness.
+	* `packages`: List of SDK 'packages'.
+	* `clang-args`: Metadata for setting up Clang correctly without using the wrapper scripts. Has `${W32CROSS_SDKROOT}` substitution.
+		* `any.lst`: Base list. Not parameterized with architecture. Does not contain `lib` directories.
+		* `ARCH.lst`: List for a given architecture. Contains Clang target. Non-linking, does not contain `lib` directories.
+		* `ARCH.ld.lst`: List for a given architecture. Contains Clang target and `lib` directories.
 * `build/`: Build internal files that can be safely removed.
 * `licenses/`: licenses
 * `stl/`: STL license, `include/` and `lib/`.
@@ -32,6 +39,7 @@ This seems to be the intended approach by Meson, and it does have the key advant
 * `cppwinrt/`: It's here, I guess.
 * `redist/`: Redistributables.
 * `fakewinsysroot/`: Makes `clang-cl` work.
+* `activate`: Sourcable. Puts `bin/` into PATH.
 
 ## Stability Concerns
 
@@ -47,3 +55,9 @@ The following paths **must be _absolutely stable_** because `clangd` will work b
 * `wsdk/include`, `wsdk/lib/x86`, `wsdk/lib/x64`, `wsdk/lib/arm64`
 * `ucrt/include`, `ucrt/lib/x86`, `ucrt/lib/x64`, `ucrt/lib/arm64`
 * `stl/include`, `stl/lib/x86`, `stl/lib/x64`, `stl/lib/arm64`
+
+The following paths are the 'external interface' intended for use by enclosures to produce build instructions. If you're seeing this, they're stable.
+
+* `etc/packages`
+* `etc/clang-args/*`
+* `etc/ready`

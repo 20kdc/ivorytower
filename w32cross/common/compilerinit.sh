@@ -4,6 +4,7 @@
 . common/cbase.sh
 
 mkdir -p "${IVTW_SDKPFX}bin"
+mkdir -p "${IVTW_SDKPFX}etc"
 
 # clang-cl is only linked by version on at least Ubuntu 24.04 for clang-cl-18.
 # We have to thus find by version.
@@ -89,23 +90,70 @@ ln -s "../../../../ucrt/lib" "${IVTW_SDKPFX}fakewinsysroot/VC/Tools/MSVC/lib"
 ln -s "../../../../../stl/include" "${IVTW_SDKPFX}fakewinsysroot/VC/Tools/MSVC/atlmfc/include"
 ln -s "../../../../../stl/lib" "${IVTW_SDKPFX}fakewinsysroot/VC/Tools/MSVC/atlmfc/lib"
 
+# -- clang-args --
+
+gen_clangargs_lst_common() {
+	echo "$OUR_FUSELD"
+	for package in $SDK_PACKAGES; do
+		echo "-isystem"
+		echo "\${W32CROSS_SDKROOT}/$package/include"
+	done
+	echo "-fms-runtime-lib=dll"
+}
+gen_clangargs_lst_arch() {
+	ivtw_vcarch_clangtarget "$1"
+	echo "--target=$ivtw_vcarch_clangtarget_result"
+	gen_clangargs_lst_common
+}
+gen_clangargs_lst_ld() {
+	gen_clangargs_lst_arch "$1"
+	# https://github.com/llvm/llvm-project/blob/642daaf27dd0cda7127d35bad1a3fe705a267918/clang/lib/Driver/ToolChains/MSVC.cpp#L125
+	# This *really* messes things up for no good reason. Luckily, we only support one configuration.
+	# So we can choose to just solely support that one configuration.
+	echo "-nostartfiles"
+	echo "-Wl,-defaultlib:msvcrt"
+	echo "-Wl,-defaultlib:msvcprt"
+	echo "-Wl,-defaultlib:oldnames"
+	for package in $SDK_PACKAGES; do
+		echo "-L\${W32CROSS_SDKROOT}/$package/lib/$1"
+	done
+}
+
+rm -f "${IVTW_SDKPFX}etc/packages"
+for package in $SDK_PACKAGES; do
+	echo "$package" >> "${IVTW_SDKPFX}etc/packages"
+done
+
+mkdir -p "${IVTW_SDKPFX}etc/clang-args"
+gen_clangargs_lst_common > "${IVTW_SDKPFX}etc/clang-args/any.lst"
+
+for arch in $IVTW_VCARCHS; do
+	gen_clangargs_lst_arch "$arch" > "${IVTW_SDKPFX}etc/clang-args/$arch.lst"
+	gen_clangargs_lst_ld "$arch" > "${IVTW_SDKPFX}etc/clang-args/$arch.ld.lst"
+done
+
 # -- clang --
 
-OUR_CLANGARGS="$OUR_FUSELD -isystem \"\${W32CROSS_SDKROOT}/stl/include\" -isystem \"\${W32CROSS_SDKROOT}/ucrt/include\" -isystem \"\${W32CROSS_SDKROOT}/wsdk/include\""
-# https://github.com/llvm/llvm-project/blob/642daaf27dd0cda7127d35bad1a3fe705a267918/clang/lib/Driver/ToolChains/MSVC.cpp#L125
-# This *really* messes things up for no good reason. Luckily, we only support one configuration.
-# So we can choose to just solely support that one configuration.
-OUR_CLANGARGS="$OUR_CLANGARGS -fms-runtime-lib=dll -nostartfiles -Xlinker -defaultlib:msvcrt -Xlinker -defaultlib:msvcprt -Xlinker -defaultlib:oldnames"
+OUR_CLANGARGS=""
+
+set_our_clangargs() {
+	OUR_CLANGARGS=""
+	while read line; do
+		OUR_CLANGARGS="$OUR_CLANGARGS \"$line\""
+	done
+}
+
 
 for plusplus in "" "++"; do
+	set_our_clangargs < "${IVTW_SDKPFX}etc/clang-args/any.lst"
 	connect "clang${plusplus}" "clang${plusplus}" "$OUR_CLANGARGS"
 	xlink_compat "clang${plusplus}" "../bin/w32cross-clang${plusplus}"
 
 	for arch in $IVTW_VCARCHS; do
-		OUR_ARCHCLANGARGS="$OUR_CLANGARGS -L \"\${W32CROSS_SDKROOT}/stl/lib/$arch\" -L \"\${W32CROSS_SDKROOT}/ucrt/lib/$arch\" -L \"\${W32CROSS_SDKROOT}/wsdk/lib/$arch\""
+		set_our_clangargs < "${IVTW_SDKPFX}etc/clang-args/$arch.ld.lst"
 
 		ivtw_vcarch_clangtarget "$arch"
-		connect "clang${plusplus}" "clang${plusplus}-${arch}" "$OUR_ARCHCLANGARGS --target=$ivtw_vcarch_clangtarget_result"
+		connect "clang${plusplus}" "clang${plusplus}-${arch}" "$OUR_CLANGARGS"
 		xlink_compat "${arch}/clang${plusplus}" "../../bin/w32cross-clang${plusplus}-${arch}"
 	done
 done

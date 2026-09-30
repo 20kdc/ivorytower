@@ -7,6 +7,8 @@ STL16_PATH="${IVTW_DLPFX}stl16"
 STL16_URL="https://github.com/microsoft/STL/"
 STL16_BRANCH="vs-2019-16.10"
 
+SDK_PACKAGES="stl ucrt wsdk"
+
 sdk_disclaimer() {
 	echo "This SDK downloads:"
 	ivtw_disclaimer_dl "$ISO_PATH" "$ISO_URL"

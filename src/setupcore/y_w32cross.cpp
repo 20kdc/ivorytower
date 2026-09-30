@@ -12,7 +12,26 @@ W32CrossSys * W32CrossSys::build(const char * sdk) {
 		return nullptr;
 	}
 	if (iblis::runCmd({helper->helper("w32cross-wizard"), sdk}) == 0) {
-		return new W32CrossSys(helper->w32crossSDK(sdk) + "/");
+		return new W32CrossSys(helper->w32crossSDK(sdk));
 	}
 	return nullptr;
+}
+
+std::vector<std::string> W32CrossSys::getClangArgs(const std::string & config) {
+	std::vector<std::string> unfiltered = readFile(prefix + "/etc/clang-args/" + config + ".lst");
+	std::vector<std::string> filtered;
+	for (auto path : unfiltered) {
+		std::string path2 = path;
+		size_t pos = 0;
+		while (true) {
+			auto res = path2.find("${W32CROSS_SDKROOT}", pos);
+			if (res == std::string::npos)
+				break;
+			path2 = path2.replace(res, 19, prefix);
+			pos = res + prefix.length();
+		}
+		if (!path2.empty())
+			filtered.push_back(path2);
+	}
+	return filtered;
 }

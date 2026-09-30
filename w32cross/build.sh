@@ -21,6 +21,6 @@ common/compilerinit.sh
 sdk_build
 
 # This ensures w32cross-wizard *knows* the SDK is ready.
-cat <<EOF > "$IVTW_SDKPFX/ready"
+cat <<EOF > "$IVTW_SDKPFX/etc/ready"
 W32Cross $W32CROSS_SDKID SDK setup $(git describe --all --long || true) READY
 EOF

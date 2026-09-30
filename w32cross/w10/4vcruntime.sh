@@ -61,35 +61,31 @@ for arch in x86 x64 arm64; do
 	ivtw_import_defs oldnames "$arch" "$NOTVCRT_LIBDIR/$arch"
 
 	# Compile CRT0.
-	for debug in "" "d"; do
-		# echo "dbg $debug"
-		mkdir -p "$NOTVCRT_OBJDIR/$arch/msvcrt${debug}"
-		# Build 'simpler' objects
-		for object in crt0_common crt0_gs crt0_app_atexit crt0_dll crt0_dll_nomain; do
-			# Versions are mapped here from flags to lib names.
-			# Trust me, it's better this way.
-			"${IVTW_CL}-$arch" "$1" /c /O1 "/MD${debug}" \
-			"/Fo$NOTVCRT_OBJDIR/$arch/msvcrt${debug}/${object}.obj" \
-			   "$NOTVCRT_SRCDIR/${object}.c"
-		done
-		# Dual-mode objects (Unicode and not)
-		for object in crt0_exe_con crt0_exe_gui; do
-			"${IVTW_CL}-$arch" /c /O1 "/MD${debug}" \
-			"/Fo$NOTVCRT_OBJDIR/$arch/msvcrt${debug}/${object}a.obj" \
-			   "$NOTVCRT_SRCDIR/${object}.c"
-			"${IVTW_CL}-$arch" /c /O1 "/MD${debug}" /D_UNICODE \
-			"/Fo$NOTVCRT_OBJDIR/$arch/msvcrt${debug}/${object}w.obj" \
-			   "$NOTVCRT_SRCDIR/${object}.c"
-		done
-		"${IVTW_LIB}" "/machine:$arch" \
-			 "$NOTVCRT_OBJDIR/$arch/msvcrt${debug}/"*.obj \
-		"/out:$NOTVCRT_LIBDIR/$arch/msvcrt${debug}.lib"
+	mkdir -p "$NOTVCRT_OBJDIR/$arch/vcruntime"
+
+	# Build 'simpler' objects
+	# Notably, this builds the 'ANSI' versions of crt0_exe.
+	# The Unicode versions are built in the next pass.
+	for object in \
+	crt0_common crt0_gs crt0_app_atexit crt0_dll crt0_dll_nomain \
+	crt0_exe_con crt0_exe_gui \
+	; do
+		# Versions are mapped here from flags to lib names.
+		# Trust me, it's better this way.
+		"${IVTW_CL}-$arch" "$1" /c /O1 /MD \
+		"/Fo$NOTVCRT_OBJDIR/$arch/vcruntime/${object}.obj" \
+			"$NOTVCRT_SRCDIR/${object}.c"
+	done
+
+	# Unicode versions where relevant.
+	for object in crt0_exe_con crt0_exe_gui; do
+		"${IVTW_CL}-$arch" /c /O1 /MD /D_UNICODE \
+		"/Fo$NOTVCRT_OBJDIR/$arch/vcruntime/${object}_w.obj" \
+			"$NOTVCRT_SRCDIR/${object}.c"
 	done
 
 	# Build VCRuntime supplement.
-	# This is NOT CRT0, this is C++ stuff.
 	# Note: DO NOT USE /FA1 for actual build it breaks the compile :<
-	mkdir -p "$NOTVCRT_OBJDIR/$arch/vcruntime"
 	for object in \
 	vcr_typeinfo vcr_new_nothrow \
 	vcr_new1 vcr_new2 vcr_new3 vcr_new4 vcr_new5 vcr_new6 vcr_new7 vcr_new8 \
@@ -103,11 +99,14 @@ for arch in x86 x64 arm64; do
 		   "$NOTVCRT_SRCDIR/${object}.cpp"
 	done
 
-	# Merge VCRuntime libraries to create the one that's needed.
+	# Merge all libraries to create the One True Library.
+	# This merging strategy solves issues with defaultlib not propagating right.
+	# There's no real reason not to do this, since we don't have a static vcruntime anyway.
 	# We ignore vcruntime140_1 for now, we may never actually end up using it.
 	"${IVTW_LIB}" "/machine:$arch" \
+	"$NOTVCRT_LIBDIR/$arch/ucrt.lib" \
 	"$NOTVCRT_LIBDIR/$arch/vcruntime140.lib" \
 	"$NOTVCRT_LIBDIR/$arch/vcruntime140_threads.lib" \
 	"$NOTVCRT_OBJDIR/$arch/vcruntime/"*.obj \
-	"/out:$NOTVCRT_LIBDIR/$arch/vcruntime.lib"
+	"/out:$NOTVCRT_LIBDIR/$arch/msvcrt.lib"
 done

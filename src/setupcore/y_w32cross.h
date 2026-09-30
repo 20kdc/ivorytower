@@ -6,6 +6,7 @@ namespace iblis {
 		IBLIS_IMMOVABLE(W32CrossSys)
 		static W32CrossSys * build(const char * sdk);
 		std::string prefix;
+		std::vector<std::string> getClangArgs(const std::string & config);
 	private:
 		W32CrossSys(std::string prefix) : prefix(prefix) {}
 	};

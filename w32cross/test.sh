@@ -30,7 +30,7 @@ do_test() {
 		"$IVTW_CL" /c /FA1 /EHs /MD "/Fatests/bin_cl/$test_out.asm" "/Fotests/bin_cl/$test_out.obj" "tests/$test_file"
 		false
 	fi
-	"$IVTW_CLANG_X64" -fms-runtime-lib=dll -v $args_clang -o "tests/bin/$test_out" "tests/$test_file"
+	"$IVTW_CLANG_X64" -fms-runtime-lib=dll $args_clang -o "tests/bin/$test_out" "tests/$test_file"
 }
 
 do_test a_hello.c hello.exe "" ""
