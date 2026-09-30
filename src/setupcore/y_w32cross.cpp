@@ -12,11 +12,7 @@ W32CrossSys * W32CrossSys::build(const char * sdk) {
 		return nullptr;
 	}
 	if (iblis::runCmd({helper->helper("w32cross-wizard"), sdk}) == 0) {
-		return new W32CrossSys(helper->w32crossBinCompatLink() + "/");
+		return new W32CrossSys(helper->w32crossSDK(sdk) + "/");
 	}
 	return nullptr;
-}
-
-std::string W32CrossSys::toolPath(const std::string & tool) {
-	return prefix + tool;
 }

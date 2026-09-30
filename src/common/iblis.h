@@ -80,7 +80,7 @@ namespace iblis {
 		std::string itsetupDir;
 		std::string helper(const char * name);
 		std::string osxcrossBinLink();
-		std::string w32crossBinCompatLink();
+		std::string w32crossSDK(const char * sdk);
 	};
 	extern Subsystem<HelperSys> helperSys;
 
