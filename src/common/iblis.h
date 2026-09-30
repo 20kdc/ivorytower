@@ -34,22 +34,41 @@ namespace iblis {
 	bool writeFile(const std::string & path, const std::string & content);
 	void warn(const char * subsystem, const std::string & message);
 
+	// Template magic underlying Subsystem
+	class SubsystemFactory {
+	public:
+		virtual ~SubsystemFactory() {}
+		virtual void * build() = 0;
+	};
+
+	// Template magic underlying Subsystem
+	template <class L>
+	class LambdaSubsystemFactory : public SubsystemFactory {
+	public:
+		LambdaSubsystemFactory(L lambda) : lambda(lambda) {}
+		L lambda;
+		virtual void * build() { return lambda(); }
+	};
+
 	// A subsystem activates when requested by explicit reference.
 	template <class T>
 	class Subsystem {
 	public:
-		Subsystem() : content(nullptr) {}
+		template<typename... Params> Subsystem(Params ...params) : content(nullptr), builder(new LambdaSubsystemFactory([=] { return (T *) T::build(params...); })) {
+		}
 		~Subsystem() {
 			if (content)
 				delete content;
+			delete builder;
 		}
 		IBLIS_IMMOVABLE(Subsystem);
 		T * get() {
 			if (!content)
-				content = T::build();
+				content = (T *) builder->build();
 			return content;
 		}
 	private:
+		SubsystemFactory * builder;
 		T * content;
 	};
 
@@ -61,7 +80,7 @@ namespace iblis {
 		std::string itsetupDir;
 		std::string helper(const char * name);
 		std::string osxcrossBinLink();
-		std::string w32crossBinLink();
+		std::string w32crossBinCompatLink();
 	};
 	extern Subsystem<HelperSys> helperSys;
 

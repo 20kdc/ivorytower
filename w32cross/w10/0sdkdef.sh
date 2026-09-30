@@ -10,12 +10,13 @@ STL16_BRANCH="vs-2019-16.10"
 # For safety reasons, this is duplicated in 4msvc.sh for the rm -rf
 SDK_MSVCPFX="${IVTW_SDKPFX}VC/Tools/MSVC/"
 
-SDK_CL_ARGS="/winsysroot \"\$W32CROSS_SDKROOT\""
+SDK_CL_ARGS=""
+SDK_LINK_ARGS=""
 
 sdk_disclaimer() {
 	echo "This SDK downloads:"
-	echo " $ISO_PATH : $ISO_URL"
-	echo " $STL16_PATH : $STL16_URL ($STL16_BRANCH)"
+	ivtw_disclaimer_dl "$ISO_PATH" "$ISO_URL"
+	ivtw_disclaimer_dl "$STL16_PATH" "$STL16_URL ($STL16_BRANCH)"
 	echo "It requires, among other things:"
 	echo " clang-cl lld-link llvm-lib"
 	echo " 7z msiextract patch"

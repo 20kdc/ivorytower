@@ -32,20 +32,13 @@ const Machine Machine::wa64("wa64", &OS::w, &CPU::a64);
 
 const STLDisposition STLDisposition::q_default = [] {
 	STLDisposition result;
-	result.ivtName = "default",
-	result.compilerArgs.addCArgs = {};
-	result.compilerArgs.addCLinkArgs = {};
-	result.compilerArgs.addCppArgs = {};
-	result.compilerArgs.addCppLinkArgs = {};
+	result.ivtName = "default";
 	return result;
 }();
 
 const STLDisposition STLDisposition::q_static = [] {
 	STLDisposition result;
-	result.ivtName = "static",
-	result.compilerArgs.addCArgs = {};
-	result.compilerArgs.addCLinkArgs = {};
-	result.compilerArgs.addCppArgs = {};
+	result.ivtName = "static";
 	result.compilerArgs.addCppLinkArgs = {"-static-libstdc++"};
 	return result;
 }();
@@ -54,7 +47,6 @@ const STLDisposition STLDisposition::q_zero = [] {
 	STLDisposition result;
 	result.ivtName = "zero";
 	result.compilerArgs.addCArgs = {"-fno-exceptions"};
-	result.compilerArgs.addCLinkArgs = {};
 	result.compilerArgs.addCppArgs = {"-nostdinc++", "-fno-rtti", "-fno-exceptions"};
 	result.compilerArgs.addCppLinkArgs = {"-nostdlib++"};
 	result.compilerArgs.cppEh = "none";
@@ -67,9 +59,7 @@ const STLDisposition STLDisposition::q_zero = [] {
 const STLDisposition STLDisposition::q_staticW = [] {
 	STLDisposition result;
 	result.ivtName = "static",
-	result.compilerArgs.addCArgs = {};
 	result.compilerArgs.addCLinkArgs = {"-static-libgcc"};
-	result.compilerArgs.addCppArgs = {};
 	result.compilerArgs.addCppLinkArgs = {"-static-libstdc++", "-static-libgcc", "-l:libatomic.a"};
 	return result;
 }();
@@ -93,13 +83,13 @@ const STLDisposition STLDisposition::q_zeroL = [] {
 	result.ivtName = "zero";
 	result.hackCPPWithC = true;
 	result.compilerArgs.addCArgs = {"-fno-exceptions"};
-	result.compilerArgs.addCLinkArgs = {};
 	result.compilerArgs.addCppArgs = {"-fno-rtti", "-fno-exceptions"};
-	result.compilerArgs.addCppLinkArgs = {};
 	result.compilerArgs.cppEh = "none";
 	result.compilerArgs.cppRtti = "false";
 	return result;
 }();
+
+// Utilities
 
 void CompilerArgs::merge(const CompilerArgs & other) {
 	for (auto x = other.addCArgs.begin(); x < other.addCArgs.end(); x++)

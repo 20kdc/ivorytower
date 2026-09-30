@@ -169,8 +169,8 @@ std::string iblis::HelperSys::osxcrossBinLink() {
 	return itsetupDir + "/osxcross_bin";
 }
 
-std::string iblis::HelperSys::w32crossBinLink() {
-	return itsetupDir + "/w32cross/sdk_w10/bin";
+std::string iblis::HelperSys::w32crossBinCompatLink() {
+	return itsetupDir + "/w32cross/sdk_w10/bin_compat";
 }
 
 Subsystem<HelperSys> iblis::helperSys;

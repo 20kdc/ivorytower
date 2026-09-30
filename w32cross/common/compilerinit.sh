@@ -1,5 +1,6 @@
 #!/bin/sh -e
 
+# IVTW_CL_ARGS etc. come from here
 . common/cbase.sh
 
 mkdir -p "${IVTW_SDKPFX}bin"
@@ -39,23 +40,69 @@ exec "$ivtw_find_command_result" $3 "\$@"
 EOF
 	chmod +x "${IVTW_SDKPFX}bin/w32cross-$2"
 }
+# COMPATNAME PATH
+connect_compat() {
+	# Forced compiler autodetect without overrides sucks.
+	# See: https://github.com/mesonbuild/meson/blob/3f1673ae45b8d6beb1631a76e1def0e8fb85d9d8/mesonbuild/compilers/detect.py
+	# In order to dodge this, we provide the 'bin_compat' directory.
+	# This directory is less safe to put into PATH, but it makes build systems see what they want to see.
+	rm -f "${IVTW_SDKPFX}bin_compat/$1"
+	mkdir -p "$(dirname "${IVTW_SDKPFX}bin_compat/$1")"
+	ln -s "$2" "${IVTW_SDKPFX}bin_compat/$1"
+}
 
-connect clang-cl cl "-fuse-ld=w32cross-link $SDK_CL_ARGS"
+# First, find the -fuse-ld linker.
+# clang-cl pipelines linking-relevant sysroot stuff to the linker.
+# This is good, because setting a 'proper' value for -fuse-ld= would probably have undesirable consequences.
+# At the same time, Meson will invoke the linker independently (and with linker flags like /MACHINE).
+# This means that we ABSOLUTELY need Meson to go through w32cross-link.
+# Between this and its detection logic re: link and clang-cl, bin_compat is vital to running things.
+ivtw_find_command "lld-link"
+OUR_FUSELD="-fuse-ld=$ivtw_find_command_result"
+
+connect clang-cl cl "$OUR_FUSELD $IVTW_CL_ARGS"
+connect_compat "cl" "../bin/w32cross-cl"
+connect clang-cl clang-cl "$OUR_FUSELD $IVTW_CL_ARGS"
+connect_compat "clang-cl" "../bin/w32cross-clang-cl"
 
 # These wrappers use names consistent with the architecture names used throughout the SDK.
-connect clang-cl cl-x86 "-fuse-ld=w32cross-link --target=i686-windows-msvc $SDK_CL_ARGS"
-connect clang-cl cl-x64 "-fuse-ld=w32cross-link --target=x86_64-windows-msvc $SDK_CL_ARGS"
-connect clang-cl cl-arm64 "-fuse-ld=w32cross-link --target=aarch64-windows-msvc $SDK_CL_ARGS"
+connect clang-cl cl-x86 "$OUR_FUSELD --target=i686-windows-msvc $IVTW_CL_ARGS"
+connect_compat "x86/cl" "../../bin/w32cross-cl-x86"
+connect clang-cl cl-x64 "$OUR_FUSELD --target=x86_64-windows-msvc $IVTW_CL_ARGS"
+connect_compat "x64/cl" "../../bin/w32cross-cl-x64"
+connect clang-cl cl-arm64 "$OUR_FUSELD --target=aarch64-windows-msvc $IVTW_CL_ARGS"
+connect_compat "arm64/cl" "../../bin/w32cross-cl-arm64"
+connect clang-cl clang-cl-x86 "$OUR_FUSELD --target=i686-windows-msvc $IVTW_CL_ARGS"
+connect_compat "x86/clang-cl" "../../bin/w32cross-clang-cl-x86"
+connect clang-cl clang-cl-x64 "$OUR_FUSELD --target=x86_64-windows-msvc $IVTW_CL_ARGS"
+connect_compat "x64/clang-cl" "../../bin/w32cross-clang-cl-x64"
+connect clang-cl clang-cl-arm64 "$OUR_FUSELD --target=aarch64-windows-msvc $IVTW_CL_ARGS"
+connect_compat "arm64/clang-cl" "../../bin/w32cross-clang-cl-arm64"
 
-connect llvm-ml ml ""
+connect llvm-ml ml "$IVTW_ML_ARGS"
+connect_compat "ml" "../bin/w32cross-ml"
+connect llvm-ml llvm-ml "$IVTW_ML_ARGS"
+connect_compat "llvm-ml" "../bin/w32cross-llvm-ml"
 # note the LLD! llvm-link is something different
-connect lld-link link ""
-connect llvm-rc rc ""
-connect llvm-cvtres cvtres ""
-connect llvm-lib lib ""
+connect lld-link link "$IVTW_LINK_ARGS"
+connect_compat "link" "../bin/w32cross-link"
+connect lld-link lld-link "$IVTW_LINK_ARGS"
+connect_compat "lld-link" "../bin/w32cross-lld-link"
+connect llvm-rc rc "$IVTW_RC_ARGS"
+connect_compat "rc" "../bin/w32cross-rc"
+connect llvm-rc llvm-rc "$IVTW_RC_ARGS"
+connect_compat "llvm-rc" "../bin/w32cross-llvm-rc"
+connect llvm-cvtres cvtres "$IVTW_CVTRES_ARGS"
+connect_compat "cvtres" "../bin/w32cross-cvtres"
+connect llvm-cvtres llvm-cvtres "$IVTW_CVTRES_ARGS"
+connect_compat "llvm-cvtres" "../bin/w32cross-llvm-cvtres"
+connect llvm-lib lib "$IVTW_LIB_ARGS"
+connect_compat "lib" "../bin/w32cross-lib"
+connect llvm-lib llvm-lib "$IVTW_LIB_ARGS"
+connect_compat "llvm-lib" "../bin/w32cross-llvm-lib"
 
 # prepare utilities
-clang++ common/fixerupper.cpp -o "${IVTW_SDKPFX}bin/w32cross-treecasefix"
+$CXX common/fixerupper.cpp -o "${IVTW_SDKPFX}bin/w32cross-treecasefix"
 
 cat <<EOF > "${IVTW_SDKPFX}activate"
 PATH="$(readlink -f "${IVTW_SDKPFX}bin"):\$PATH"

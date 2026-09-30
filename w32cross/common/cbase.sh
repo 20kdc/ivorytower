@@ -15,6 +15,12 @@ elif [ ! -e "$W32CROSS_SDKID/0sdkdef.sh" ]; then
 	echo "* Script may have been run with incorrect CD."
 fi
 
+# SDK build tools (for w32cross-treecasefix and any future similar tools)
+
+if [ "$CXX" = "" ]; then
+	CXX="c++"
+fi
+
 # Core directory variables.
 # These should be based on prefixes to prevent 'root -rf risk'.
 IVTW_DLPFX="downloaded/"
@@ -26,6 +32,7 @@ IVTW_LIB="${IVTW_SDKPFX}bin/w32cross-lib"
 # -- SDK variable defaults --
 
 SDK_CL_ARGS=""
+SDK_LINK_ARGS=""
 
 # -- Core Utilities --
 
@@ -62,6 +69,16 @@ ivtw_find_command() {
 	ivtw_find_command_result="$(ivtw_get_candidates "$1" | head -n 1)"
 }
 
+# -- Disclaimer --
+
+# PATH TEXT
+ivtw_disclaimer_dl() {
+	echo " $1 : $2"
+	if [ -e "$1" ]; then
+		echo "  (already downloaded, will be skipped)"
+	fi
+}
+
 # -- Bootstrapping --
 
 # ivtw_import_defs PACKAGE ARCH OUTPATH
@@ -72,3 +89,15 @@ ivtw_import_defs() {
 }
 
 . "$W32CROSS_SDKID/0sdkdef.sh"
+
+# -- SDK-derived IVTW variables --
+
+# Note: "/winsysroot X" works for clang-cl but not for lld-link.
+# "/winsysroot:X" will result in prefixing ":" to everything.
+# This sort of thing is why common (and thus compilersetup) handles this stuff, not SDK.
+IVTW_CL_ARGS="/winsysroot \"\$W32CROSS_SDKROOT\" $SDK_CL_ARGS"
+IVTW_ML_ARGS=""
+IVTW_LINK_ARGS="\"/winsysroot:\$W32CROSS_SDKROOT\" $SDK_LINK_ARGS"
+IVTW_RC_ARGS=""
+IVTW_CVTRES_ARGS=""
+IVTW_LIB_ARGS=""
