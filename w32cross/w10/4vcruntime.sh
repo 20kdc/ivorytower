@@ -67,7 +67,7 @@ for arch in x86 x64 arm64; do
 	# Notably, this builds the 'ANSI' versions of crt0_exe.
 	# The Unicode versions are built in the next pass.
 	for object in \
-	crt0_common crt0_gs crt0_app_atexit crt0_dll crt0_dll_nomain \
+	crt0_common crt0_gs crt0_dll crt0_dll_nomain \
 	crt0_exe_con crt0_exe_gui \
 	; do
 		# Versions are mapped here from flags to lib names.

@@ -42,5 +42,3 @@ int __stdcall _DllMainCRTStartup(void * a, int reason, void * reserved) {
 		return DllMain(a, reason, reserved);
 	}
 }
-
-#pragma comment(linker, "/alternatename:DllMain=__NOTVCRUNTIME__DllMainCRTStartup_Default")

@@ -27,3 +27,9 @@ ANIMALDECL Animal * animalFactory() {
 ANIMALDECL void animalOopsie() {
 	throw std::exception("oopsie!");
 }
+
+// This is to confirm the real DllMain takes precedence.
+int __stdcall DllMain(void * a, int reason, void * c) {
+	puts("Hi, I'm the real DllMain.");
+	return 1;
+}

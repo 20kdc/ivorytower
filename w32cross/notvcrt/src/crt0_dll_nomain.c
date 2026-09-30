@@ -5,6 +5,6 @@
  * For more information, please refer to <http://unlicense.org>, supplied as COPYING in the W32Cross source code.
  */
 
-int __stdcall __NOTVCRUNTIME__DllMainCRTStartup_Default(void * a, int reason, void * c) {
+int __stdcall __attribute__((weak)) DllMain(void * a, int reason, void * c) {
 	return 1;
 }

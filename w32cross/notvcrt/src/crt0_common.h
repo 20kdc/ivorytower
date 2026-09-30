@@ -29,5 +29,5 @@ extern _PVFV __xt_z[1];
  * crt0 init/finalizer functions.
  * 0 return in __NOTVCRUNTIME_init indicates mysterious failure.
  */
-int __NOTVCRUNTIME_init();
+int __NOTVCRUNTIME_init(int isApp);
 void __NOTVCRUNTIME_fini();

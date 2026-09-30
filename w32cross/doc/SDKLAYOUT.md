@@ -60,4 +60,7 @@ The following paths are the 'external interface' intended for use by enclosures 
 
 * `etc/packages`
 * `etc/clang-args/*`
+	* To be clear, running `clang++` with the args in `x86.ld.lst` followed by i.e. `hello.cpp` should produce a working, ready-to-run (given STL/vcruntime) 32-bit Windows executable.
+		* The non-`.ld` files can compile object files but cannot link them. (This is to prevent 'unused' noise.)
+		* These files are wrapper equivalents. You can kind of think of this as an 'exo-compiler-driver'.
 * `etc/ready`

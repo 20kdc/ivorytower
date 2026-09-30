@@ -2,8 +2,8 @@ clang++
 --target=i686-windows-msvc
 -Iinclude
 -Iinclude_ext
--I../sdk_w10/Windows Kits/10/Include/10.0.19041.0/ucrt
--I../sdk_w10/Windows Kits/10/Include/10.0.19041.0/um
--I../sdk_w10/Windows Kits/10/Include/10.0.19041.0/shared
+-I../sdk_w10/stl/include
+-I../sdk_w10/ucrt/include
+-I../sdk_w10/wsdk/include
 -D_HAS_EXCEPTIONS
 -D_CPPRTTI

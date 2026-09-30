@@ -10,6 +10,7 @@
  */
 
 #include "crt0_common.h"
+#include "corecrt_startup.h"
 #include "crtdefs.h"
 
 /* We waste some bytes putting dummy values in here to prevent discard. */
@@ -41,30 +42,45 @@ _CRTALLOC(".CRT$XTA") _PVFV __xt_a[1];
 _CRTALLOC(".CRT$XTZ") _PVFV __xt_z[1];
 
 /*
- * THIS TABLE MUST BE INITIALIZED BY CRT0!
- * i.e. via _initialize_onexit_table(&onexit_local_table);
- * _initialize_onexit_table is clearly intended to be loaded by 1st thread.
+ * Rather than try to figure out how to make sure we don't get a symbol conflict,
+ *  we include all three tables even though we 'shouldn't'.
  */
-_onexit_table_t __NOTVCRUNTIME_onexit_table;
+static _onexit_table_t atexit_table, at_quick_exit_table, onexit_table;
 
-_onexit_t __cdecl _onexit(_onexit_t f) {
-	return _register_onexit_function(&__NOTVCRUNTIME_onexit_table, f) ? f : 0;
+static int isDLL;
+
+int __cdecl atexit(void (__cdecl * f)()) {
+	if (!isDLL)
+		return _register_onexit_function(&atexit_table, (_onexit_t) f);
+	return _crt_atexit(f);
 }
 
-int __NOTVCRUNTIME_init() {
-	_initialize_onexit_table(&__NOTVCRUNTIME_onexit_table);
+int __cdecl at_quick_exit(void (__cdecl * f)()) {
+	if (!isDLL)
+		return _register_onexit_function(&at_quick_exit_table, (_onexit_t) f);
+	return _crt_at_quick_exit(f);
+}
+
+_onexit_t __cdecl _onexit(_onexit_t f) {
+	return _register_onexit_function(&onexit_table, f) ? f : 0;
+}
+
+int __NOTVCRUNTIME_init(int isDLLV) {
+	isDLL = isDLLV;
+	if (isDLL) {
+		_initialize_onexit_table(&atexit_table);
+		_initialize_onexit_table(&at_quick_exit_table);
+	}
+	_initialize_onexit_table(&onexit_table);
 	if (_initterm_e(__xi_a, __xi_z))
 		return 0;
 	_initterm(__xc_a, __xc_z);
 	return 1;
 }
 void __NOTVCRUNTIME_fini() {
+	if (isDLL) {
+		_execute_onexit_table(&atexit_table);
+		_execute_onexit_table(&at_quick_exit_table);
+	}
 	_initterm(__xt_a, __xt_z);
 }
-
-/*
- * For apps (i.e. things that are not DLLs), we setup atexit here to use app CRT.
- * DLLs override this with a custom table set. (NOT YET IMPLEMENTED, BUT BUSY PUTTING OUT THESE FIRES)
- */
-#pragma comment(linker, "/alternatename:atexit=__NOTVCRUNTIME_ACRT_atexit")
-#pragma comment(linker, "/alternatename:at_quick_exit=__NOTVCRUNTIME_ACRT_at_quick_exit")
