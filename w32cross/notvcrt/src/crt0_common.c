@@ -64,7 +64,7 @@ void __NOTVCRUNTIME_fini() {
 
 /*
  * For apps (i.e. things that are not DLLs), we setup atexit here to use app CRT.
- * DLLs override this with a custom table set.
+ * DLLs override this with a custom table set. (NOT YET IMPLEMENTED, BUT BUSY PUTTING OUT THESE FIRES)
  */
 #pragma comment(linker, "/alternatename:atexit=__NOTVCRUNTIME_ACRT_atexit")
 #pragma comment(linker, "/alternatename:at_quick_exit=__NOTVCRUNTIME_ACRT_at_quick_exit")

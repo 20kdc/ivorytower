@@ -16,8 +16,12 @@ public:
 		compiler.variant = "w32cross";
 		compiler.c = {sdkP->toolPath(std::string(arch + "/clang-cl"))},
 		compiler.cpp = {sdkP->toolPath(std::string(arch + "/clang-cl"))},
-		compiler.c_ld = {sdkP->toolPath(std::string("lld-link"))},
-		compiler.cpp_ld = {sdkP->toolPath(std::string("lld-link"))},
+		// So this is unfortunate because Meson taking charge of linking bypasses linker comment pragmas.
+		// This has resulted in
+		// compiler.c_ld = {sdkP->toolPath(std::string("lld-link"))},
+		// compiler.cpp_ld = {sdkP->toolPath(std::string("lld-link"))},
+		// This is the only mode W32Cross supports.
+		compiler.args.bVSCRT = "md";
 		// compiler.ar = {sdkP->toolPath("w32cross-lib")},
 		// w32cross-strip is not a thing, need to work on this across subgroups
 		//compiler.strip = {sdkP->toolPath("w32cross-strip")},

@@ -12,10 +12,10 @@ void * __security_cookie = 0;
 /*
  * BEWARE: Our current crt0 DOES NOT CALL THIS FUNCTION.
  */
-void __CRTDECL __security_init_cookie() {
+void __stdcall __security_init_cookie() {
 	/* we retain our general attitude of not caring about this. */
 }
 
-void __CRTDECL __security_check_cookie(void * value) {
+void __stdcall __security_check_cookie(void * value) {
 	/* do nothing, we do not care. */
 }

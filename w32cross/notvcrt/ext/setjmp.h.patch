@@ -1,5 +1,5 @@
---- thirdparty/mingw-w64-headers/setjmp.h	2026-09-28 21:58:20.720420358 +0100
-+++ notvcrt/include_ext/setjmp.h	2026-09-29 00:14:34.687681715 +0100
+--- mingw
++++ notvcrt
 @@ -209,21 +209,17 @@
  #endif
  

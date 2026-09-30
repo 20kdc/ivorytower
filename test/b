@@ -19,6 +19,11 @@ do_stlp() {
 # Test most things reasonably available to Ubuntu 24.04.
 # (We can't pull in aarch64 Windows.)
 
+if [ "$#" != 0 ]; then
+	do_variant "$1"
+	exit
+fi
+
 do_stlp lgx32_ _scout
 do_stlp lgx64_ _scout
 

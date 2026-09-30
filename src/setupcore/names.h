@@ -64,6 +64,7 @@ namespace setupcore {
 		// if empty these are left alone
 		const char * cppEh = 0;
 		const char * cppRtti = 0;
+		const char * bVSCRT = 0;
 		void merge(const CompilerArgs & other);
 	};
 

@@ -66,5 +66,5 @@
 /* /GS support */
 
 extern void * __security_cookie;
-void __CRTDECL __security_init_cookie();
-void __CRTDECL __security_check_cookie(void *);
+void __stdcall __security_init_cookie();
+void __stdcall __security_check_cookie(void *);

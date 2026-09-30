@@ -1,5 +1,5 @@
---- thirdparty/mingw-w64-headers/eh.h	2026-09-28 21:58:20.717891415 +0100
-+++ notvcrt/include_ext/eh.h	2026-09-29 00:08:43.298937494 +0100
+--- mingw
++++ notvcrt
 @@ -8,9 +8,13 @@
  #error eh.h is only for C++!
  #endif

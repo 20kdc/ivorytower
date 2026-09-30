@@ -156,6 +156,7 @@ std::string setupcore::meson::makeCrossFile(const CompilerCfg & comp, const STLD
 	base += iniArg("cpp_link_args", mergedArgs.addCppLinkArgs);
 	base += iniProp("cpp_eh", mergedArgs.cppEh);
 	base += iniProp("cpp_rtti", mergedArgs.cppRtti);
+	base += iniProp("b_vscrt", mergedArgs.bVSCRT);
 	return base;
 }
 

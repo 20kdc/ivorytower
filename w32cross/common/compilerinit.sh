@@ -46,9 +46,10 @@ connect_compat() {
 	# See: https://github.com/mesonbuild/meson/blob/3f1673ae45b8d6beb1631a76e1def0e8fb85d9d8/mesonbuild/compilers/detect.py
 	# In order to dodge this, we provide the 'bin_compat' directory.
 	# This directory is less safe to put into PATH, but it makes build systems see what they want to see.
-	rm -f "${IVTW_SDKPFX}bin_compat/$1"
+	rm -f "${IVTW_SDKPFX}bin_compat/$1" "${IVTW_SDKPFX}bin_compat/$1.exe"
 	mkdir -p "$(dirname "${IVTW_SDKPFX}bin_compat/$1")"
 	ln -s "$2" "${IVTW_SDKPFX}bin_compat/$1"
+	ln -s "$2" "${IVTW_SDKPFX}bin_compat/$1.exe"
 }
 
 # First, find the -fuse-ld linker.

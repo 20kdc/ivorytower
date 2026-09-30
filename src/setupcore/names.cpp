@@ -104,6 +104,8 @@ void CompilerArgs::merge(const CompilerArgs & other) {
 		cppEh = other.cppEh;
 	if (other.cppRtti)
 		cppRtti = other.cppRtti;
+	if (other.bVSCRT)
+		bVSCRT = other.bVSCRT;
 }
 
 std::vector<std::vector<std::string> *> CompilerCfg::allCommands() {

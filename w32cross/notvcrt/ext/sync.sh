@@ -15,7 +15,7 @@ graft() {
 	if [ ! -e "notvcrt/include_ext/$2" ]; then
 		patch -o "notvcrt/include_ext/$2" -i "notvcrt/ext/$2.patch" "$1"
 	else
-		diff -u "$1" "notvcrt/include_ext/$2" > "notvcrt/ext/$2.patch" || true
+		diff --label "mingw" -u "$1" --label "notvcrt" "notvcrt/include_ext/$2" > "notvcrt/ext/$2.patch" || true
 	fi
 }
 
