@@ -16,6 +16,12 @@ Some headers come from MinGW-w64 (see `../thirdparty/mingw-w64-headers`) and are
 * `setjmp.h`: `setjmp`/`longjmp`/`jmp_buf`
 * `setjmpex.h`: Fancy MS extension support header
 
+## _When adding files_
+
+Files added in the include directory sometimes go to different places.
+
+There's probably some better organization that can be done here, but for _now_ specifics must be detailed in `w10/4vcruntime.sh`.
+
 ## Managing External Header Patches
 
 Patches to MinGW headers are managed through `notvcrt/ext/sync.sh`.

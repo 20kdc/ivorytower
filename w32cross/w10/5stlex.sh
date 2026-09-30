@@ -4,19 +4,25 @@ W32CROSS_SDKID=w10
 
 . common/cbase.sh
 
-cp -r "${IVTW_DLPFX}stl16/stl/inc/"* "${SDK_MSVCPFX}/include/"
-cp "${IVTW_DLPFX}stl16/LICENSE.txt" "${IVTW_SDKPFX}/licenses/MicrosoftSTL_LICENSE.txt"
-cp "${IVTW_DLPFX}stl16/NOTICE.txt" "${IVTW_SDKPFX}/licenses/MicrosoftSTL_NOTICE.txt"
+rm -rf "${IVTW_SDKPFX}stl"
+mkdir -p "${IVTW_SDKPFX}stl"
 
-# Compile for all supported architectures.
-# Note that we can only compile DLL versions.
-# We do compile debug versions, but they're half-hearted.
+cp -r "${IVTW_DLPFX}stl16/stl/src" "${IVTW_SDKPFX}stl/src"
+# should be transpositional
+cp -r "${IVTW_DLPFX}stl16/stl/inc" "${IVTW_SDKPFX}stl/include"
+cp "${IVTW_DLPFX}stl16/LICENSE.txt" "${IVTW_SDKPFX}licenses/MicrosoftSTL_LICENSE.txt"
+cp "${IVTW_DLPFX}stl16/NOTICE.txt" "${IVTW_SDKPFX}licenses/MicrosoftSTL_NOTICE.txt"
+
+cp "notppl/include/"* "${IVTW_SDKPFX}stl/include/"
+
 for arch in x86 x64 arm64; do
-	echo "compiling: $arch"
-	mkdir -p "${SDK_MSVCPFX}/obj/$arch"
-	mkdir -p "${SDK_MSVCPFX}/lib/$arch"
-	# Pure imports are managed here.
-	ivtw_import_defs vc14_redist "$arch" "${SDK_MSVCPFX}/lib/$arch"
-	# oldnames.lib gets included by default, so we need to have it.
-	ivtw_import_defs oldnames "$arch" "${SDK_MSVCPFX}/lib/$arch"
+	mkdir -p "${IVTW_SDKPFX}stl/lib/$arch"
+	ivtw_import_defs vc14_redist_stl "$arch" "${IVTW_SDKPFX}stl/lib/$arch"
+	# Build the C++ link library. Note we can't build debug libs, as we don't have the defs for those STLs.
+	"${IVTW_LIB}" "/machine:$arch" \
+	"${IVTW_SDKPFX}stl/lib/$arch/msvcp140.lib" \
+	"${IVTW_SDKPFX}stl/lib/$arch/msvcp140_1.lib" \
+	"${IVTW_SDKPFX}stl/lib/$arch/msvcp140_atomic_wait.lib" \
+	"${IVTW_SDKPFX}stl/lib/$arch/msvcp140_codecvt_ids.lib" \
+	"/out:${IVTW_SDKPFX}stl/lib/$arch/msvcprt.lib"
 done

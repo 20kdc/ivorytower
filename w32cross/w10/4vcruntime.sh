@@ -1,5 +1,12 @@
 #!/bin/sh -e
 
+if [ "$1" != "" ]; then
+	if [ "$1" != "-v" ]; then
+		echo "chkccl parameter can be be -v or nothing"
+		exit 1
+	fi
+fi
+
 W32CROSS_SDKID=w10
 
 . common/cbase.sh
@@ -7,59 +14,82 @@ W32CROSS_SDKID=w10
 # We need a VCRuntime, and the SDK won't give us a real one.
 # Luckily, the VCRuntime is basically libgcc but for VC. It's not even the STL.
 # We *can* just write our own, more or less.
+
 notvcrt/ext/sync.sh
-cp -r notvcrt/include notvcrt/src "${SDK_MSVCPFX}"
-cp -r notvcrt/include_ext/* "${SDK_MSVCPFX}include"
 
-# Setup STL.
-cp -r "${IVTW_DLPFX}stl16/stl/inc/"* "${SDK_MSVCPFX}/include/"
-cp "${IVTW_DLPFX}stl16/LICENSE.txt" "${IVTW_SDKPFX}/licenses/MicrosoftSTL_LICENSE.txt"
-cp "${IVTW_DLPFX}stl16/NOTICE.txt" "${IVTW_SDKPFX}/licenses/MicrosoftSTL_NOTICE.txt"
+rm -rf "${IVTW_SDKPFX}ucrt/src/notvcrt"
+mkdir -p "${IVTW_SDKPFX}ucrt/src"
+mkdir -p "${IVTW_SDKPFX}ucrt/include"
+mkdir -p "${IVTW_SDKPFX}wsdk/include"
 
-# -- FALSE MSVC COMPILATION STARTS HERE --
+cp -r notvcrt/src "${IVTW_SDKPFX}ucrt/src/notvcrt"
+
+# Note that different headers end up different places.
+# Specifically, eh.h and excpt.h are obviously Windows headers in disguise.
+# While setjmp/etc. are tied up with the CRT or compiler.
+cp notvcrt/include_ext/eh.h "${IVTW_SDKPFX}wsdk/include"
+cp notvcrt/include_ext/excpt.h "${IVTW_SDKPFX}wsdk/include"
+cp notvcrt/include_ext/setjmp.h "${IVTW_SDKPFX}ucrt/include"
+cp notvcrt/include_ext/setjmpex.h "${IVTW_SDKPFX}ucrt/include"
+cp notvcrt/include/crtdefs.h "${IVTW_SDKPFX}ucrt/include"
+cp notvcrt/include/intrin0.h "${IVTW_SDKPFX}ucrt/include"
+cp notvcrt/include/isa_availability.h "${IVTW_SDKPFX}ucrt/include"
+cp notvcrt/include/vadefs.h "${IVTW_SDKPFX}ucrt/include"
+# All VCRuntime headers go in with the UCRT.
+cp notvcrt/include/vcruntime*.h "${IVTW_SDKPFX}ucrt/include"
+# This MUST go here since otherwise it clobbers WSDK.
+cp notvcrt/include/winnt.h "${IVTW_SDKPFX}ucrt/include"
+
+# -- NotVCRT compilation and lib creation begins here --
+
+rm -rf "${IVTW_SDKPFX}build/notvcrt_obj"
+NOTVCRT_OBJDIR="${IVTW_SDKPFX}build/notvcrt_obj"
+NOTVCRT_LIBDIR="${IVTW_SDKPFX}ucrt/lib"
+NOTVCRT_SRCDIR="${IVTW_SDKPFX}ucrt/src/notvcrt"
 
 # Compile for all supported architectures.
 # Note that we can only compile DLL versions.
 # We do compile debug versions, but they're half-hearted.
 for arch in x86 x64 arm64; do
 	echo "compiling: $arch"
-	mkdir -p "${SDK_MSVCPFX}/obj/$arch"
-	mkdir -p "${SDK_MSVCPFX}/lib/$arch"
+	mkdir -p "$NOTVCRT_OBJDIR/$arch"
+	mkdir -p "$NOTVCRT_LIBDIR/$arch"
+
 	# Pure imports are managed here.
-	ivtw_import_defs vc14_redist "$arch" "${SDK_MSVCPFX}/lib/$arch"
+	ivtw_import_defs vc14_redist "$arch" "$NOTVCRT_LIBDIR/$arch"
 	# oldnames.lib gets included by default, so we need to have it.
-	ivtw_import_defs oldnames "$arch" "${SDK_MSVCPFX}/lib/$arch"
+	ivtw_import_defs oldnames "$arch" "$NOTVCRT_LIBDIR/$arch"
 
 	# Compile CRT0.
 	for debug in "" "d"; do
 		# echo "dbg $debug"
-		mkdir -p "${SDK_MSVCPFX}/obj/$arch/msvcrt${debug}"
+		mkdir -p "$NOTVCRT_OBJDIR/$arch/msvcrt${debug}"
 		# Build 'simpler' objects
 		for object in crt0_common crt0_gs crt0_app_atexit crt0_dll crt0_dll_nomain; do
 			# Versions are mapped here from flags to lib names.
 			# Trust me, it's better this way.
-			"${IVTW_CL}-$arch" /c /O1 "/MD${debug}" \
-			"/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt${debug}/${object}.obj" \
-			   "${SDK_MSVCPFX}/src/${object}.c"
+			"${IVTW_CL}-$arch" "$1" /c /O1 "/MD${debug}" \
+			"/Fo$NOTVCRT_OBJDIR/$arch/msvcrt${debug}/${object}.obj" \
+			   "$NOTVCRT_SRCDIR/${object}.c"
 		done
 		# Dual-mode objects (Unicode and not)
 		for object in crt0_exe_con crt0_exe_gui; do
 			"${IVTW_CL}-$arch" /c /O1 "/MD${debug}" \
-			"/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt${debug}/${object}a.obj" \
-			   "${SDK_MSVCPFX}/src/${object}.c"
+			"/Fo$NOTVCRT_OBJDIR/$arch/msvcrt${debug}/${object}a.obj" \
+			   "$NOTVCRT_SRCDIR/${object}.c"
 			"${IVTW_CL}-$arch" /c /O1 "/MD${debug}" /D_UNICODE \
-			"/Fo${SDK_MSVCPFX}/obj/$arch/msvcrt${debug}/${object}w.obj" \
-			   "${SDK_MSVCPFX}/src/${object}.c"
+			"/Fo$NOTVCRT_OBJDIR/$arch/msvcrt${debug}/${object}w.obj" \
+			   "$NOTVCRT_SRCDIR/${object}.c"
 		done
 		"${IVTW_LIB}" "/machine:$arch" \
-			 "${SDK_MSVCPFX}/obj/$arch/msvcrt${debug}/"*.obj \
-		"/out:${SDK_MSVCPFX}/lib/$arch/msvcrt${debug}.lib"
+			 "$NOTVCRT_OBJDIR/$arch/msvcrt${debug}/"*.obj \
+		"/out:$NOTVCRT_LIBDIR/$arch/msvcrt${debug}.lib"
 	done
 
 	# Build VCRuntime supplement.
 	# This is NOT CRT0, this is C++ stuff.
 	# Note: DO NOT USE /FA1 for actual build it breaks the compile :<
-	mkdir -p "${SDK_MSVCPFX}/obj/$arch/vcruntime"
+	mkdir -p "$NOTVCRT_OBJDIR/$arch/vcruntime"
 	for object in \
 	vcr_typeinfo vcr_new_nothrow \
 	vcr_new1 vcr_new2 vcr_new3 vcr_new4 vcr_new5 vcr_new6 vcr_new7 vcr_new8 \
@@ -69,23 +99,15 @@ for arch in x86 x64 arm64; do
 		# Trust me, it's better this way.
 		# We use /EHs here because std::bad_alloc exception has to be caught in vrc_new.
 		"${IVTW_CL}-$arch" /c /O1 /MD /EHs \
-		"/Fo${SDK_MSVCPFX}/obj/$arch/vcruntime/${object}.obj" \
-		   "${SDK_MSVCPFX}/src/${object}.cpp"
+		"/Fo$NOTVCRT_OBJDIR/$arch/vcruntime/${object}.obj" \
+		   "$NOTVCRT_SRCDIR/${object}.cpp"
 	done
 
 	# Merge VCRuntime libraries to create the one that's needed.
 	# We ignore vcruntime140_1 for now, we may never actually end up using it.
 	"${IVTW_LIB}" "/machine:$arch" \
-	"${SDK_MSVCPFX}/lib/$arch/vcruntime140.lib" \
-	"${SDK_MSVCPFX}/lib/$arch/vcruntime140_threads.lib" \
-	"${SDK_MSVCPFX}/obj/$arch/vcruntime/"*.obj \
-	"/out:${SDK_MSVCPFX}/lib/$arch/vcruntime.lib"
-
-	# Build the C++ link library. Note we can't build debug libs, as we don't have the defs for those STLs.
-	"${IVTW_LIB}" "/machine:$arch" \
-	"${SDK_MSVCPFX}/lib/$arch/msvcp140.lib" \
-	"${SDK_MSVCPFX}/lib/$arch/msvcp140_1.lib" \
-	"${SDK_MSVCPFX}/lib/$arch/msvcp140_atomic_wait.lib" \
-	"${SDK_MSVCPFX}/lib/$arch/msvcp140_codecvt_ids.lib" \
-	"/out:${SDK_MSVCPFX}/lib/$arch/msvcprt.lib"
+	"$NOTVCRT_LIBDIR/$arch/vcruntime140.lib" \
+	"$NOTVCRT_LIBDIR/$arch/vcruntime140_threads.lib" \
+	"$NOTVCRT_OBJDIR/$arch/vcruntime/"*.obj \
+	"/out:$NOTVCRT_LIBDIR/$arch/vcruntime.lib"
 done

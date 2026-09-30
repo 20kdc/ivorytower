@@ -28,3 +28,4 @@ This seems to be the intended approach by Meson upstream, and it does have the k
 	* `lib/`
 * `cppwinrt/`: It's here, I guess.
 * `redist/`: Redistributables.
+* `fakewinsysroot/`: Makes `clang-cl` work.

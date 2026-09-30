@@ -8,8 +8,9 @@ fi
 
 . common/cbase.sh
 
-rm -rf tests/bin
+rm -rf tests/bin tests/bin_cl
 mkdir -p tests/bin
+mkdir -p tests/bin_cl
 
 do_test() {
 	# echo "$1"
@@ -17,10 +18,10 @@ do_test() {
 	shift
 	test_out="$1"
 	shift
-	if "$IVTW_CL" /EHs /MD "$@" "/Fetests/bin/$test_out" "tests/$test_file" ; then
+	if "$IVTW_CL" /EHs /MD "$@" "/Fetests/bin_cl/$test_out" "tests/$test_file" ; then
 		true
 	else
-		"$IVTW_CL" /c /FA1 /EHs /MD "/Fatests/bin/$test_out.asm" "/Fotests/bin/$test_out.obj" "tests/$test_file"
+		"$IVTW_CL" /c /FA1 /EHs /MD "/Fatests/bin_cl/$test_out.asm" "/Fotests/bin_cl/$test_out.obj" "tests/$test_file"
 		false
 	fi
 }

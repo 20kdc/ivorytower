@@ -29,11 +29,6 @@ IVTW_SDKPFX="sdk_$W32CROSS_SDKID/"
 IVTW_CL="${IVTW_SDKPFX}bin/w32cross-cl"
 IVTW_LIB="${IVTW_SDKPFX}bin/w32cross-lib"
 
-# -- SDK variable defaults --
-
-SDK_CL_ARGS=""
-SDK_LINK_ARGS=""
-
 # -- Core Utilities --
 
 # Runs a stage script.
@@ -88,16 +83,33 @@ ivtw_import_defs() {
 	done
 }
 
+IVTW_VCARCHS="x86 x64 arm64"
+ivtw_vcarch_clangtarget() {
+	if [ "$1" = "x86" ]; then
+		ivtw_vcarch_clangtarget_result="i686-windows-msvc"
+	elif [ "$1" = "x64" ]; then
+		ivtw_vcarch_clangtarget_result="x86_64-windows-msvc"
+	elif [ "$1" = "arm64" ]; then
+		ivtw_vcarch_clangtarget_result="aarch64-windows-msvc"
+	else
+		echo "Unrecognizable vcarch $1"
+		exit 1
+	fi
+}
+
+# -- The SDK --
+
 . "$W32CROSS_SDKID/0sdkdef.sh"
 
 # -- SDK-derived IVTW variables --
 
 # Note: "/winsysroot X" works for clang-cl but not for lld-link.
 # "/winsysroot:X" will result in prefixing ":" to everything.
-# This sort of thing is why common (and thus compilersetup) handles this stuff, not SDK.
-IVTW_CL_ARGS="/winsysroot \"\$W32CROSS_SDKROOT\""
+
+IVTW_CL_ARGS="/winsysroot \"\$W32CROSS_SDKROOT/fakewinsysroot\""
+IVTW_CLANG_ARGS=""
 IVTW_ML_ARGS=""
-IVTW_LINK_ARGS="\"/winsysroot:\$W32CROSS_SDKROOT\""
+IVTW_LINK_ARGS=""
 IVTW_RC_ARGS=""
 IVTW_CVTRES_ARGS=""
 IVTW_LIB_ARGS=""

@@ -2,4 +2,5 @@
 /dev_scavenger.log
 /downloaded
 /tests/bin
+/tests/bin_cl
 /notvcrt/include_ext

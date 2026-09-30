@@ -15,4 +15,5 @@ These files are organized by 'source package'. Specific SDK scripts pick up thes
 * `vc14_redist`: `https://aka.ms/vc14/vc_redist.*.exe` for `*`: `x86`, `x64`, `arm64`.
 	* `vcruntime140_1` is _missing_ on x86 and it's unclear why. However, the only really scary function it supplies is `__CxxFrameHandler4`. LLVM only knows `__CxxFrameHandler3` from `vcruntime140`, doesn't know the NLG functions _at all,_ and the NLG functions are also duplicate symbols.
 * `vc14_redist_stl`: Libraries that are part of the STL/PPL complex.
-* `oldnames`: `oldnames.lib` content. Entirely custom, but also completely empty for now.
+* `oldnames`: `oldnames.lib` content. Entirely custom, but also almost completely empty for now.
+	* This feels like something MinGW-w64 might have a copy of that can be used instead, mmm.
