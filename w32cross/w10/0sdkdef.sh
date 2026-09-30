@@ -7,12 +7,6 @@ STL16_PATH="${IVTW_DLPFX}stl16"
 STL16_URL="https://github.com/microsoft/STL/"
 STL16_BRANCH="vs-2019-16.10"
 
-# For safety reasons, this is duplicated in 4msvc.sh for the rm -rf
-SDK_MSVCPFX="${IVTW_SDKPFX}VC/Tools/MSVC/"
-
-SDK_CL_ARGS=""
-SDK_LINK_ARGS=""
-
 sdk_disclaimer() {
 	echo "This SDK downloads:"
 	ivtw_disclaimer_dl "$ISO_PATH" "$ISO_URL"
@@ -46,8 +40,9 @@ sdk_isoextract() {
 sdk_build() {
 	# These stages prepare the Windows SDK itself.
 	ivtw_stage 2msiextract
+	ivtw_stage 2z_msiextract_clean
 	ivtw_stage 3treecasefix
-	# -- The version of the SDK prepared HERE can be used to build code which doesn't end up involving vcruntime etc. --
-	# This stage prepares the 'fake MSVC'.
-	ivtw_stage 4msvc
+	# -- The version of the SDK prepared HERE can be used to build code which doesn't end up involving vcruntime or crt0. --
+	ivtw_stage 4vcruntime
+	ivtw_stage 5stlex
 }

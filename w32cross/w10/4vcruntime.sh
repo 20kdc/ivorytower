@@ -4,10 +4,6 @@ W32CROSS_SDKID=w10
 
 . common/cbase.sh
 
-# Always regenerate this directory to prevent clobbering.
-rm -rf "${IVTW_SDKPFX}VC/Tools/MSVC"
-mkdir -p "${SDK_MSVCPFX}"
-
 # We need a VCRuntime, and the SDK won't give us a real one.
 # Luckily, the VCRuntime is basically libgcc but for VC. It's not even the STL.
 # We *can* just write our own, more or less.

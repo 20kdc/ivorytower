@@ -11,13 +11,11 @@ W32Cross is built on four key pillars:
 * STL: Can be gotten in code form from <https://github.com/microsoft/STL>.
 	* These header files are binary-compatible (or at least _enough_).
 * MinGW-W64: Some public-domain headers are taken from here and grafted into the overall whole.
-	* See `common/copy_mingw_headers.sh` for a full list of which specific headers are grafted.
+	* See `thirdparty/mingw-w64-headers` for the original headers. Patches are in `notvcrt/ext`.
 * `notvcrt`: 'The rest of the owl'. This is the little bit of custom synthetic stuff needed to bridge it all together.
 
 ## Notes
 
-This is tested with `clang-cl-18` on Ubuntu 24.04.
+This is tested with `clang` on Ubuntu 24.04.
 
-The `/FA1` option appears to produce code which will not assemble in some cases; `vcr_typeinfo.cpp` seems to be this way.
-
-The replica `vcruntime.h` can be gently described as _sparse._
+The replica `vcruntime.h` and friends can be gently described as _sparse._

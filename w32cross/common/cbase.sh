@@ -95,9 +95,9 @@ ivtw_import_defs() {
 # Note: "/winsysroot X" works for clang-cl but not for lld-link.
 # "/winsysroot:X" will result in prefixing ":" to everything.
 # This sort of thing is why common (and thus compilersetup) handles this stuff, not SDK.
-IVTW_CL_ARGS="/winsysroot \"\$W32CROSS_SDKROOT\" $SDK_CL_ARGS"
+IVTW_CL_ARGS="/winsysroot \"\$W32CROSS_SDKROOT\""
 IVTW_ML_ARGS=""
-IVTW_LINK_ARGS="\"/winsysroot:\$W32CROSS_SDKROOT\" $SDK_LINK_ARGS"
+IVTW_LINK_ARGS="\"/winsysroot:\$W32CROSS_SDKROOT\""
 IVTW_RC_ARGS=""
 IVTW_CVTRES_ARGS=""
 IVTW_LIB_ARGS=""
