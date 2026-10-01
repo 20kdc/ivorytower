@@ -100,6 +100,16 @@ for arch in x86 x64 arm64; do
 		   "$NOTVCRT_SRCDIR/${object}.cpp"
 	done
 
+	if [ "$arch" = "x86" ]; then
+		ARCH_COMPILERRT="${IVTW_SDKPFX}build/compiler-rt/libclang_rt.builtins-i386.a"
+	elif [ "$arch" = "x64" ]; then
+		ARCH_COMPILERRT="${IVTW_SDKPFX}build/compiler-rt/libclang_rt.builtins-x86_64.a"
+	elif [ "$arch" = "arm64" ]; then
+		ARCH_COMPILERRT="${IVTW_SDKPFX}build/compiler-rt/libclang_rt.builtins-aarch64.a"
+	elif [ "$arch" = "arm" ]; then
+		ARCH_COMPILERRT="${IVTW_SDKPFX}build/compiler-rt/libclang_rt.builtins-arm.a"
+	fi
+
 	# Merge all libraries to create the One True Library.
 	# This merging strategy solves issues with defaultlib not propagating right.
 	# There's no real reason not to do this, since we don't have a static vcruntime anyway.
@@ -108,6 +118,7 @@ for arch in x86 x64 arm64; do
 	"$NOTVCRT_LIBDIR/$arch/ucrt.lib" \
 	"$NOTVCRT_LIBDIR/$arch/vcruntime140.lib" \
 	"$NOTVCRT_LIBDIR/$arch/vcruntime140_threads.lib" \
+	"$ARCH_COMPILERRT" \
 	"$NOTVCRT_OBJDIR/$arch/vcruntime/"*.obj \
 	"/out:$NOTVCRT_LIBDIR/$arch/msvcrt.lib"
 done

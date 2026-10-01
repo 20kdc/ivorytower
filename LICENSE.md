@@ -1,11 +1,16 @@
-All content in this repository is released into the public domain.
-However, not all content in this repository is from the same source.
+This repository contains content from various sources.
 
-Observe the following files:
+The following filenames point to licensing information of some kind regarding their directory's contents:
 
-`w32cross/thirdparty/mingw-w64-headers` is described by DISCLAIMER.PD in
- that directory.
-These contents are also partially quoted in `w32cross/notvcrt/ext`.
+* `DISCLAIMER.PD`
+* `LICENSE.md`
+* `LICENSE.TXT`
+
+A full list of these files is below:
+
+* `w32cross/notvcrt/ext/LICENSE.md`
+* `w32cross/thirdparty/mingw-w64-headers/DISCLAIMER.PD`
+* `w32cross/thirdparty/mingw-w64-cross-compiler-rt/LICENSE.TXT`
 
 The remaining contents of this repository have their release described by
  the Unlicense:

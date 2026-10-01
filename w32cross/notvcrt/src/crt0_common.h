@@ -39,4 +39,23 @@ int __NOTVCRUNTIME_init(int isDLL);
  */
 void __NOTVCRUNTIME_dll_fini();
 
+/*
+ * interlocked etc.
+ */
 #pragma comment(linker, "/defaultlib:kernel32")
+
+/*
+ * hack to use 'GNU' compiler-rt with 'MSVC' target
+ * this should be literally the only difference
+ */
+#if defined(__i386__)
+#pragma comment(linker, "/alternatename:__chkstk=__alloca")
+#elif defined(__x86_64__)
+#pragma comment(linker, "/alternatename:__chkstk=___chkstk_ms")
+#endif
+
+/*
+ * I'm not sure why, but Clang is really deathly afraid of emitting "??_7type_info@@6B@".
+ * Placing this here forces it to properly link to itself.
+ */
+#pragma comment(linker, "/alternatename:??_7type_info@@6B@.1=??_7type_info@@6B@")
