@@ -9,10 +9,10 @@
 
 void * __security_cookie = 0;
 
-void __stdcall __security_init_cookie() {
+void __security_init_cookie() {
 	/* we retain our general attitude of not caring about this. */
 }
 
-void __stdcall __security_check_cookie(void * value) {
+void __fastcall __security_check_cookie(void * value) {
 	/* do nothing, we do not care. */
 }

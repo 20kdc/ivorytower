@@ -6,7 +6,7 @@ As the mechanical output of `gendef`, they do not carry the copyright of it. I b
 
 They are also absolutely necessary for interoperability purposes.
 
-Ultimately, as unreviewed `gendef` output, they are open to tweaking if it Makes Thing Work Better.
+Ultimately, as unreviewed `gendef` output, they are open to tweaking if it Makes Thing Work Better. This has happened i.e. for `x86/vcruntime140.def`.
 
 Any such changes are, of course, in the public domain.
 

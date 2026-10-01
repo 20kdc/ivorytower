@@ -7,6 +7,7 @@ STL16_PATH="${IVTW_DLPFX}stl16"
 STL16_URL="https://github.com/microsoft/STL/"
 STL16_BRANCH="vs-2019-16.10"
 
+SDK_VCARCHS="x86 x64 arm64"
 SDK_PACKAGES="stl ucrt wsdk"
 
 sdk_disclaimer() {

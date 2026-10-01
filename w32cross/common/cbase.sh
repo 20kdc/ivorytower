@@ -27,7 +27,7 @@ IVTW_DLPFX="downloaded/"
 IVTW_SDKPFX="sdk_$W32CROSS_SDKID/"
 
 IVTW_CL="${IVTW_SDKPFX}bin/w32cross-cl"
-IVTW_CLANG_X64="${IVTW_SDKPFX}bin/w32cross-clang++-x64"
+IVTW_CLANG="${IVTW_SDKPFX}bin/w32cross-clang++"
 IVTW_LIB="${IVTW_SDKPFX}bin/w32cross-lib"
 
 # -- Core Utilities --

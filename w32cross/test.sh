@@ -11,8 +11,8 @@ common/compilerinit.sh
 . common/cbase.sh
 
 rm -rf tests/bin tests/bin_cl
-mkdir -p tests/bin
-mkdir -p tests/bin_cl
+
+CURRENT_ARCH=""
 
 do_test() {
 	# echo "$1"
@@ -24,19 +24,24 @@ do_test() {
 	shift
 	args_clang="$1"
 	shift
-	if "$IVTW_CL" /EHs /MD $args_cl "/Fetests/bin_cl/$test_out" "tests/$test_file" ; then
+	if "${IVTW_CL}-${CURRENT_ARCH}" /EHs /MD $args_cl "/Fetests/bin/cl/$CURRENT_ARCH/$test_out" "tests/$test_file" ; then
 		true
 	else
-		"$IVTW_CL" /c /FA1 /EHs /MD "/Fatests/bin_cl/$test_out.asm" "/Fotests/bin_cl/$test_out.obj" "tests/$test_file"
+		"${IVTW_CL}-${CURRENT_ARCH}" /c /FA1 /EHs /MD "/Fatests/bin/cl/$CURRENT_ARCH/$test_out.asm" "/Fotests/bin/cl/$CURRENT_ARCH/$test_out.obj" "tests/$test_file"
 		false
 	fi
-	"$IVTW_CLANG_X64" -fms-runtime-lib=dll $args_clang -o "tests/bin/$test_out" "tests/$test_file"
+	"${IVTW_CLANG}-${CURRENT_ARCH}" -fms-runtime-lib=dll $args_clang -o "tests/bin/clang/$CURRENT_ARCH/$test_out" "tests/$test_file"
 }
 
-do_test a_hello.c hello.exe "" ""
-do_test a_args.c args_a.exe "" ""
-do_test a_args.c args_w.exe "/D_UNICODE" ""
-do_test b_constructors.cpp constructors.exe "" ""
-do_test b_hellocpp.cpp hellocpp.exe "" ""
-do_test c_cxxdll.cpp cxxdll.dll "/LD" "-shared"
-do_test c_cxxdllexe.cpp cxxdll.exe "tests/bin_cl/cxxdll.lib" "tests/bin_cl/cxxdll.lib"
+for CURRENT_ARCH in $SDK_VCARCHS; do
+	echo "tests in arch $CURRENT_ARCH"
+	mkdir -p "tests/bin/cl/$CURRENT_ARCH"
+	mkdir -p "tests/bin/clang/$CURRENT_ARCH"
+	do_test a_hello.c hello.exe "" ""
+	do_test a_args.c args_a.exe "" ""
+	do_test a_args.c args_w.exe "/D_UNICODE" ""
+	do_test b_constructors.cpp constructors.exe "" ""
+	do_test b_hellocpp.cpp hellocpp.exe "" ""
+	do_test c_cxxdll.cpp cxxdll.dll "/LD" "-shared"
+	do_test c_cxxdllexe.cpp cxxdll.exe "tests/bin/cl/$CURRENT_ARCH/cxxdll.lib" "tests/bin/cl/$CURRENT_ARCH/cxxdll.lib"
+done

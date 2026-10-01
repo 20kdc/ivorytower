@@ -18,7 +18,9 @@ Instead, it intends to provide a unified setup tool for various cross-compilatio
 * OSXCross: <https://github.com/tpoechtrager/osxcross>
 * Valve's 'Steam Runtime' build environment (via Distrobox): <https://gitlab.steamos.cloud/steamrt/scout/sdk> (etc.)
 
-It, along with these install instructions, results in a set of crossfiles that are then globally available for use in projects.
+There is also a custom environment for building MSVC-ABI binaries with the STL, 'W32Cross'. _This option is obviously relatively unstable, but may be useful if its limitations are accepted._
+
+ivorytower, along with these install instructions, results in a set of crossfiles that are then globally available for use in projects.
 
 ## how to use it
 

@@ -39,6 +39,8 @@ int __NOTVCRUNTIME_init(int isDLL);
  */
 void __NOTVCRUNTIME_dll_fini();
 
+/* -- LINKER ARG STUFFING AND RATIONALES THEREOF -- */
+
 /*
  * interlocked etc.
  */

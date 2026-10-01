@@ -6,7 +6,11 @@
 LIBRARY "VCRUNTIME140.dll"
 EXPORTS
 _CreateFrameInfo
-_CxxThrowException@8
+
+; [WCX] gendef said '_CxxThrowException@8', compiler wants '__CxxThrowException@8', '_CxxThrowException' exists
+__CxxThrowException@8==_CxxThrowException
+_CxxThrowException
+
 _EH_prolog
 _FindAndUnlinkFrame
 _IsExceptionObjectToBeDestroyed

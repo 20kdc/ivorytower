@@ -10,7 +10,7 @@ W32Cross is built on four key pillars:
 	* Has the useful property of _not being a Visual Studio SDK,_ and thus not subject to 'profit-cap licensing'.
 * STL: Can be gotten in code form from <https://github.com/microsoft/STL>.
 	* These header files are binary-compatible (or at least _enough_).
-* MinGW-W64: Some public-domain headers are taken from here and grafted into the overall whole.
+* MinGW-w64: The build of compiler-rt, along with some public-domain headers, are taken from here and grafted into the overall whole.
 	* See `thirdparty/mingw-w64-headers` for the original headers. Patches are in `notvcrt/ext`.
 * `notvcrt`: 'The rest of the owl'. This is the little bit of custom synthetic stuff needed to bridge it all together.
 

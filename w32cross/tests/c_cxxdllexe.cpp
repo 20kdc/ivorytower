@@ -17,5 +17,6 @@ int main(int argc, char ** argv) {
 	} catch (std::exception ex) {
 		printf("caught: %s\n", ex.what());
 	}
+	printf("I think the Animal is a Cat, survey says: %p\n", dynamic_cast<Cat *>(animal));
 	return 0;
 }

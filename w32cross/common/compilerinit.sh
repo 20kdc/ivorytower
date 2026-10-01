@@ -20,9 +20,9 @@ connect() {
 # W32Cross-generated tool configuration file.
 W32CROSS_BINDIR="\$(dirname "\$(readlink -f "\$0")")"
 # just in case any w32cross- wrappers are needed
-export PATH="$W32CROSS_BINDIR:$PATH"
+export PATH="\$W32CROSS_BINDIR:\$PATH"
 W32CROSS_SDKROOT="\$(dirname "\$W32CROSS_BINDIR")"
-# echo "$PATH"
+# echo "\$PATH"
 # echo "W32CROSS_SDKROOT: \$W32CROSS_SDKROOT"
 
 exec "$ivtw_find_command_result" $3 "\$@"
@@ -55,13 +55,17 @@ xlink_compat() {
 ivtw_find_command "lld-link"
 
 OUR_FUSELD="-fuse-ld=$ivtw_find_command_result"
+# For clang-cl, we need to forcibly inject /safeseh:no because it won't otherwise listen.
+OUR_FUSELD_CL="-fuse-ld=\"w32cross-link\""
+# this is stuff that is forcibly injected via that mechanism
+OUR_FORCEDLINKARGS="/safeseh:no"
 # Note: "/winsysroot X" works for clang-cl but not for lld-link.
 # "/winsysroot:X" will result in prefixing ":" to everything.
-OUR_WINSYSROOT="/winsysroot \"\$W32CROSS_SDKROOT/fakewinsysroot\""
+OUR_WINSYSROOT="/winsysroot \"\$W32CROSS_SDKROOT/fakewinsysroot\" /winsdkver:10"
 
 # -- clang-cl --
 
-connect clang-cl clang-cl "$OUR_FUSELD $OUR_WINSYSROOT"
+connect clang-cl clang-cl "$OUR_FUSELD_CL $OUR_WINSYSROOT -Xlinker/safeseh:no"
 xlink clang-cl cl
 xlink_compat "cl" "../bin/w32cross-cl"
 
@@ -69,7 +73,7 @@ xlink_compat "cl" "../bin/w32cross-cl"
 for arch in $IVTW_VCARCHS; do
 	ivtw_vcarch_clangtarget "$arch"
 	for clanginess in "" "clang-"; do
-		connect clang-cl "${clanginess}cl-${arch}" "$OUR_FUSELD --target=$ivtw_vcarch_clangtarget_result $OUR_WINSYSROOT"
+		connect clang-cl "${clanginess}cl-${arch}" "$OUR_FUSELD_CL --target=$ivtw_vcarch_clangtarget_result $OUR_WINSYSROOT"
 		xlink_compat "${arch}/${clanginess}cl" "../../bin/w32cross-${clanginess}cl-${arch}"
 	done
 done
@@ -78,11 +82,12 @@ done
 
 rm -rf "${IVTW_SDKPFX}fakewinsysroot"
 mkdir -p "${IVTW_SDKPFX}fakewinsysroot/VC/Tools/MSVC"
-mkdir -p "${IVTW_SDKPFX}fakewinsysroot/Windows Kits/10"
+mkdir -p "${IVTW_SDKPFX}fakewinsysroot/Windows Kits/10/Include/10.0.19041.0"
+mkdir -p "${IVTW_SDKPFX}fakewinsysroot/Windows Kits/10/Lib/10.0.19041.0"
 mkdir -p "${IVTW_SDKPFX}fakewinsysroot/VC/Tools/MSVC/atlmfc"
 
-ln -s "../../../wsdk/include" "${IVTW_SDKPFX}fakewinsysroot/Windows Kits/10/Include"
-ln -s "../../../wsdk/lib" "${IVTW_SDKPFX}fakewinsysroot/Windows Kits/10/Lib"
+ln -s "../../../../../wsdk/include" "${IVTW_SDKPFX}fakewinsysroot/Windows Kits/10/Include/10.0.19041.0/um"
+ln -s "../../../../../wsdk/lib" "${IVTW_SDKPFX}fakewinsysroot/Windows Kits/10/Lib/10.0.19041.0/um"
 
 ln -s "../../../../ucrt/include" "${IVTW_SDKPFX}fakewinsysroot/VC/Tools/MSVC/include"
 ln -s "../../../../ucrt/lib" "${IVTW_SDKPFX}fakewinsysroot/VC/Tools/MSVC/lib"
@@ -117,6 +122,11 @@ gen_clangargs_lst_ld() {
 	for package in $SDK_PACKAGES; do
 		echo "-L\${W32CROSS_SDKROOT}/$package/lib/$1"
 	done
+	# This has to be defined outside because clang-cl just won't listen anyway I guess.
+	# See-also: OUR_FUSELD_CL, lld-link args
+	# Rationale: lld-link: error: /safeseh: ../../../../VCRUNTIME140.dll is not compatible with SEH
+	# (looks like the forwarder did it somehow)
+	echo "-Wl,-safeseh:no"
 	# The following are defined also in crt0_common.h and are described there.
 	echo "-Wl,-defaultlib:kernel32"
 	if [ "$1" = "x86" ]; then
@@ -169,19 +179,19 @@ done
 # -- llvm assorted --
 
 for llvminess in "" "llvm-"; do
-	connect llvm-ml ${llvminess}ml "$IVTW_ML_ARGS"
+	connect llvm-ml ${llvminess}ml ""
 	xlink_compat "${llvminess}ml" "../bin/w32cross-${llvminess}ml"
 	# There's llvm-rc, but it's well known to be kind of a mess. :<
-	connect llvm-cvtres ${llvminess}cvtres "$IVTW_CVTRES_ARGS"
+	connect llvm-cvtres ${llvminess}cvtres ""
 	xlink_compat "${llvminess}cvtres" "../bin/w32cross-${llvminess}cvtres"
-	connect llvm-lib ${llvminess}lib "$IVTW_LIB_ARGS"
+	connect llvm-lib ${llvminess}lib ""
 	xlink_compat "${llvminess}lib" "../bin/w32cross-${llvminess}lib"
 done
 
 # note the LLD! llvm-link is something different
-connect lld-link link "$IVTW_LINK_ARGS"
+connect lld-link link "$OUR_FORCEDLINKARGS"
 xlink_compat "link" "../bin/w32cross-link"
-connect lld-link lld-link "$IVTW_LINK_ARGS"
+connect lld-link lld-link "$OUR_FORCEDLINKARGS"
 xlink_compat "lld-link" "../bin/w32cross-lld-link"
 
 # -- utilities --
