@@ -13,11 +13,19 @@ _thrd_sleep32
 _thrd_sleep64
 call_once
 cnd_broadcast
-cnd_destroy@0
+
+; [WCX] Previous pattern so far tells me this @0 is fake.
+cnd_destroy@0==cnd_destroy
+cnd_destroy
+
 cnd_init
 cnd_signal
 cnd_wait
-mtx_destroy@0
+
+; [WCX] Ditto.
+mtx_destroy@0==mtx_destroy
+mtx_destroy
+
 mtx_init
 mtx_lock
 mtx_trylock
@@ -26,9 +34,9 @@ thrd_create
 thrd_current
 thrd_detach
 thrd_equal
-thrd_exit ; Check!!! Couldn't determine function argument count. Function doesn't return. 
+thrd_exit
 thrd_join
-thrd_yield ; Check!!! forwards to SwitchToThread in KERNEL32.dll (ordinal 1475)
+thrd_yield
 tss_create
 tss_delete
 tss_get

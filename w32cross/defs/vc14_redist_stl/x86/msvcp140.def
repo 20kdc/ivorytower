@@ -2715,7 +2715,11 @@ _Chmod
 _Close_dir
 _Cnd_broadcast
 _Cnd_destroy ; Check!!! forwards to free in api-ms-win-crt-heap-l1-1-0.dll (ordinal 24)
-_Cnd_destroy_in_situ@0
+
+; [WCX] Suspicious, see x86/vcruntime140.def for what I mean
+_Cnd_destroy_in_situ@0==_Cnd_destroy_in_situ
+_Cnd_destroy_in_situ
+
 _Cnd_do_broadcast_at_thread_exit
 _Cnd_init
 _Cnd_init_in_situ
@@ -2767,7 +2771,11 @@ _Mbrtowc
 _Mtx_clear_owner
 _Mtx_current_owns
 _Mtx_destroy ; Check!!! forwards to free in api-ms-win-crt-heap-l1-1-0.dll (ordinal 24)
-_Mtx_destroy_in_situ@0
+
+; [WCX] Ditto
+_Mtx_destroy_in_situ@0==_Mtx_destroy_in_situ
+_Mtx_destroy_in_situ
+
 _Mtx_getconcrtcs
 _Mtx_init
 _Mtx_init_in_situ
@@ -2871,5 +2879,9 @@ __crtSetFileInformationByHandle
 __crtSetThreadpoolTimer
 __crtSetThreadpoolWait
 __crtWaitForThreadpoolTimerCallbacks
-__set_stl_sync_api_mode@0
+
+; [WCX] Substitute
+__set_stl_sync_api_mode@0==__set_stl_sync_api_mode
+__set_stl_sync_api_mode
+
 xtime_get

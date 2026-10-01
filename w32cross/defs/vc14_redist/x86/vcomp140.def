@@ -67,7 +67,11 @@ _vcomp_for_dynamic_init
 _vcomp_for_dynamic_init_i8
 _vcomp_for_dynamic_next
 _vcomp_for_dynamic_next_i8
-_vcomp_for_static_end@0
+
+; [WCX] Previous pattern so far tells me this @0 is fake.
+_vcomp_for_static_end@0==_vcomp_for_static_end
+_vcomp_for_static_end
+
 _vcomp_for_static_init
 _vcomp_for_static_init_i8
 _vcomp_for_static_simple_init

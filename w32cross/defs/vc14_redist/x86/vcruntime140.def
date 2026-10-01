@@ -14,8 +14,15 @@ _CxxThrowException
 _EH_prolog
 _FindAndUnlinkFrame
 _IsExceptionObjectToBeDestroyed
-_NLG_Dispatch2@4
-_NLG_Return@12
+
+; [WCX] Dependency Walker output looks suspicious.
+_NLG_Dispatch2@4==_NLG_Dispatch2
+_NLG_Dispatch2
+
+; [WCX] Ditto.
+_NLG_Return@12==_NLG_Return
+_NLG_Return
+
 _NLG_Return2
 _SetWinRTOutOfMemoryExceptionCallback
 __AdjustPointer
@@ -26,7 +33,11 @@ __CxxExceptionFilter
 __CxxFrameHandler
 __CxxFrameHandler2
 __CxxFrameHandler3
-__CxxLongjmpUnwind@4
+
+; [WCX] Ditto.
+__CxxLongjmpUnwind@4==__CxxLongjmpUnwind
+__CxxLongjmpUnwind
+
 __CxxQueryExceptionSize
 __CxxRegisterExceptionObject
 __CxxUnregisterExceptionObject
@@ -44,13 +55,18 @@ __processing_throw
 __report_gsfailure
 __std_exception_copy
 __std_exception_destroy
-__std_terminate ; Check!!! forwards to terminate in api-ms-win-crt-runtime-l1-1-0.dll (ordinal 106)
+__std_terminate
 __std_type_info_compare
 __std_type_info_destroy_list
 __std_type_info_hash
 __std_type_info_name
-__telemetry_main_invoke_trigger@0
-__telemetry_main_return_trigger@0
+
+; [WCX] Ditto. (but, who calls these intentionally?)
+__telemetry_main_invoke_trigger@0==__telemetry_main_invoke_trigger
+__telemetry_main_invoke_trigger
+__telemetry_main_return_trigger@0==__telemetry_main_invoke_trigger
+__telemetry_main_return_trigger
+
 __unDName
 __unDNameEx
 __uncaught_exception
@@ -69,14 +85,19 @@ _global_unwind2
 _is_exception_typeof
 _local_unwind2
 _local_unwind4
-_longjmpex ; Check!!! Couldn't determine function argument count. Function doesn't return. 
-_purecall ; Check!!! Couldn't determine function argument count. Function doesn't return. 
-_seh_longjmp_unwind4@4
-_seh_longjmp_unwind@4
+_longjmpex
+_purecall
+
+; [WCX] Ditto.
+_seh_longjmp_unwind4@4==_seh_longjmp_unwind4
+_seh_longjmp_unwind4
+_seh_longjmp_unwind@4==_seh_longjmp_unwind
+_seh_longjmp_unwind
+
 _set_purecall_handler
 _set_se_translator
 _setjmp3
-longjmp ; Check!!! Couldn't determine function argument count. Function doesn't return. 
+longjmp
 memchr
 memcmp
 memcpy
@@ -86,7 +107,7 @@ set_unexpected
 strchr
 strrchr
 strstr
-unexpected ; Check!!! Couldn't determine function argument count. Function doesn't return. 
+unexpected
 wcschr
 wcsrchr
 wcsstr

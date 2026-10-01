@@ -17,3 +17,5 @@ These files are organized by 'source package'. Specific SDK scripts pick up thes
 * `vc14_redist_stl`: Libraries that are part of the STL/PPL complex.
 * `oldnames`: `oldnames.lib` content. Entirely custom, but also almost completely empty for now.
 	* This feels like something MinGW-w64 might have a copy of that can be used instead, mmm.
+
+Something in particular that came up is that `gendef` seems to have mismangled some 32-bit functions with fake `@` suffixes.
