@@ -24,7 +24,9 @@
 
 #define _HAS_CXX17 0
 #define _HAS_EXCEPTIONS 1
-#define _HAS_UNEXPECTED 0
+#define _HAS_UNEXPECTED 1
+#define _HAS_NODISCARD 1
+#define _NODISCARD [[nodiscard]]
 
 /* MinGW compatibility. */
 
@@ -57,11 +59,6 @@
 
 #define _CRT_DEPRECATE_TEXT(p)
 #define _CRT_SATELLITE_CODECVT_IDS_NOIMPORT
-
-/* Markers */
-
-#define _HAS_NODISCARD 1
-#define _NODISCARD [[nodiscard]]
 
 /* /GS support */
 

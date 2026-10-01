@@ -28,6 +28,15 @@ extern _PVFV __xt_z[1];
 /*
  * crt0 init/finalizer functions.
  * 0 return in __NOTVCRUNTIME_init indicates mysterious failure.
+ * Be warned: These functions *MUST* only be called once ever per module, each.
  */
-int __NOTVCRUNTIME_init(int isApp);
-void __NOTVCRUNTIME_fini();
+int __NOTVCRUNTIME_init(int isDLL);
+
+/*
+ * This only runs for DLLs.
+ * EXEs setup everything this *would* do with _crt_atexit in advance.
+ * This is based on logic implied by https://devblogs.microsoft.com/oldnewthing/20141017-00/?p=43823/
+ */
+void __NOTVCRUNTIME_dll_fini();
+
+#pragma comment(linker, "/defaultlib:kernel32.lib")

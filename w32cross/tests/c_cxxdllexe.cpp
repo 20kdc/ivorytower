@@ -1,7 +1,12 @@
 #include <stdio.h>
 #include "c_cxxdll.hxx"
 
+void atexittest() {
+	puts("Hi, I'm an atexit function living in an EXE.");
+}
+
 int main(int argc, char ** argv) {
+	atexit(atexittest);
 	Animal * animal = animalFactory();
 	animal->detail();
 	puts("animal exception test 1");

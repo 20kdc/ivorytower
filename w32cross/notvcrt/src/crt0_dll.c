@@ -7,8 +7,6 @@
 
 /* We could define WIN32_LEAN_AND_MEAN here, but it's more useful to exercise the includes. */
 #include <windows.h>
-
-#include "corecrt_startup.h"
 #include "crt0_common.h"
 
 int __stdcall DllMain(void * a, int reason, void * reserved);
@@ -17,13 +15,11 @@ int __stdcall _CRT_INIT(void * a, int reason, void * reserved) {
 	static int counter = 0;
 	if (reason == DLL_PROCESS_ATTACH) {
 		counter++;
-		return __NOTVCRUNTIME_init();
+		return __NOTVCRUNTIME_init(1);
 	} else if (reason == DLL_PROCESS_DETACH) {
 		counter--;
 		if (counter == 0) {
-			/* We're only to run destructors if dynamically loaded. */
-			if (!reserved)
-				__NOTVCRUNTIME_fini();
+			__NOTVCRUNTIME_dll_fini();
 			return 0;
 		}
 	}

@@ -9,11 +9,18 @@
  * Init/term sections.
  */
 
+#include <windows.h>
 #include "crt0_common.h"
 #include "corecrt_startup.h"
-#include "crtdefs.h"
+#include "interlockedapi.h"
+#include "stdlib.h"
+#include "vcruntime.h"
+#include "winnt.h"
 
-/* We waste some bytes putting dummy values in here to prevent discard. */
+/*
+ * We waste some bytes putting dummy values in here to prevent discard.
+ * The 'merge comment' might get discarded, mmm.
+ */
 
 #pragma comment(linker, "/merge:.CRT=.rdata")
 
@@ -42,45 +49,97 @@ _CRTALLOC(".CRT$XTA") _PVFV __xt_a[1];
 _CRTALLOC(".CRT$XTZ") _PVFV __xt_z[1];
 
 /*
- * Rather than try to figure out how to make sure we don't get a symbol conflict,
- *  we include all three tables even though we 'shouldn't'.
+ * EXE:
+ *  Destructors: _crt_atexit
+ *  _onexit: Both _crt_atexit and _crt_at_quick_exit
+ * DLL:
+ *  Everything: exit_list
  */
-static _onexit_table_t atexit_table, at_quick_exit_table, onexit_table;
 
+typedef struct {
+	SLIST_ENTRY entry;
+	_PVFV fn;
+} exitEntry_t;
+
+/*
+ * BEWARE!
+ * This list is UNUSABLE in the EXE.
+ * According to https://devblogs.microsoft.com/oldnewthing/20141017-00/?p=43823/ ,
+ * the correct behaviour is 'CRT hired lackey'.
+ */
+static SLIST_HEADER dll_exit_list;
 static int isDLL;
 
-int __cdecl atexit(void (__cdecl * f)()) {
-	if (!isDLL)
-		return _register_onexit_function(&atexit_table, (_onexit_t) f);
-	return _crt_atexit(f);
-}
-
-int __cdecl at_quick_exit(void (__cdecl * f)()) {
-	if (!isDLL)
-		return _register_onexit_function(&at_quick_exit_table, (_onexit_t) f);
-	return _crt_at_quick_exit(f);
-}
-
+/*
+ * For apps, they have the AppCRT atexit/at_quick_exit lists.
+ * For DLLs, there is no obvious reason not to combine the lists.
+ */
 _onexit_t __cdecl _onexit(_onexit_t f) {
-	return _register_onexit_function(&onexit_table, f) ? f : 0;
+	if (!isDLL) {
+		_crt_atexit((_PVFV) f);
+		_crt_at_quick_exit((_PVFV) f);
+		return f;
+	}
+	exitEntry_t * res = (exitEntry_t *) _aligned_malloc(sizeof(exitEntry_t), MEMORY_ALLOCATION_ALIGNMENT);
+	res->entry.Next = NULL;
+	res->fn = (_PVFV) f;
+	if (!res)
+		return 0;
+	InterlockedPushEntrySList(&dll_exit_list, (PSLIST_ENTRY) res);
+	return f;
+}
+
+int __cdecl atexit(_PVFV f) {
+	if (isDLL) {
+		return !!_onexit((_onexit_t) f);
+	} else {
+		return _crt_atexit(f);
+	}
+}
+
+int __cdecl at_quick_exit(_PVFV f) {
+	if (isDLL) {
+		return !!_onexit((_onexit_t) f);
+	} else {
+		return _crt_at_quick_exit(f);
+	}
 }
 
 int __NOTVCRUNTIME_init(int isDLLV) {
+	/* yes, this is a stub, but one day it might not be. */
+	__security_init_cookie();
+	/*
+	 * It may seem sensible to call __acrt_initialize.
+	 * DON'T. It got called by appcrt_dllmain.cpp!
+	 */
 	isDLL = isDLLV;
-	if (isDLL) {
-		_initialize_onexit_table(&atexit_table);
-		_initialize_onexit_table(&at_quick_exit_table);
-	}
-	_initialize_onexit_table(&onexit_table);
+	if (isDLL)
+		InitializeSListHead(&dll_exit_list);
 	if (_initterm_e(__xi_a, __xi_z))
 		return 0;
 	_initterm(__xc_a, __xc_z);
+	/*
+	 * If we're NOT a DLL, then destructors are installed into _crt_atexit.
+	 * If we ARE a DLL, then they are handled in the dll_fini function below.
+	 */
+	if (!isDLL) {
+		_PVFV * ptr = __xc_z;
+		while (ptr != __xc_a) {
+			ptr--;
+			if (*ptr)
+				_crt_atexit(*ptr);
+		}
+	}
 	return 1;
 }
-void __NOTVCRUNTIME_fini() {
-	if (isDLL) {
-		_execute_onexit_table(&atexit_table);
-		_execute_onexit_table(&at_quick_exit_table);
+
+void __NOTVCRUNTIME_dll_fini() {
+	while (1) {
+		exitEntry_t * current = (exitEntry_t *) InterlockedPopEntrySList(&dll_exit_list);
+		if (!current)
+			break;
+		current->fn();
+		_aligned_free(current);
 	}
 	_initterm(__xt_a, __xt_z);
 }

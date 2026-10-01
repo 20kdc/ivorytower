@@ -40,6 +40,7 @@ This allows the patches to be what's stored in Git while offering an easy develo
 * Init/Fini
 	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-initialization?view=msvc-140>
 	* `Source/10.0.19041.0/ucrt/internal/initialization.cpp`
+	* <https://devblogs.microsoft.com/oldnewthing/20141017-00/?p=43823/>
 * Atexit behaviour
 	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/atexit?view=msvc-170>
 * Security cookie

@@ -9,9 +9,6 @@
 
 void * __security_cookie = 0;
 
-/*
- * BEWARE: Our current crt0 DOES NOT CALL THIS FUNCTION.
- */
 void __stdcall __security_init_cookie() {
 	/* we retain our general attitude of not caring about this. */
 }

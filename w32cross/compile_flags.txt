@@ -1,0 +1,9 @@
+clang++
+--target=i686-windows-msvc
+-Inotvcrt/include
+-Inotvcrt/include_ext
+-Isdk_w10/stl/include
+-Isdk_w10/ucrt/include
+-Isdk_w10/wsdk/include
+-D_HAS_EXCEPTIONS
+-D_CPPRTTI

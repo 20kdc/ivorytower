@@ -26,8 +26,7 @@ int _tmain(int argc, _TCHAR ** argv);
 
 void _tmainCRTStartup() {
 	_set_app_type(_crt_console_app);
-	__NOTVCRUNTIME_init();
-	atexit(__NOTVCRUNTIME_fini);
+	__NOTVCRUNTIME_init(0);
 	_configure_t_argv(_crt_argv_unexpanded_arguments);
 	exit(_tmain(*__p___argc(), *__p___targv()));
 }

@@ -1,4 +1,6 @@
+#include <windows.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <typeinfo>
 #include <exception>
 
@@ -28,8 +30,17 @@ ANIMALDECL void animalOopsie() {
 	throw std::exception("oopsie!");
 }
 
+void atexittest() {
+	puts("Hi, I'm an atexit function living in a DLL.");
+}
+
 // This is to confirm the real DllMain takes precedence.
 int __stdcall DllMain(void * a, int reason, void * c) {
-	puts("Hi, I'm the real DllMain.");
+	if (reason == DLL_PROCESS_ATTACH) {
+		atexit(atexittest);
+		puts("Hi, I'm the real DllMain, and I just got attached.");
+	} else {
+		puts("Hi, I'm the real DllMain, and something else happened.");
+	}
 	return 1;
 }
