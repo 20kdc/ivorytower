@@ -32,9 +32,11 @@ do_stlp lgx64_ _sniper
 do_stlp wx32_ _mingw
 do_stlp wx64_ _mingw
 
-do_stlp wx32_ _w32cross
-do_stlp wx64_ _w32cross
-do_stlp wa64_ _w32cross
+# w32cross can only do default STL disposition.
+# This is because it relies *heavily* on dynamic linking to do all its work from more reasonably licensed resources.
+do_variant wx32_default_w32cross
+do_variant wx64_default_w32cross
+do_variant wa64_default_w32cross
 
 do_stlp mx64_ ""
 do_stlp ma64_ ""

@@ -39,4 +39,4 @@ int __NOTVCRUNTIME_init(int isDLL);
  */
 void __NOTVCRUNTIME_dll_fini();
 
-#pragma comment(linker, "/defaultlib:kernel32.lib")
+#pragma comment(linker, "/defaultlib:kernel32")

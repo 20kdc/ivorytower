@@ -4,3 +4,10 @@
 LIBRARY "ucrtbase.dll"
 EXPORTS
 	open=_open
+	close=_close
+	lseek=_lseek
+	read=_read
+	write=_write
+	fileno=_fileno
+	setmode=_setmode
+	putenv=_putenv
