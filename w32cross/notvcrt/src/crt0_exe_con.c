@@ -12,15 +12,17 @@
 
 #include "crt0_common.h"
 
-int _tmain(int argc, _TCHAR ** argv);
+int _tmain(int argc, _TCHAR ** argv, _TCHAR ** evx);
 
 #ifdef _UNICODE
 #define _tmainCRTStartup wmainCRTStartup
 #define _configure_t_argv _configure_wide_argv
+#define _get_initial_t_environment _get_initial_wide_environment
 #define __p___targv __p___wargv
 #else
 #define _tmainCRTStartup mainCRTStartup
 #define _configure_t_argv _configure_narrow_argv
+#define _get_initial_t_environment _get_initial_narrow_environment
 #define __p___targv __p___argv
 #endif
 
@@ -28,5 +30,5 @@ void _tmainCRTStartup() {
 	_set_app_type(_crt_console_app);
 	__NOTVCRUNTIME_init(0);
 	_configure_t_argv(_crt_argv_unexpanded_arguments);
-	exit(_tmain(*__p___argc(), *__p___targv()));
+	exit(_tmain(*__p___argc(), *__p___targv(), _get_initial_t_environment()));
 }

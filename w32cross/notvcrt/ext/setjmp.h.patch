@@ -1,34 +1,94 @@
 --- mingw
 +++ notvcrt
-@@ -209,21 +209,17 @@
+@@ -203,27 +203,73 @@
+ #define _JMP_BUF_DEFINED
  #endif
  
++/*
++ * [WCX] Ok, so, this whole section is going to be a mess.
++ * There's a pretty good reason for this.
++ * Let's start with the constraints:
++ * 1. Clang intrin.h will include this header and will then proceed to declare a _setjmp prototype.
++ *    We should be able to get away with marking it dllimport, but the prototype CANNOT BE CHANGED.
++ *    This means that our _setjmp can ONLY be _setjmp(jmp_buf _Buf).
++ * 2. https://github.com/llvm/llvm-project/blob/9d872cbb70f3f525a39f2b964597ecfd2b8735e4/clang/lib/CodeGen/CGCall.cpp#L2975
++ *    This indicates that there is a precise set of function calls we are 'expected' to make.
++ * 3. List of setjmps available per-arch are:
++ *    arm64: __intrinsic_setjmpex
++ *    x64: __intrinsic_setjmp __intrinsic_setjmpex
++ *    x86: __intrinsic_setjmp _setjmp3
++ * 4. STL <csetjmp> assumes that 'setjmp' is no more complex than a simple symbol define.
++ * 5. According to Wine ntdll/signal and msvcrt/except_i386:
++ *    x86: __intrinsic_setjmp takes only buf parameter.
++ *    x64: __intrinsic_setjmp and __intrinsic_setjmpex are the same thing.
++ *         Both of these read Buf from RCX and frame pointer from RDX indicating 2-parameter.
++ *    arm64: __intrinsic_setjmpex reads buf from x0 and frame pointer from x1.
++ *
++ * As a result:
++ * 1. We replace STL <csetjmp>. There is simply no way we can inject the frame pointer without doing this.
++ *    There isn't even a 'if you add an object' way. We just can't.
++ * 2. We intentionally avoid Clang's _setjmp definition with __setjmp.
++ * 3. The original idea was to change the intrinsic symbols, but because _setjmp has been ruined by Clang,
++ *    we just leave them as-is.
++ *
++ * First, the longjmp definitions (thankfully left alone).
++ */
++
+ _CRTIMP __MINGW_ATTRIB_NORETURN __attribute__ ((__nothrow__)) void __cdecl longjmp(jmp_buf _Buf, int _Value); /* for setjmp.h and non-i386 setjmpex.h */
  #ifdef __i386__
+ _CRTIMP __MINGW_ATTRIB_NORETURN __attribute__ ((__nothrow__)) void __cdecl _longjmpex(jmp_buf _Buf, int _Value); /* for i386 setjmpex.h */
+ #endif
+ 
+-#ifdef __i386__
 -_CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmp(jmp_buf _Buf); /* old i386 crtdll setjmp.h */
- _CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmp3(jmp_buf _Buf, int _Count, ...); /* new i386 msvcrt20+ setjmp.h and setjmpex.h */
- #else
+-_CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmp3(jmp_buf _Buf, int _Count, ...); /* new i386 msvcrt20+ setjmp.h and setjmpex.h */
+-#else
 -#ifndef __aarch64__
 -_CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmp(jmp_buf _Buf, void *_Frame); /* for non-i386 and non-aarch64 setjmp.h */
 -#endif
- _CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmpex(jmp_buf _Buf, void *_Frame); /* for non-i386 setjmpex.h and aarch64 setjmp.h */
- #endif
+-_CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmpex(jmp_buf _Buf, void *_Frame); /* for non-i386 setjmpex.h and aarch64 setjmp.h */
+-#endif
++/*
++ * [WCX]
++ * Because setjmp is so architecture-picky, we redo all definitions per-architecture.
++ */
++#if defined(__i386__)
  
 -#if defined(__arm__) || defined(__aarch64__)
 -int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) __mingw_setjmp(jmp_buf _Buf);
 -__MINGW_ATTRIB_NORETURN __attribute__ ((__nothrow__)) void __mingw_longjmp(jmp_buf _Buf, int _Value);
 -#endif
--
++_CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__))
++__intrinsic_setjmp(jmp_buf _Buf);
++_CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__))
++_setjmp3(jmp_buf _Buf, int _Count, ...);
++#define __setjmp(BUF) _setjmp3((BUF), 0)
++#define _setjmpex(BUF) _setjmp3((BUF), 0)
++
++#elif defined(__x86_64__)
++
++_CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__))
++__intrinsic_setjmp(jmp_buf _Buf, void* _Frame);
++_CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__))
++__intrinsic_setjmpex(jmp_buf _Buf, void* _Frame);
++#define __setjmp(BUF) __intrinsic_setjmp((BUF), __builtin_frame_address(0))
++#define _setjmpex(BUF) __intrinsic_setjmpex((BUF), __builtin_frame_address(0))
++
++#elif defined(__aarch64__)
++
++_CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__))
++__intrinsic_setjmpex(jmp_buf _Buf, void* _Frame);
++#define __setjmp(BUF) __intrinsic_setjmpex((BUF), __builtin_frame_address(0))
++#define _setjmpex(BUF) __intrinsic_setjmpex((BUF), __builtin_frame_address(0))
+ 
 -void * __cdecl __attribute__ ((__nothrow__)) mingw_getsp (void);
-+/*
-+ * [WCX] We're not MinGW!
-+ * Also, this comes up later, but Clang REALLY wants us to use _setjmp.
-+ * It has a definition in intrin.h and we BETTER NOT conflict with it.
-+ */
-+int __cdecl _setjmp(jmp_buf _Buf);
++#else
++#error "Architecture not supported by NOTVCRT setjmp.h"
++#endif
  
  #ifdef __cplusplus
  }
-@@ -237,49 +233,18 @@
+@@ -237,38 +283,18 @@
   * It allows '#include <setjmpex.h>' to override the existing setjmp() and longjmp() definitions.
   */
  
@@ -56,7 +116,14 @@
 -#  else
 -#    define setjmp(BUF) _setjmp((BUF), __builtin_frame_address(0))
 -#  endif
--#else
++
++/*
++ * [WCX] rework block to work correctly (I hope...)
++ */
++
++#if defined(__i386__) || (!defined(_INC_SETJMPEX) && !defined(__aarch64__))
++#define setjmp __setjmp
+ #else
 -#  if __has_builtin(__builtin_sponentry)
 -#    define setjmp(BUF) _setjmpex((BUF), __builtin_sponentry())
 -#  elif (__MINGW_GCC_VERSION < 40702) && !defined(__clang__)
@@ -64,13 +131,11 @@
 -#  else
 -#    define setjmp(BUF) _setjmpex((BUF), __builtin_frame_address(0))
 -#  endif
--#endif
-+
-+/* [WCX] Stripped logic due to what was mentioned earlier. */
-+#define setjmp _setjmp
++#define setjmp _setjmpex
+ #endif
  
  #ifdef longjmp
- #  undef longjmp
+@@ -276,10 +302,6 @@
  #endif
  #if defined(_INC_SETJMPEX) && defined(__i386__)
  #  define longjmp _longjmpex

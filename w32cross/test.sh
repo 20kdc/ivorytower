@@ -27,6 +27,7 @@ do_test() {
 	if "${IVTW_CL}-${CURRENT_ARCH}" /EHs /MD $args_cl "/Fetests/bin/cl/$CURRENT_ARCH/$test_out" "tests/$test_file" ; then
 		true
 	else
+		echo "cl $CURRENT_ARCH"
 		"${IVTW_CL}-${CURRENT_ARCH}" /c /FA1 /EHs /MD "/Fatests/bin/cl/$CURRENT_ARCH/$test_out.asm" "/Fotests/bin/cl/$CURRENT_ARCH/$test_out.obj" "tests/$test_file"
 		false
 	fi
