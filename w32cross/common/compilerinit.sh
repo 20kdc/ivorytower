@@ -179,13 +179,11 @@ done
 # -- llvm assorted --
 
 for llvminess in "" "llvm-"; do
-	connect llvm-ml ${llvminess}ml ""
-	xlink_compat "${llvminess}ml" "../bin/w32cross-${llvminess}ml"
 	# There's llvm-rc, but it's well known to be kind of a mess. :<
-	connect llvm-cvtres ${llvminess}cvtres ""
-	xlink_compat "${llvminess}cvtres" "../bin/w32cross-${llvminess}cvtres"
-	connect llvm-lib ${llvminess}lib ""
-	xlink_compat "${llvminess}lib" "../bin/w32cross-${llvminess}lib"
+	for verb in "ml" "cvtres" "lib" "strip"; do
+		connect "llvm-${verb}" "${llvminess}${verb}" ""
+		xlink_compat "${llvminess}${verb}" "../bin/w32cross-${llvminess}${verb}"
+	done
 done
 
 # note the LLD! llvm-link is something different

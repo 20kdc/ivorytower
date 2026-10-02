@@ -15,8 +15,8 @@ public:
 		compiler.machine = &mach;
 		compiler.variant = "w32cross";
 		// To make clangd work properly, this hell had to be created.
-		compiler.c = {"clang"},
-		compiler.cpp = {"clang++"},
+		compiler.c = {"clang"};
+		compiler.cpp = {"clang++"};
 
 		compiler.args.addCArgs = sdkP->getClangArgs(arch);
 		compiler.args.addCLinkArgs = sdkP->getClangArgs(arch + ".ld");
@@ -25,9 +25,8 @@ public:
 		compiler.args.addCppLinkArgs = compiler.args.addCLinkArgs;
 
 		compiler.args.bVSCRT = "md";
-		// compiler.ar = {sdkP->toolPath("w32cross-lib")},
-		// w32cross-strip is not a thing, need to work on this across subgroups
-		//compiler.strip = {sdkP->toolPath("w32cross-strip")},
+		compiler.lib = {sdkP->toolPath("w32cross-lib")},
+		compiler.strip = {sdkP->toolPath("w32cross-strip")};
 		//compiler.generic = {sdkP->toolPath("")};
 		compiler.dispositions = {
 			// We only support 'default' STL disposition for this compiler.

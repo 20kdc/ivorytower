@@ -96,6 +96,7 @@ namespace setupcore {
 		std::vector<std::string> cpp_ld;
 		std::vector<std::string> ar;
 		std::vector<std::string> windres;
+		std::vector<std::string> lib;
 		std::vector<std::string> strip;
 
 		// CMake. Would be in generic but mingw etc. don't work this way, so we need to not prefix there.

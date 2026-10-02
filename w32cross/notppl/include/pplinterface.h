@@ -28,7 +28,7 @@ namespace Concurrency {
 		static __cdecl void _SpinYield();
 	};
 	typedef void (__cdecl * TaskProc)(void *);
-	class CurrentScheduler __declspec(dllimport) {
+	class __declspec(dllimport) CurrentScheduler {
 	public:
 		static void __cdecl ScheduleTask(TaskProc, void *);
 	};

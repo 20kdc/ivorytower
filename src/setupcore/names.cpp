@@ -116,6 +116,7 @@ std::vector<std::vector<std::string> *> CompilerCfg::allCommands() {
 		&cpp_ld,
 		&ar,
 		&windres,
+		&lib,
 		&strip,
 		&cmake,
 		&generic,

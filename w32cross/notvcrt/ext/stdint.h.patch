@@ -1,0 +1,84 @@
+--- mingw
++++ notvcrt
+@@ -25,12 +25,35 @@
+ #ifndef _STDINT_H
+ #define _STDINT_H
+ 
+-#include <crtdefs.h>
+-
+-#define __need_wint_t
++/* [WCX] patch in missing stuff */
++#define __need_ptrdiff_t
++#define __need_size_t
++#define __need_rsize_t
+ #define __need_wchar_t
++#define __need_NULL
++#define __need_nullptr_t
++#define __need_unreachable
++#define __need_max_align_t
++#define __need_wint_t
++#define __need_offsetof
+ #include <stddef.h>
+ 
++/*
++ * [WCX] intptr_t/uintptr_t
++ * Note that max/min are defined later, just not the types themselves
++ */
++#ifdef _WIN64
++typedef long long intptr_t;
++typedef unsigned long long uintptr_t;
++#define INTPTR_WIDTH 64
++#define UINTPTR_WIDTH 64
++#else
++typedef int intptr_t;
++typedef unsigned uintptr_t;
++#define INTPTR_WIDTH 32
++#define UINTPTR_WIDTH 32
++#endif
++
+ /* 7.18.1.1  Exact-width integer types */
+ typedef signed char int8_t;
+ typedef unsigned char   uint8_t;
+@@ -38,8 +61,9 @@
+ typedef unsigned short  uint16_t;
+ typedef int  int32_t;
+ typedef unsigned   uint32_t;
+-__MINGW_EXTENSION typedef long long  int64_t;
+-__MINGW_EXTENSION typedef unsigned long long   uint64_t;
++/* [WCX] Because this is such a base header, we can't rely on __MINGW_EXTENSION. */
++typedef long long  int64_t;
++typedef unsigned long long   uint64_t;
+ 
+ /* 7.18.1.2  Minimum-width integer types */
+ typedef signed char int_least8_t;
+@@ -48,8 +72,9 @@
+ typedef unsigned short  uint_least16_t;
+ typedef int  int_least32_t;
+ typedef unsigned   uint_least32_t;
+-__MINGW_EXTENSION typedef long long  int_least64_t;
+-__MINGW_EXTENSION typedef unsigned long long   uint_least64_t;
++/* [WCX] Because this is such a base header, we have to hide __MINGW_EXTENSION. */
++typedef long long  int_least64_t;
++typedef unsigned long long   uint_least64_t;
+ 
+ /*  7.18.1.3  Fastest minimum-width integer types
+  *  Not actually guaranteed to be fastest for all purposes
+@@ -61,12 +86,14 @@
+ typedef unsigned short  uint_fast16_t;
+ typedef int  int_fast32_t;
+ typedef unsigned  int  uint_fast32_t;
+-__MINGW_EXTENSION typedef long long  int_fast64_t;
+-__MINGW_EXTENSION typedef unsigned long long   uint_fast64_t;
++/* [WCX] Because this is such a base header, we have to hide __MINGW_EXTENSION. */
++typedef long long  int_fast64_t;
++typedef unsigned long long   uint_fast64_t;
+ 
+ /* 7.18.1.5  Greatest-width integer types */
+-__MINGW_EXTENSION typedef long long  intmax_t;
+-__MINGW_EXTENSION typedef unsigned long long   uintmax_t;
++/* [WCX] Because this is such a base header, we have to hide __MINGW_EXTENSION. */
++typedef long long  intmax_t;
++typedef unsigned long long   uintmax_t;
+ 
+ /* 7.18.2  Limits of specified-width integer types */
+ #if !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS) ||	\

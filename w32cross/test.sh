@@ -44,4 +44,6 @@ for CURRENT_ARCH in $SDK_VCARCHS; do
 	do_test b_hellocpp.cpp hellocpp.exe "" ""
 	do_test c_cxxdll.cpp cxxdll.dll "/LD" "-shared"
 	do_test c_cxxdllexe.cpp cxxdll.exe "tests/bin/cl/$CURRENT_ARCH/cxxdll.lib" "tests/bin/cl/$CURRENT_ARCH/cxxdll.lib"
+	do_test d_micro_fbxcommon.cpp d_micro_fbxcommon.dll "/LD" "-shared"
+	do_test z_endlesschamber.cpp z_endlesschamber.dll "/LD" "-shared"
 done

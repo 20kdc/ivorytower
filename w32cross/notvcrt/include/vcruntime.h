@@ -11,6 +11,11 @@
 #error "You may need to pass -fms-compatibility-version, Clang isn't taking you seriously"
 #endif
 
+/* MinGW compatibility. This must be handled as early as possible. { */
+#define __MINGW_EXTENSION
+#define __MINGW_ATTRIB_NORETURN __declspec(noreturn)
+/* } */
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -27,11 +32,6 @@
 #define _HAS_UNEXPECTED 1
 #define _HAS_NODISCARD 1
 #define _NODISCARD [[nodiscard]]
-
-/* MinGW compatibility. */
-
-#define __MINGW_EXTENSION
-#define __MINGW_ATTRIB_NORETURN __declspec(noreturn)
 
 /* C++ guards */
 

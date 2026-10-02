@@ -20,7 +20,9 @@ graft() {
 }
 
 # ORIGINAL INCLUDE_EXT
+# BE SURE ALSO TO ADD TO w10/4vcruntime.sh
 graft thirdparty/mingw-w64-headers/eh.h eh.h
 graft thirdparty/mingw-w64-headers/excpt.h excpt.h
 graft thirdparty/mingw-w64-headers/setjmp.h setjmp.h
 graft thirdparty/mingw-w64-headers/setjmpex.h setjmpex.h
+graft thirdparty/mingw-w64-headers/stdint.h stdint.h

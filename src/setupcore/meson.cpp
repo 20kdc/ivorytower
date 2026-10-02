@@ -131,8 +131,10 @@ std::string setupcore::meson::makeCrossFile(const CompilerCfg & comp, const STLD
 	}
 	base += iniCmd("ar", comp.ar);
 	base += iniCmd("windres", comp.windres);
+	base += iniCmd("lib", comp.lib);
 	base += iniCmd("strip", comp.strip);
 	base += iniCmd("cmake", comp.cmake);
+
 	// https://mesonbuild.com/Machine-files.html#binaries
 	base += iniGenCmd("cups-config", comp.generic);
 	base += iniGenCmd("gnustep-config", comp.generic);
