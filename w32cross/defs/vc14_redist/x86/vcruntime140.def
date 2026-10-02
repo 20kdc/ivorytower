@@ -69,8 +69,6 @@ __telemetry_main_return_trigger
 
 __unDName
 __unDNameEx
-__uncaught_exception
-__uncaught_exceptions
 __vcrt_GetModuleFileNameW
 __vcrt_GetModuleHandleW
 __vcrt_InitializeCriticalSectionEx
@@ -80,22 +78,38 @@ _except_handler2
 _except_handler3
 _except_handler4_common
 _get_purecall_handler
-_get_unexpected
 _global_unwind2
+
+; [WCX] These ones are particularly weird ducks.
+; They're declared in eh.h and are expected to be C++-mangled, even though the DLL says not.
+; This is important for namespace integrity, so rather than adding extern C, we just go with it.
+unexpected
+?unexpected@@YAXXZ==unexpected
 _is_exception_typeof
+?_is_exception_typeof@@YAHABVtype_info@@PAU_EXCEPTION_POINTERS@@@Z==_is_exception_typeof
+set_unexpected
+?set_unexpected@@YAP6AXXZP6AXXZ@Z==set_unexpected
+_get_unexpected
+?_get_unexpected@@YAP6AXXZXZ==_get_unexpected
+_set_se_translator
+?_set_se_translator@@YAP6AXIPAU_EXCEPTION_POINTERS@@@ZP6AXI0@Z@Z==_set_se_translator
+__uncaught_exception
+?__uncaught_exception@@YA_NXZ==__uncaught_exception
+__uncaught_exceptions
+?__uncaught_exceptions@@YAHXZ==__uncaught_exceptions
+
 _local_unwind2
 _local_unwind4
 _longjmpex
 _purecall
 
-; [WCX] Ditto.
+; [WCX] Looks like another 'fake at'.
 _seh_longjmp_unwind4@4==_seh_longjmp_unwind4
 _seh_longjmp_unwind4
 _seh_longjmp_unwind@4==_seh_longjmp_unwind
 _seh_longjmp_unwind
 
 _set_purecall_handler
-_set_se_translator
 _setjmp3
 longjmp
 memchr
@@ -103,11 +117,9 @@ memcmp
 memcpy
 memmove
 memset
-set_unexpected
 strchr
 strrchr
 strstr
-unexpected
 wcschr
 wcsrchr
 wcsstr

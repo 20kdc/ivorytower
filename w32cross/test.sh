@@ -24,14 +24,14 @@ do_test() {
 	shift
 	args_clang="$1"
 	shift
-	if "${IVTW_CL}-${CURRENT_ARCH}" /EHs /MD $args_cl "/Fetests/bin/cl/$CURRENT_ARCH/$test_out" "tests/$test_file" ; then
+	if "${IVTW_CL}-${CURRENT_ARCH}" /EHs /MD $args_cl /clang:-Wl,/demangle:no "/Fetests/bin/cl/$CURRENT_ARCH/$test_out" "tests/$test_file" ; then
 		true
 	else
 		echo "cl $CURRENT_ARCH"
 		"${IVTW_CL}-${CURRENT_ARCH}" /c /FA1 /EHs /MD "/Fatests/bin/cl/$CURRENT_ARCH/$test_out.asm" "/Fotests/bin/cl/$CURRENT_ARCH/$test_out.obj" "tests/$test_file"
 		false
 	fi
-	"${IVTW_CLANG}-${CURRENT_ARCH}" -fms-runtime-lib=dll $args_clang -o "tests/bin/clang/$CURRENT_ARCH/$test_out" "tests/$test_file"
+	"${IVTW_CLANG}-${CURRENT_ARCH}" -fms-runtime-lib=dll $args_clang -Wl,/demangle:no -o "tests/bin/clang/$CURRENT_ARCH/$test_out" "tests/$test_file"
 }
 
 for CURRENT_ARCH in $SDK_VCARCHS; do
