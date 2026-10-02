@@ -25,8 +25,10 @@ public:
 		compiler.args.addCppLinkArgs = compiler.args.addCLinkArgs;
 
 		compiler.args.bVSCRT = "md";
+
 		compiler.lib = {sdkP->toolPath("w32cross-lib")},
 		compiler.strip = {sdkP->toolPath("w32cross-strip")};
+		compiler.windres = {sdkP->toolPath("w32cross-windres-" + arch)};
 		//compiler.generic = {sdkP->toolPath("")};
 		compiler.dispositions = {
 			// We only support 'default' STL disposition for this compiler.

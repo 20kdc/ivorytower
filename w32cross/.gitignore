@@ -4,3 +4,4 @@
 /tests/bin
 /tests/bin_cl
 /notvcrt/include_ext
+/.cache

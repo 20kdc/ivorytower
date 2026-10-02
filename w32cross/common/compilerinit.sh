@@ -105,10 +105,20 @@ gen_clangargs_lst_common() {
 	done
 	echo "-fms-runtime-lib=dll"
 }
+gen_windres_lst_common() {
+	for package in $SDK_PACKAGES; do
+		echo "--include-dir=\${W32CROSS_SDKROOT}/$package/include"
+	done
+}
 gen_clangargs_lst_arch() {
 	ivtw_vcarch_clangtarget "$1"
 	echo "--target=$ivtw_vcarch_clangtarget_result"
 	gen_clangargs_lst_common
+}
+gen_windres_lst_arch() {
+	ivtw_vcarch_clangtarget "$1"
+	echo "--target=$ivtw_vcarch_clangtarget_result"
+	gen_windres_lst_common
 }
 gen_clangargs_lst_ld() {
 	gen_clangargs_lst_arch "$1"
@@ -143,11 +153,14 @@ for package in $SDK_PACKAGES; do
 done
 
 mkdir -p "${IVTW_SDKPFX}etc/clang-args"
+mkdir -p "${IVTW_SDKPFX}etc/windres-args"
 gen_clangargs_lst_common > "${IVTW_SDKPFX}etc/clang-args/any.lst"
+gen_clangargs_lst_common > "${IVTW_SDKPFX}etc/windres-args/any.lst"
 
 for arch in $IVTW_VCARCHS; do
 	gen_clangargs_lst_arch "$arch" > "${IVTW_SDKPFX}etc/clang-args/$arch.lst"
 	gen_clangargs_lst_ld "$arch" > "${IVTW_SDKPFX}etc/clang-args/$arch.ld.lst"
+	gen_windres_lst_arch "$arch" > "${IVTW_SDKPFX}etc/windres-args/$arch.lst"
 done
 
 # -- clang --
@@ -169,10 +182,22 @@ for plusplus in "" "++"; do
 
 	for arch in $IVTW_VCARCHS; do
 		set_our_clangargs < "${IVTW_SDKPFX}etc/clang-args/$arch.ld.lst"
-
-		ivtw_vcarch_clangtarget "$arch"
 		connect "clang${plusplus}" "clang${plusplus}-${arch}" "$OUR_CLANGARGS"
 		xlink_compat "${arch}/clang${plusplus}" "../../bin/w32cross-clang${plusplus}-${arch}"
+	done
+done
+
+# -- windres --
+
+for llvminess in "" "llvm-"; do
+	set_our_clangargs < "${IVTW_SDKPFX}etc/windres-args/any.lst"
+	connect "llvm-windres" "${llvminess}windres" "$OUR_CLANGARGS"
+	xlink_compat "${llvminess}windres" "../bin/w32cross-${llvminess}windres"
+
+	for arch in $IVTW_VCARCHS; do
+		set_our_clangargs < "${IVTW_SDKPFX}etc/windres-args/$arch.lst"
+		connect "llvm-windres" "${llvminess}windres-${arch}" "$OUR_CLANGARGS"
+		xlink_compat "${arch}/${llvminess}windres" "../../bin/w32cross-${llvminess}windres-${arch}"
 	done
 done
 

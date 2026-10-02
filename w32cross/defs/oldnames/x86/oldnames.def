@@ -14,3 +14,13 @@ EXPORTS
 LIBRARY "api-ms-win-crt-environment-l1-1-0.dll"
 EXPORTS
 	putenv==_putenv
+
+LIBRARY "api-ms-win-crt-filesystem-l1-1-0.dll"
+EXPORTS
+	unlink==_unlink
+	wunlink==_wunlink
+
+LIBRARY "api-ms-win-crt-convert-l1-1-0.dll"
+EXPORTS
+	; SDL2 needs this, funnily enough
+	itoa==_itoa
