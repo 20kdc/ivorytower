@@ -115,6 +115,10 @@ int __NOTVCRUNTIME_init(int isDLLV) {
 	isDLL = isDLLV;
 	if (isDLL)
 		InitializeSListHead(&dll_exit_list);
+	/*
+	 * KNOW YOUR RELIABILITY CHECK:
+	 * ./w10/4vcruntime.sh ; ./test.sh ; wine tests/bin/cl/x86/constructors.exe
+	 */
 	if (_initterm_e(__xi_a, __xi_z))
 		return 0;
 	_initterm(__xc_a, __xc_z);
@@ -123,12 +127,21 @@ int __NOTVCRUNTIME_init(int isDLLV) {
 	 * If we ARE a DLL, then they are handled in the dll_fini function below.
 	 */
 	if (!isDLL) {
-		_PVFV * ptr = __xc_z;
-		while (ptr != __xc_a) {
-			ptr--;
+		/*
+		 * initterm runs from A to Z.
+		 * This means we should logically run destructors from Z to A.
+		 * But atexit runs in reverse, so we do this by... iterating forward again!
+		 * Isn't this fun?
+		 */
+		_PVFV * ptr = __xp_a;
+		/* term first (so run last) */
+		for (_PVFV * ptr = __xt_a; ptr != __xt_z; ptr++)
 			if (*ptr)
 				_crt_atexit(*ptr);
-		}
+		/* then pre-term (so run before) */
+		for (_PVFV * ptr = __xp_a; ptr != __xp_z; ptr++)
+			if (*ptr)
+				_crt_atexit(*ptr);
 	}
 	return 1;
 }
@@ -141,5 +154,6 @@ void __NOTVCRUNTIME_dll_fini() {
 		current->fn();
 		_aligned_free(current);
 	}
+	_initterm(__xp_a, __xp_z);
 	_initterm(__xt_a, __xt_z);
 }

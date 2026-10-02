@@ -48,3 +48,5 @@ for CURRENT_ARCH in $SDK_VCARCHS; do
 	do_test d_micro_fbxcommon.cpp d_micro_fbxcommon.dll "/LD" "-shared"
 	do_test z_endlesschamber.cpp z_endlesschamber.dll "/LD" "-shared"
 done
+
+echo BE SURE TO RUN tests/bin/cl/x86/constructors.exe

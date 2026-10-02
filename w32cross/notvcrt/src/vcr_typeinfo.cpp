@@ -17,7 +17,7 @@ void __type_info_root_node_destructor() {
 }
 
 #pragma section(".CRT$XTY", read)
-__declspec(allocate(".CRT$XTY")) static _PVFV __type_info_root_node_destructor_ptr = { __type_info_root_node_destructor };
+__attribute__((used)) __declspec(allocate(".CRT$XTY")) static _PVFV __type_info_root_node_destructor_ptr = { __type_info_root_node_destructor };
 
 type_info::~type_info() {
 	// hi! I am a virtual destructor that shouldn't reasonably get called!

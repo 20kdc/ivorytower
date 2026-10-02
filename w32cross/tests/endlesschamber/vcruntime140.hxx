@@ -64,6 +64,7 @@ __declspec(dllexport) void * it_vcruntime140_RTDynamicCast(std::exception * ex) 
 // __RTtypeid
 // NOLINTNEXTLINE
 __declspec(dllexport) const std::type_info * it_vcruntime140_RTtypeid(std::exception * ex) {
+	// TODO: This doesn't appear to actually call __RTtypeid???
 	return &typeid(ex);
 }
 
@@ -104,7 +105,7 @@ __declspec(dllexport) void it_vcruntime140_std_terminate(void (*narwhal)()) thro
 }
 
 // __std_type_info_compare: TODO
-// __std_type_info_destroy_list: already called by notvcrt
+// __std_type_info_destroy_list: SHOULD already be called by notvcrt
 // __std_type_info_hash: TODO
 // __std_type_info_name: TODO
 // __telemetry_main_invoke_trigger: unnecessary
