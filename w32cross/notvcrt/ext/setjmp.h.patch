@@ -1,6 +1,6 @@
 --- mingw
 +++ notvcrt
-@@ -203,27 +203,73 @@
+@@ -203,27 +203,80 @@
  #define _JMP_BUF_DEFINED
  #endif
  
@@ -25,9 +25,12 @@
 + *    arm64: __intrinsic_setjmpex reads buf from x0 and frame pointer from x1.
 + *
 + * As a result:
-+ * 1. We replace STL <csetjmp>. There is simply no way we can inject the frame pointer without doing this.
-+ *    There isn't even a 'if you add an object' way. We just can't.
-+ * 2. We intentionally avoid Clang's _setjmp definition with __setjmp.
++ * 1. We replace STL <csetjmp>. There is simply no way we can inject the frame pointer without doing this;
++ *    STL <csetjmp> is inherently designed in a way which requires a 1-parameter function.
++ *    Such a function *cannot* be valid without pulling that parameter from 'somewhere'.
++ *    One can assume that MSVC 'does something crazy' i.e. internally rewrites _setjmp.
++ *    The replaced csetjmp still tries to account for 'std::setjmp' by importing __NOTVCRUNTIME_SETJMP_IMPL.
++ * 2. We intentionally avoid Clang's _setjmp definition with __NOTVCRUNTIME_setjmp.
 + * 3. The original idea was to change the intrinsic symbols, but because _setjmp has been ruined by Clang,
 + *    we just leave them as-is.
 + *
@@ -62,7 +65,8 @@
 +__intrinsic_setjmp(jmp_buf _Buf);
 +_CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__))
 +_setjmp3(jmp_buf _Buf, int _Count, ...);
-+#define __setjmp(BUF) _setjmp3((BUF), 0)
++#define __NOTVCRUNTIME_setjmp(BUF) _setjmp3((BUF), 0)
++#define __NOTVCRUNTIME_SETJMP_IMPL _setjmp3
 +#define _setjmpex(BUF) _setjmp3((BUF), 0)
 +
 +#elif defined(__x86_64__)
@@ -71,14 +75,17 @@
 +__intrinsic_setjmp(jmp_buf _Buf, void* _Frame);
 +_CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__))
 +__intrinsic_setjmpex(jmp_buf _Buf, void* _Frame);
-+#define __setjmp(BUF) __intrinsic_setjmp((BUF), __builtin_frame_address(0))
++#define __NOTVCRUNTIME_setjmp(BUF) __intrinsic_setjmp((BUF), __builtin_frame_address(0))
++#define __NOTVCRUNTIME_SETJMP_IMPL __intrinsic_setjmp
 +#define _setjmpex(BUF) __intrinsic_setjmpex((BUF), __builtin_frame_address(0))
++#define __NOTVCRUNTIME_SETJMPEX_IMPL __intrinsic_setjmpex
 +
 +#elif defined(__aarch64__)
 +
 +_CRTIMP int __cdecl __attribute__ ((__nothrow__,__returns_twice__))
 +__intrinsic_setjmpex(jmp_buf _Buf, void* _Frame);
-+#define __setjmp(BUF) __intrinsic_setjmpex((BUF), __builtin_frame_address(0))
++#define __NOTVCRUNTIME_setjmp(BUF) __intrinsic_setjmpex((BUF), __builtin_frame_address(0))
++#define __NOTVCRUNTIME_SETJMP_IMPL __intrinsic_setjmpex
 +#define _setjmpex(BUF) __intrinsic_setjmpex((BUF), __builtin_frame_address(0))
  
 -void * __cdecl __attribute__ ((__nothrow__)) mingw_getsp (void);
@@ -88,7 +95,7 @@
  
  #ifdef __cplusplus
  }
-@@ -237,38 +283,18 @@
+@@ -237,38 +290,18 @@
   * It allows '#include <setjmpex.h>' to override the existing setjmp() and longjmp() definitions.
   */
  
@@ -122,7 +129,7 @@
 + */
 +
 +#if defined(__i386__) || (!defined(_INC_SETJMPEX) && !defined(__aarch64__))
-+#define setjmp __setjmp
++#define setjmp __NOTVCRUNTIME_setjmp
  #else
 -#  if __has_builtin(__builtin_sponentry)
 -#    define setjmp(BUF) _setjmpex((BUF), __builtin_sponentry())
@@ -135,7 +142,7 @@
  #endif
  
  #ifdef longjmp
-@@ -276,10 +302,6 @@
+@@ -276,10 +309,6 @@
  #endif
  #if defined(_INC_SETJMPEX) && defined(__i386__)
  #  define longjmp _longjmpex

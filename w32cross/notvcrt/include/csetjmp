@@ -1,0 +1,20 @@
+/*
+ * NOTVCRUNTIME
+ * This is not VCRuntime.
+ * This is free and unencumbered software released into the public domain.
+ * For more information, please refer to <http://unlicense.org>, supplied as COPYING in the W32Cross source code.
+ */
+
+#pragma once
+
+#include <setjmp.h>
+
+namespace std {
+	using ::jmp_buf;
+	using ::longjmp;
+	// See setjmp.h for details.
+	using ::__NOTVCRUNTIME_SETJMP_IMPL;
+#ifdef __NOTVCRUNTIME_SETJMPEX_IMPL
+	using ::__NOTVCRUNTIME_SETJMPEX_IMPL;
+#endif
+}
