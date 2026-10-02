@@ -34,8 +34,9 @@ __CxxFrameHandler
 __CxxFrameHandler2
 __CxxFrameHandler3
 
-; [WCX] Ditto.
-__CxxLongjmpUnwind@4==__CxxLongjmpUnwind
+; [WCX] So funnily enough gendef figured out there was a weird name.
+; It just incorrectly determined what that name was.
+___CxxLongjmpUnwind@4==__CxxLongjmpUnwind
 __CxxLongjmpUnwind
 
 __CxxQueryExceptionSize

@@ -43,7 +43,7 @@
 #define _CRT_END_C_HEADER
 #endif
 
-/* Calling conventions */
+/* Calling conventions, etc. */
 
 #define __CLR_OR_THIS_CALL __thiscall
 #define __CLRCALL_PURE_OR_CDECL __cdecl

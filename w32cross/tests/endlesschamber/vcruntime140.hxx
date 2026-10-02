@@ -187,3 +187,5 @@ __declspec(dllexport) wchar_t * it_vcruntime140_wcsseries(wchar_t *, wchar_t * x
 	wchar_t * mid = wcsrchr(x, '.');
 	return wcsstr(send, mid);
 }
+
+// ___CxxLongjmpUnwind@4 is x86-specific and is handled in b_exceptions_vs_destructors.cpp
