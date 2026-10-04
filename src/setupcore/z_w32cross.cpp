@@ -8,7 +8,7 @@ using namespace setupcore;
 class W32CrossComponent : public Component {
 public:
 	Subsystem<W32CrossSys> * sdk;
-	W32CrossComponent(const char * name, const char * purpose, Subsystem<W32CrossSys> * sdk) : Component(name, purpose, true), sdk(sdk) {
+	W32CrossComponent(const char * name, const char * purpose, Subsystem<W32CrossSys> * sdk) : Component(name, purpose, false), sdk(sdk) {
 	}
 	bool subinstall(InstallData * prepare, iblis::W32CrossSys * sdkP, const Machine & mach, const std::string & arch) {
 		CompilerCfg compiler;

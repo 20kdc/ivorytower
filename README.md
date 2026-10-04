@@ -34,8 +34,11 @@ Start with a Linux system that has at least these things:
 * `meson`, with a working host C++ compiler
 * A reasonably sensible filesystem layout
 	* All source code you intend to compile must be visible from `/home`, `/media`, `$XDG_RUNTIME_DIR` or `/tmp`. Workarounds are possible, see [options](doc/OPTIONS.md)
-* For Windows support:
+* For MinGW Windows support:
 	* Either/both of `i686-w64-mingw32-gcc-win32` and `x86_64-w64-mingw32-gcc-win32` (also `g++`, etc.)
+		* If you want to insist on the 'POSIX threads' compiler, set `mingw_suffix=-posix`.
+* For `w32cross` Windows support:
+	* `msiextract`, `clang`, `clang++`, `lld-link`, `llvm-lib`, and various other tools.
 * For Mac OS X support:
 	* `wget`
 	* Generally 'a system that OSXCross supports'
@@ -46,8 +49,6 @@ ivorytower defaults to setting up the following targets:
 
 * MinGW-w64 (assumed to be provided by your distribution)
 	* This target is installed even if the underlying executables do not exist, as the binary names are well-standardized.
-	* There may in future be added a Clang-MSVC target. This is highly preferrable for various fun reasons, like interop with existing code.
-		* For anyone curious: `clang -fuse-ld=lld-link -target i686-windows-msvc test.cpp -Xlinker /safeseh:no -o test.exe -I /media/ramdisk/msvc600/vc98/include -L /media/ramdisk/msvc600/vc98/Lib` works, but the filesystem must be case-insensitive. The primary challenge will be determining a similar strategy to OSXCross for a more modern SDK. More realistically, Clang 'wants' to be run as `clang-cl-18` or such and Meson should be told to pretend it's MSVC...
 * OSXCross (will be downloaded if necessary)
 * and SteamRT Scout x86\_64 in a container (via Docker).
 
@@ -55,11 +56,13 @@ Additional targets that can be selected are:
 
 * SteamRT Scout i386 (`scout_i386=on`)
 * SteamRT Sniper x86\_64 (`sniper=on`)
+* The `w32cross` Clang-MSVC target (`w32cross=on`)
+	* This is highly preferrable for various reasons, like interop with existing code, but also must download a Windows SDK ISO (among other things).
 
 ## caveats
 
-* Running the build system outside a container and the compiler inside is not, strictly speaking, the fastest way of running a compiler. This will be slower than not doing that.
-* Because the Windows builds are based on MinGW right now, the GNU ABI is used. `w32cross` will be where work on solving this is done.
+* For the Linux builds, running the build system outside a container and the compiler inside is not, strictly speaking, the fastest way of running a compiler. This will be slower than not doing that.
+* `w32cross` is quasi-stable and MinGW-w64's C++ standard library requires being shipped with your application.
 
 ## use of global crossfile caches
 
@@ -91,6 +94,7 @@ A toolchain is specified as the prefix `ivt/`, followed by three components sepa
 			* I am aware <https://mesonbuild.com/Creating-Linux-binaries.html> says that different Linux distributions have binary-incompatible STLs.
 			* Valve uses dynamic STL (insofaras they use the STL at all), and more to the point, shadowing the system STL is a realistic risk **that will break Mesa if it happens.**
 			* For as much as GNU library management has caused other issues in this project, `libstdc++` maintainers seem well aware that breaking ABI here would _light everything on fire_ and have evaded that catastrophe.
+		* This is the only supported mode for `w32cross`.
 	* `static`: The toolchain STL is used in an explicitly static mode. `libgcc` is statically linked if necessary.
 		* Remember that you can disable RTTI and exceptions. If your project is multi-module, strongly consider doing this.
 		* In this mode, you should take care to use _as little of the STL as possible_ at interface boundaries. `dynamic_cast` is potentially a mismatch hazard.
