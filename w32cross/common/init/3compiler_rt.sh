@@ -22,3 +22,9 @@ else
 	# Try to be at least a little clever here regarding version updates.
 	mv "${IVTW_SDKPFX}build/compiler-rt/usr/lib/clang/"*"/lib/windows/"* "${IVTW_SDKPFX}build/compiler-rt/"
 fi
+
+# Save having to do this remapping in SDK-specific NotVCRT orchestration.
+ln -s "libclang_rt.builtins-i386.a" "${IVTW_SDKPFX}build/compiler-rt/libclang_rt.builtins.x86.a"
+ln -s "libclang_rt.builtins-x86_64.a" "${IVTW_SDKPFX}build/compiler-rt/libclang_rt.builtins.x64.a"
+ln -s "libclang_rt.builtins-aarch64.a" "${IVTW_SDKPFX}build/compiler-rt/libclang_rt.builtins.arm64.a"
+ln -s "libclang_rt.builtins-arm.a" "${IVTW_SDKPFX}build/compiler-rt/libclang_rt.builtins.arm.a"

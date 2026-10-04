@@ -24,7 +24,8 @@ This seems to be the intended approach by Meson, and it does have the key advant
 		* `ARCH.ld.lst`: List for a given architecture. Contains Clang target and `lib` directories.
 * `build/`: Build internal files that can be safely removed.
 	* `compiler-rt/`: Contains LLVM `compiler-rt`. The SDK stages merge these into `msvcrt.lib`.
-	* `notvcrt_obj/`: Meson build directory for `notvcrt`.
+		* `libclang_rt.builtins.ARCH.a`: Pre-mapped into x86\_64
+	* `notvcrt_obj/ARCH`: Meson build directories for `notvcrt`.
 * `licenses/`: licenses
 * `stl/`: STL license, `include/` and `lib/`.
 	* `include/`
