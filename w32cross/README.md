@@ -19,3 +19,17 @@ W32Cross is built on four key pillars:
 This is tested with `clang` on Ubuntu 24.04.
 
 The replica `vcruntime.h` and friends can be gently described as _sparse._
+
+## How It Works
+
+w32cross is run by a series of shell scripts that operate on an 'SDK directory'. It builds in various stages:
+
+1. First, any downloads are handled (defined in i.e. `w10/0sdkdef.sh`)
+2. `common/compilerinit.sh` detects the correct names for various tools (i.e. because `clang-cl` is not symlinked to a version on Ubuntu) and builds an 'empty SDK'.
+	* The resulting 'empty SDK' contains:
+		* `compiler-rt` (but not yet usable)
+		* Toolchain arg-lists
+		* Wrappers adding said arg-lists to the tools and then running them
+		* Many symlinks
+		* `w32cross-treecasefix`, which attempts to create lowercase symlinks for all files that might need them
+3. The SDK is extracted, rearranged, lowercased, `notvcrt` is built, and then the STL is put in.

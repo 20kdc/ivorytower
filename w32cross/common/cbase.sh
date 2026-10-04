@@ -1,15 +1,15 @@
 # All common definitions for W32Cross setup.
 
 # -- NOTICE ON LAYOUT --
-# Internal variables are marked IVTW_.
-# castlebase functions are marked ivtw_.
+# Base variables are marked IVTW_.
+# Base functions are marked ivtw_. Return values from base functions are lowercase also.
 # Functions defined in SDK config are marked sdk_.
 
 if [ "$W32CROSS_SDKID" = "" ]; then
-	echo "common/castlebase.sh: Requires W32CROSS_SDKID"
+	echo "common/cbase.sh: Requires W32CROSS_SDKID"
 	exit 1
 elif [ ! -e "$W32CROSS_SDKID/0sdkdef.sh" ]; then
-	echo "common/castlebase.sh: Could not find 0sdkdef.sh."
+	echo "common/cbase.sh: Could not find 0sdkdef.sh."
 	echo "Possible causes:"
 	echo "* SDK '$W32CROSS_SDKID' is not a known SDK synthesis chain."
 	echo "* Script may have been run with incorrect CD."
@@ -25,6 +25,7 @@ fi
 # These should be based on prefixes to prevent 'root -rf risk'.
 IVTW_DLPFX="downloaded/"
 IVTW_SDKPFX="sdk_$W32CROSS_SDKID/"
+IVTW_MACRO_WHEREAMI='W32CROSS_BINDIR="$(dirname "$(readlink -f "$0")")"'
 
 # -- Core Utilities --
 
@@ -65,9 +66,7 @@ ivtw_find_command() {
 
 IVTW_CL="${IVTW_SDKPFX}bin/w32cross-cl"
 IVTW_CLANG="${IVTW_SDKPFX}bin/w32cross-clang++"
-
-ivtw_find_command "^llvm-lib"
-IVTW_LIB="$ivtw_find_command_result"
+IVTW_LIB="${IVTW_SDKPFX}bin/w32cross-lib"
 
 # -- Disclaimer --
 
