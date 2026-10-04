@@ -21,6 +21,10 @@ std::string W32CrossSys::toolPath(const std::string & tool) {
 	return {prefix + "/bin/" + tool};
 }
 
+std::string W32CrossSys::toolCompatPath(const std::string & tool) {
+	return {prefix + "/bin_compat/" + tool};
+}
+
 std::vector<std::string> W32CrossSys::getClangArgs(const std::string & config) {
 	std::vector<std::string> unfiltered = readFile(prefix + "/etc/clang-args/" + config + ".lst");
 	std::vector<std::string> filtered;

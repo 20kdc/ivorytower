@@ -26,10 +26,6 @@ fi
 IVTW_DLPFX="downloaded/"
 IVTW_SDKPFX="sdk_$W32CROSS_SDKID/"
 
-IVTW_CL="${IVTW_SDKPFX}bin/w32cross-cl"
-IVTW_CLANG="${IVTW_SDKPFX}bin/w32cross-clang++"
-IVTW_LIB="${IVTW_SDKPFX}bin/w32cross-lib"
-
 # -- Core Utilities --
 
 # Runs a stage script.
@@ -64,6 +60,14 @@ ivtw_get_candidates() {
 ivtw_find_command() {
 	ivtw_find_command_result="$(ivtw_get_candidates "$1" | head -n 1)"
 }
+
+# -- command references --
+
+IVTW_CL="${IVTW_SDKPFX}bin/w32cross-cl"
+IVTW_CLANG="${IVTW_SDKPFX}bin/w32cross-clang++"
+
+ivtw_find_command "^llvm-lib"
+IVTW_LIB="$ivtw_find_command_result"
 
 # -- Disclaimer --
 

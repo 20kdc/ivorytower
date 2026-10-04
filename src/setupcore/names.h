@@ -94,9 +94,11 @@ namespace setupcore {
 		std::vector<std::string> c_ld;
 		std::vector<std::string> cpp;
 		std::vector<std::string> cpp_ld;
+		// This is *also* 'lib'. Meson uses filename-based detection for this.
+		// https://github.com/mesonbuild/meson/blob/db12230ef8f3aae78be40c1b8892ba7888e45fac/mesonbuild/compilers/detect.py#L228
+		// Since we may end up needing to use i.e. 'llvm-lib-18' (which would _not_ be detected as llvm-lib), platforms that care may need a wrapper script.
 		std::vector<std::string> ar;
 		std::vector<std::string> windres;
-		std::vector<std::string> lib;
 		std::vector<std::string> strip;
 
 		// CMake. Would be in generic but mingw etc. don't work this way, so we need to not prefix there.

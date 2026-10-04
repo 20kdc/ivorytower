@@ -50,6 +50,8 @@ NOTVCRT_OBJDIR="${IVTW_SDKPFX}build/notvcrt_obj"
 NOTVCRT_LIBDIR="${IVTW_SDKPFX}ucrt/lib"
 NOTVCRT_SRCDIR="${IVTW_SDKPFX}ucrt/src/notvcrt"
 
+PATH="${IVTW_SDKPFX}bin:$PATH"
+
 # Compile for all supported architectures.
 # Note that we can only compile DLL versions.
 # We do compile debug versions, but they're half-hearted.
@@ -64,44 +66,8 @@ for arch in x86 x64 arm64; do
 	ivtw_import_defs oldnames "$arch" "$NOTVCRT_LIBDIR/$arch"
 
 	# Compile CRT0.
-	mkdir -p "$NOTVCRT_OBJDIR/$arch/vcruntime"
-
-	# Build 'simpler' objects
-	# Notably, this builds the 'ANSI' versions of crt0_exe.
-	# The Unicode versions are built in the next pass.
-	for object in \
-	crt0_common crt0_gs crt0_fltused \
-	crt0_dll crt0_dll_nomain \
-	crt0_exe_con crt0_exe_gui \
-	; do
-		# Versions are mapped here from flags to lib names.
-		# Trust me, it's better this way.
-		"${IVTW_CL}-$arch" "$1" /c /O1 /MD \
-		"/Fo$NOTVCRT_OBJDIR/$arch/vcruntime/${object}.obj" \
-			"$NOTVCRT_SRCDIR/${object}.c"
-	done
-
-	# Unicode versions where relevant.
-	for object in crt0_exe_con crt0_exe_gui; do
-		"${IVTW_CL}-$arch" /c /O1 /MD /D_UNICODE \
-		"/Fo$NOTVCRT_OBJDIR/$arch/vcruntime/${object}_w.obj" \
-			"$NOTVCRT_SRCDIR/${object}.c"
-	done
-
-	# Build VCRuntime supplement.
-	# Note: DO NOT USE /FA1 for actual build it breaks the compile :<
-	for object in \
-	vcr_typeinfo vcr_new_nothrow \
-	vcr_new1 vcr_new2 vcr_new3 vcr_new4 vcr_new5 vcr_new6 vcr_new7 vcr_new8 \
-	vcr_del01 vcr_del02 vcr_del03 vcr_del04 vcr_del05 vcr_del06 vcr_del07 vcr_del08 vcr_del09 vcr_del10 vcr_del11 vcr_del12 \
-	; do
-		# Versions are mapped here from flags to lib names.
-		# Trust me, it's better this way.
-		# We use /EHs here because std::bad_alloc exception has to be caught in vrc_new.
-		"${IVTW_CL}-$arch" /c /O1 /MD /EHs \
-		"/Fo$NOTVCRT_OBJDIR/$arch/vcruntime/${object}.obj" \
-		   "$NOTVCRT_SRCDIR/${object}.cpp"
-	done
+	meson setup "$NOTVCRT_OBJDIR/$arch" "$NOTVCRT_SRCDIR" --cross-file "${IVTW_SDKPFX}etc/meson_bootstrap/${arch}"
+	meson compile -C "$NOTVCRT_OBJDIR/$arch"
 
 	if [ "$arch" = "x86" ]; then
 		ARCH_COMPILERRT="${IVTW_SDKPFX}build/compiler-rt/libclang_rt.builtins-i386.a"
@@ -122,6 +88,6 @@ for arch in x86 x64 arm64; do
 	"$NOTVCRT_LIBDIR/$arch/vcruntime140.lib" \
 	"$NOTVCRT_LIBDIR/$arch/vcruntime140_threads.lib" \
 	"$ARCH_COMPILERRT" \
-	"$NOTVCRT_OBJDIR/$arch/vcruntime/"*.obj \
+	"$NOTVCRT_OBJDIR/$arch/libnotvcrt.a" \
 	"/out:$NOTVCRT_LIBDIR/$arch/msvcrt.lib"
 done

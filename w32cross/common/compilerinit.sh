@@ -174,7 +174,6 @@ set_our_clangargs() {
 	done
 }
 
-
 for plusplus in "" "++"; do
 	set_our_clangargs < "${IVTW_SDKPFX}etc/clang-args/any.lst"
 	connect "clang${plusplus}" "clang${plusplus}" "$OUR_CLANGARGS"
@@ -182,7 +181,8 @@ for plusplus in "" "++"; do
 
 	for arch in $IVTW_VCARCHS; do
 		set_our_clangargs < "${IVTW_SDKPFX}etc/clang-args/$arch.ld.lst"
-		connect "clang${plusplus}" "clang${plusplus}-${arch}" "$OUR_CLANGARGS"
+		# Disable -Wno-unused-command-line-argument because we attach linker args which may not be used.
+		connect "clang${plusplus}" "clang${plusplus}-${arch}" "-Wno-unused-command-line-argument $OUR_CLANGARGS"
 		xlink_compat "${arch}/clang${plusplus}" "../../bin/w32cross-clang${plusplus}-${arch}"
 	done
 done
@@ -225,6 +225,39 @@ cat <<EOF > "${IVTW_SDKPFX}activate"
 PATH="$(readlink -f "${IVTW_SDKPFX}bin"):\$PATH"
 EOF
 chmod +x "${IVTW_SDKPFX}activate"
+
+# -- Bootstrap crossfiles --
+
+mkdir -p "${IVTW_SDKPFX}etc/meson_bootstrap"
+# We just do these manually
+bootstrap_crossfile_gen() {
+
+cat <<EOF > "${IVTW_SDKPFX}etc/meson_bootstrap/$1"
+[binaries]
+c = 'w32cross-clang-$1'
+cpp = 'w32cross-clang++-$1'
+ar = '$IVTW_LIB'
+windres = 'w32cross-windres-$1'
+strip = 'w32cross-strip'
+[host_machine]
+system = 'windows'
+subsystem = 'windows'
+kernel = 'nt'
+cpu_family = '$2'
+cpu = '$3'
+endian = 'little'
+[properties]
+needs_exe_wrapper = true
+[built-in options]
+# cpp_eh = 's' # have to pass manually
+cpp_args = ['-fexceptions', '-fcxx-exceptions']
+optimization = 's'
+EOF
+}
+
+bootstrap_crossfile_gen x86 x86 i686
+bootstrap_crossfile_gen x64 x86_64 x86_64
+bootstrap_crossfile_gen arm64 aarch64 aarch64
 
 # -- compiler-rt extract --
 # I know, I know, it's 'better' to build from source, but LLVM haven't done compiler-rt tarballs since 2020.

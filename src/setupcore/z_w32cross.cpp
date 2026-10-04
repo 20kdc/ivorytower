@@ -26,7 +26,7 @@ public:
 
 		compiler.args.bVSCRT = "md";
 
-		compiler.lib = {sdkP->toolPath("w32cross-lib")},
+		compiler.ar = {sdkP->toolCompatPath("llvm-lib")},
 		compiler.strip = {sdkP->toolPath("w32cross-strip")};
 		compiler.windres = {sdkP->toolPath("w32cross-windres-" + arch)};
 		//compiler.generic = {sdkP->toolPath("")};

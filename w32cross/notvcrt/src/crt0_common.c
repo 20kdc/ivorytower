@@ -133,7 +133,6 @@ int __NOTVCRUNTIME_init(int isDLLV) {
 		 * But atexit runs in reverse, so we do this by... iterating forward again!
 		 * Isn't this fun?
 		 */
-		_PVFV * ptr = __xp_a;
 		/* term first (so run last) */
 		for (_PVFV * ptr = __xt_a; ptr != __xt_z; ptr++)
 			if (*ptr)

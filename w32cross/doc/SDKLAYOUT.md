@@ -14,6 +14,10 @@ This seems to be the intended approach by Meson, and it does have the key advant
 * `etc/`: Y'know, stuff.
 	* `ready`: Presence indicates readiness.
 	* `packages`: List of SDK 'packages'.
+	* `meson_bootstrap/`: 'Bootstrap' Meson cross-files used to build NotVCRT.
+		* `x86`/`x64`/`arm64` files
+		* These files _absolutely_ require `bin/` to be in PATH.
+		* These files are left intentionally incomplete. `ivorytower` provides a _proper_ set of Meson crossfiles; these are specifically for bootstrap compilation.
 	* `clang-args`: Metadata for setting up Clang correctly without using the wrapper scripts. Has `${W32CROSS_SDKROOT}` substitution.
 		* `any.lst`: Base list. Not parameterized with architecture. Does not contain `lib` directories.
 		* `ARCH.lst`: List for a given architecture. Contains Clang target. Non-linking, does not contain `lib` directories.

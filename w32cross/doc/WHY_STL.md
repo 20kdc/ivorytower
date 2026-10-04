@@ -1,31 +1,18 @@
 # Why always install the STL?
 
-Other compilers in the `ivorytower` project support STL switch-off.
+Other setups in the `ivorytower` project support STL switch-off.
 
-But not `w32cross`. This is obviously extremely unusual.
+Here, though, you will always get the STL no matter what.
 
-The answer is that there really isn't a good way to turn off the STL.
+The answer to this is that there really isn't a good way to turn off the STL without making a separate set of compiler-wrapper scripts, or for the -cl compilers, a separate `winsysroot`.
 
-LLVM (and presumably MSVC) only adds so many include directories, and they are:
+The compiler-wrapper scripts are pretty what makes `w32cross` 'work out of the box', so keeping them in good shape is vital.
 
-* Windows SDK (SDK + UCRT) (`WinSdkDir`/`WinSdkVersion` set)
-* 'MSVC' (STL + VCRuntime + ATLMFC) (`VCToolsDir`)
-	* Note we don't have ATLMFC.
+Besides, if you don't care about C++ ABI, you probably don't need `w32cross` in the first place and may find MinGW preferrable.
 
-There's no toggle to selectively switch off includes.
+Or maybe just have it as a separate SDK compile?
 
-In theory, you could intentionally mix `notvcrt`, CRT libraries etc. into i.e. the UCRT regions. (This makes the most logical sense as UCRT headers rely on vcruntime headers.)
+I will say that a `zero` configuration (no dependence on the C++ standard library _whatsoever_) is impossible, as `notvcrt` and `vcruntime140` are basically a non-negotiable part of the VC++-emulating arrangement.
 
-This would mean that 'MSVC' only contains STL and ATLMFC, which would allow swapping MSVC directories.
-
-The problem is that `WinSysRoot` overrides `VCToolsDir`.
-
-While this can be done, I don't like the idea of poking the bear of potentially creating layouts that have to change because of a change in representation in LLVM.
-
-I prefer the idea of giving LLVM a layout that matches the SDK era that's being emulated, and then LLVM, which is expected to support this SDK, supporting this SDK because it quacks like the right kind of duck.
-
-With that said, if there's demand for it, or if something comes up (the use of spaces in `Windows Kits` _does_ bother me), the layout can change.
-
-Then there can be `vctoolsdir` and `vctoolsdir_nostl` or something.
-
-Note though that removing `notvcrt` (and thus a proper 'zero' configuration) seems unlikely to impossible. Functions like `_setjmp` and `_longjmpex` appear to go through `vcruntime140`. The question isn't 'can the vcruntime140 dependency be removed', that was foregone due to Clang compatibility.
+I would argue that if you are not interested in using `notvcrt`, `w32cross` is not for you; which is fine, to be clear!
+But at that point you are trying to assemble your own toolchain doing something out of scope for `w32cross`.
