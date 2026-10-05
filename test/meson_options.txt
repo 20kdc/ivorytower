@@ -1,0 +1,3 @@
+option('simple', type : 'boolean', value : true, description: 'Simple test programs. These confirm the basic toolchain is working.')
+option('sdl2', type : 'boolean', value : true, description: 'SDL2 test program. This massively increases test cost, but is a much more comprehensive test.')
+option('stl', type : 'boolean', value : true, description: 'Environment is *supposed* to have STL?')

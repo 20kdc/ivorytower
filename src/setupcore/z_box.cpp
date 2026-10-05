@@ -64,6 +64,8 @@ static CompilerCfg sensibleDefaultGCC = [] {
 	result.cpp = {"g++"};
 	result.ar = {"ar"};
 	result.strip = {"strip"};
+	result.cmake = {"cmake"};
+	result.generic = {""};
 	result.dispositions = {
 		&STLDisposition::q_default,
 		&STLDisposition::q_static,

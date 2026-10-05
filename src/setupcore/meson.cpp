@@ -129,6 +129,13 @@ std::string setupcore::meson::makeCrossFile(const CompilerCfg & comp, const STLD
 		base += iniCmd("cpp", comp.cpp);
 		base += iniCmd("cpp_ld", comp.cpp_ld);
 	}
+	// Very nasty hacky code for Mac reasons.
+	// Both GCC and Clang consider Objective-C/C++ as a C/C++ extension.
+	base += iniCmd("objc", comp.c);
+	base += iniCmd("objc_ld", comp.c_ld);
+	base += iniCmd("objcpp", comp.cpp);
+	base += iniCmd("objcpp_ld", comp.cpp_ld);
+
 	base += iniCmd("ar", comp.ar);
 	base += iniCmd("windres", comp.windres);
 	base += iniCmd("strip", comp.strip);
@@ -155,6 +162,12 @@ std::string setupcore::meson::makeCrossFile(const CompilerCfg & comp, const STLD
 	base += iniArg("c_link_args", mergedArgs.addCLinkArgs);
 	base += iniArg("cpp_args", mergedArgs.addCppArgs);
 	base += iniArg("cpp_link_args", mergedArgs.addCppLinkArgs);
+	// Continued Mac nonsense.
+	base += iniArg("objc_args", mergedArgs.addCArgs);
+	base += iniArg("objc_link_args", mergedArgs.addCLinkArgs);
+	base += iniArg("objcpp_args", mergedArgs.addCppArgs);
+	base += iniArg("objcpp_link_args", mergedArgs.addCppLinkArgs);
+
 	base += iniProp("cpp_eh", mergedArgs.cppEh);
 	base += iniProp("cpp_rtti", mergedArgs.cppRtti);
 	base += iniProp("b_vscrt", mergedArgs.bVSCRT);

@@ -2,41 +2,57 @@
 ../setup --install all=on
 echo "(passed install)"
 
+meson wrap install sdl2 || true
+
 rm -rf build
 mkdir -p build
 
 do_variant() {
-	meson setup "build/$1" --cross-file "ivt/$1" > "build/$1_setup.log" || (echo "error in setup $1" ; exit 1)
-	meson compile -C "build/$1"
+	variant="$1"
+	shift
+	meson setup "build/${variant}" --cross-file "ivt/${variant}" $@ > "build/${variant}_setup.log" || (echo "error in setup ${variant}" ; exit 1)
+	meson compile -C "build/${variant}"
 }
 
 do_stlp() {
-	do_variant "$1default$2"
-	do_variant "$1static$2"
-	do_variant "$1zero$2"
+	prefix="$1"
+	shift
+	suffix="$1"
+	shift
+	do_variant "${prefix}default${suffix}" $@
+	do_variant "${prefix}static${suffix}" $@
+	do_variant "${prefix}zero${suffix}" $@ -Dstl=false -Dsdl2=false
 }
 
 # Test most things reasonably available to Ubuntu 24.04.
-# (We can't pull in aarch64 Windows.)
+# (We can't pull in MinGW aarch64 Windows.)
 
 if [ "$#" != 0 ]; then
 	do_variant "$1"
 	exit
 fi
 
+# 'important' ('this will break and it is important if it breaks') cases
+
 do_stlp lgx32_ _scout
-do_stlp lgx64_ _scout
-
-do_stlp lgx64_ _sniper
-
-do_stlp wx32_ _mingw
-do_stlp wx64_ _mingw
 
 # w32cross can only do default STL disposition.
 # This is because it relies *heavily* on dynamic linking to do all its work from more reasonably licensed resources.
 do_variant wx32_default_w32cross
 do_variant wx64_default_w32cross
-do_variant wa64_default_w32cross
+# arm64 is sacrificable in the name of test speed
+do_variant wa64_default_w32cross -Dsdl2=false
 
-do_stlp mx64_ ""
-do_stlp ma64_ ""
+# stuff we more-or-less expect to continue working
+do_stlp lgx64_ _scout
+
+# we don't need to run SDL2 tests on sniper, it's not significantly different from scout
+do_stlp lgx64_ _sniper -Dsdl2=false
+
+# there's no significant difference between arches for the MinGW stuff, so disable anything complicated
+do_stlp wx32_ _mingw -Dsdl2=false
+do_stlp wx64_ _mingw
+
+# Mac isn't capable of the SDL2 build due to @available. We need to switch to prebuilts for this test.
+do_stlp mx64_ "" -Dsdl2=false
+do_stlp ma64_ "" -Dsdl2=false

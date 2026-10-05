@@ -128,6 +128,11 @@ gen_clangargs_lst_ld() {
 	elif [ "$1" = "x64" ]; then
 		echo "-Wl,/alternatename:__chkstk=___chkstk_ms"
 	fi
+	echo "-Wl,/alternatename:__alldiv=___divdi3"
+	echo "-Wl,/alternatename:__aulldiv=___udivdi3"
+	echo "-Wl,/alternatename:__allrem=___moddi3"
+	echo "-Wl,/alternatename:__aullrem=___umoddi3"
+	echo "-Wl,/alternatename:__allmul=___muldi3"
 	echo "-Wl,/alternatename:??_7type_info@@6B@.1=??_7type_info@@6B@"
 }
 
