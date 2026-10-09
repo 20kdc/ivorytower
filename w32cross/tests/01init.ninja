@@ -1,0 +1,8 @@
+# gen.ninja sets up $cl and $clang and immediately invokes this.
+# Note that we DO NOT have a 'build.ninja' since we expect to run from cd w32cross/.
+# We can't parameterize tool names.
+# So instead we reuse the *same* tool names and use subninja to keep them isolated.
+# By the way, this goes against, like, the entire Ninja philosophy?
+
+subninja tests/02cl.ninja
+subninja tests/02clang.ninja

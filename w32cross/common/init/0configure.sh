@@ -56,23 +56,29 @@ ivtw_find_command "lld-link"
 
 OUR_FUSELD="-fuse-ld=$ivtw_find_command_result"
 # For clang-cl, we need to forcibly inject /safeseh:no because it won't otherwise listen.
-OUR_FUSELD_CL="-fuse-ld=\"w32cross-link\""
 # this is stuff that is forcibly injected via that mechanism
 OUR_FORCEDLINKARGS="/safeseh:no"
+# Some notes:
+# * -fuse-ld=w32cross-link is used to ensure /safeseh:no is injected
+#   * remember that we do PATH injection, so this WILL work
+# * we inject /MD for the same reason we inject -fms-runtime-lib=dll on Clang
+#   * we simply can't support anything else
+#   * we can't trust all build systems to make this easy
+#   * especially for clang interface (not clang-cl), we may need to pretend to be MinGW in some cases
 # Note: "/winsysroot X" works for clang-cl but not for lld-link.
 # "/winsysroot:X" will result in prefixing ":" to everything.
-OUR_WINSYSROOT="/winsysroot \"\$W32CROSS_SDKROOT/fakewinsysroot\" /winsdkver:10"
+OUR_COMMONCLANGCLARGS="-fuse-ld=\"w32cross-link\" /winsysroot \"\$W32CROSS_SDKROOT/fakewinsysroot\" /winsdkver:10 /MD"
 
 # -- clang-cl --
 
-connect clang-cl clang-cl "$OUR_FUSELD_CL $OUR_WINSYSROOT -Xlinker/safeseh:no"
+connect clang-cl clang-cl "$OUR_FUSELD_CL $OUR_COMMONCLANGCLARGS /MD"
 xlink clang-cl cl
 xlink_compat "cl" "../bin/w32cross-cl"
 
 # These wrappers use names consistent with the architecture names used throughout the SDK.
 for arch in $IVTW_VCARCHS; do
 	ivtw_vcarch_clangtarget "$arch"
-	connect clang-cl "clang-cl-${arch}" "$OUR_FUSELD_CL --target=$ivtw_vcarch_clangtarget_result $OUR_WINSYSROOT"
+	connect clang-cl "clang-cl-${arch}" "$OUR_FUSELD_CL --target=$ivtw_vcarch_clangtarget_result $OUR_COMMONCLANGCLARGS"
 	xlink "clang-cl-${arch}" "cl-${arch}"
 	for clanginess in "" "clang-"; do
 		xlink_compat "${arch}/${clanginess}cl" "../../bin/w32cross-clang-cl-${arch}"

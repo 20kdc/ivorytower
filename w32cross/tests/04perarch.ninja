@@ -1,0 +1,35 @@
+# So despite Ninja not being designed for this sort of misuse,
+#  we do it anyway.
+# The ultimate goal here is to parallelize the build.
+
+bin=tests/bin/${chain}_${vcarch}
+
+build ${bin}/a_args.exe: aexe tests/a_args.c
+  ccarch = ${vcarch}
+
+build ${bin}/a_hello.exe: aexe tests/a_hello.c
+  ccarch = ${vcarch}
+
+build ${bin}/b_constructors.exe: aexe tests/b_constructors.cpp
+  ccarch = ${vcarch}
+
+build ${bin}/b_exceptions_vs_destructors.exe: aexe tests/b_exceptions_vs_destructors.cpp
+  ccarch = ${vcarch}
+
+build ${bin}/b_hellocpp.cpp: aexe tests/b_hellocpp.cpp
+  ccarch = ${vcarch}
+
+build ${bin}/cxxdll.dll ${bin}/cxxdll.lib: dll tests/c_cxxdll.cpp
+  out1 = ${bin}/cxxdll.dll
+  ccarch = ${vcarch}
+
+build ${bin}/cxxdll.exe: aexe tests/c_cxxdllexe.cpp ${bin}/cxxdll.lib
+  ccarch = ${vcarch}
+
+build ${bin}/d_micro_fbxcommon.dll ${bin}/d_micro_fbxcommon.lib: dll tests/d_micro_fbxcommon.cpp
+  out1 = ${bin}/d_micro_fbxcommon.dll
+  ccarch = ${vcarch}
+
+build ${bin}/z_endlesschamber.dll ${bin}/z_endlesschamber.lib: dll tests/z_endlesschamber.cpp
+  out1 = ${bin}/z_endlesschamber.dll
+  ccarch = ${vcarch}

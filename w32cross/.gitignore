@@ -2,6 +2,7 @@
 /dev_scavenger.log
 /downloaded
 /tests/bin
-/tests/bin_cl
+/tests/gen.ninja
 /notvcrt/include_ext
 /.cache
+/.ninja*

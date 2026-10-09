@@ -1,0 +1,12 @@
+chain=clang
+
+rule aexe
+  command = "${clang}-${ccarch}" -Wl,/demangle:no $in -o $out
+
+rule wexe
+  command = "${clang}-${ccarch}" -Wl,/demangle:no -D_UNICODE $in -o $out
+
+rule dll
+  command = "${clang}-${ccarch}" -Wl,/demangle:no -shared $in -o ${out1}
+
+include tests/03allarchs.ninja

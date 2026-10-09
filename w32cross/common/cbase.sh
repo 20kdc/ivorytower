@@ -65,7 +65,7 @@ ivtw_find_command() {
 # -- command references --
 
 IVTW_CL="${IVTW_SDKPFX}bin/w32cross-cl"
-IVTW_CLANG="${IVTW_SDKPFX}bin/w32cross-clang++"
+IVTW_CLANG="${IVTW_SDKPFX}bin/w32cross-clang"
 IVTW_LIB="${IVTW_SDKPFX}bin/w32cross-lib"
 
 # -- Disclaimer --
