@@ -30,7 +30,6 @@ do_test() {
 cat > "tests/gen.ninja" <<EOF
 cl=${IVTW_CL}
 clang=${IVTW_CLANG}
-include tests/01init.ninja
 EOF
-ninja -f "tests/gen.ninja"
+ninja -f "tests/01init.ninja"
 echo BE SURE TO RUN tests/bin/cl/x86/constructors.exe

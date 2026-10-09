@@ -1,4 +1,4 @@
-chain=cl
+# see 01init.ninja
 
 rule aexe
   command = "${cl}-${vcarch}" /EHs /clang:-Wl,/demangle:no $in -o $out
@@ -8,5 +8,3 @@ rule wexe
 
 rule dll
   command = "${cl}-${vcarch}" /EHs /clang:-Wl,/demangle:no /LD $in -o ${out1}
-
-include tests/03allarchs.ninja

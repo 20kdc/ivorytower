@@ -1,0 +1,10 @@
+# see 01init.ninja
+
+rule aexe
+  command = "${clang}-${vcarch}" -Wl,/demangle:no $in -o $out
+
+rule wexe
+  command = "${clang}-${vcarch}" -Wl,/demangle:no -D_UNICODE $in -o $out
+
+rule dll
+  command = "${clang}-${vcarch}" -Wl,/demangle:no -shared $in -o ${out1}

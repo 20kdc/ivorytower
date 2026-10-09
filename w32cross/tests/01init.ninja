@@ -1,8 +1,60 @@
 # gen.ninja sets up $cl and $clang and immediately invokes this.
 # Note that we DO NOT have a 'build.ninja' since we expect to run from cd w32cross/.
-# We can't parameterize tool names.
-# So instead we reuse the *same* tool names and use subninja to keep them isolated.
-# By the way, this goes against, like, the entire Ninja philosophy?
 
-subninja tests/02cl.ninja
-subninja tests/02clang.ninja
+# We can't parameterize rule names.
+# So instead we reuse the *same* rule names and use subninja to keep everything isolated.
+
+# It's important to note that Ninja appears to use a two-phase system for resolution.
+# The first phase does 'most things', including resolving variables OUTSIDE rules.
+# The second phase resolves the variables INSIDE rules.
+# This two-phase structure means the following build.ninja will output 'output2 3 2'.
+# ```ninja
+# a=1
+# rule echo
+#   command = echo $out $a $b
+# a=2
+# build output$a : echo
+#   b=$a
+# a=3
+# ```
+# It is also wise to try removing a=1 and a=2, resulting in 'output 3'.
+
+# Now, with how much Ninja's manual talks about shadowing, you would THINK
+#  that changing variables between subninjas doesn't 'time travel back', since
+#  it's a shadowed (and thus different) variable, right?
+# Nope!
+# Just to be clear, most things the Ninja manual says about shadowing...
+#  are complete and total fabrications.
+# Expect to see the pattern x=${x} (in subninjas) and x=BROKEN (outside).
+# The former is a workaround and the latter is a safety test.
+# If you don't believe me, remove the vcarch=${vcarch} line from 04perarch.
+# Tested on Ninja 1.11.1.
+
+# Given how downright weird these dynamics are, I've decided to make sure
+#  that each configuration is explicit so that there's only one level of
+#  subninja invocation.
+
+# In short, 02config.ninja is instanced for each build configuration.
+# It includes the toolchain file by itself, so that all rules are local to it.
+# It forces shadowing, so that 'build' can't 'just pull' a future vcarch.
+
+include tests/gen.ninja
+
+chain=cl
+vcarch=x86
+subninja tests/02config.ninja
+vcarch=x64
+subninja tests/02config.ninja
+vcarch=arm64
+subninja tests/02config.ninja
+
+chain=clang
+vcarch=x86
+subninja tests/02config.ninja
+vcarch=x64
+subninja tests/02config.ninja
+vcarch=arm64
+subninja tests/02config.ninja
+
+chain=BROKEN
+vcarch=BROKEN
