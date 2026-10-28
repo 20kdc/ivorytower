@@ -36,14 +36,15 @@ ninja -f "tests/01init.ninja"
 # we can reasonably assume cl/clang 'compile the same'
 
 run_test_sequence_inner() {
-	echo "a_argsa"
-	wine "tests/bin/$1/a_argsa.exe" "🛠"
-	echo "a_argsw"
-	wine "tests/bin/$1/a_argsw.exe" "🛠"
-	echo "b_cppcrt"
-	wine "tests/bin/$1/b_cppcrt.exe"
-	echo "cxxdll"
-	wine "tests/bin/$1/cxxdll.exe"
+	echo "a_smoke_a"
+	# using anything weird here would make it codepage-dependent
+	wine "tests/bin/$1/a_smoke_a.exe" "cafe2"
+	echo "a_smoke_w"
+	# can't do much about this though
+	wine "tests/bin/$1/a_smoke_w.exe" "café2 🛠"
+	# -- modular testing --
+	echo "modular tests"
+	wine "tests/bin/$1/b_launch.exe"
 }
 
 run_test_sequence() {

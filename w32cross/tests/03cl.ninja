@@ -8,3 +8,6 @@ rule wexe
 
 rule dll
   command = "${cl}-${vcarch}" /EHs /clang:-Wl,/demangle:no /LD $in -o ${out1}
+
+rule rtdll
+  command = "${cl}-${vcarch}" /EHs /clang:-Wl,/demangle:no /LD $in -o $out

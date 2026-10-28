@@ -1,24 +1,60 @@
-a_argsa
-argc = 2
-argv[1] = ??
-a_argsw
-argc = 2
-argv[1] = b_cppcrt
-+ Inspector(global)
-b
-+ Inspector(longjmp)
-a
-+ Inspector(exception)
-- Inspector(exception)
-- Inspector(global)
-cxxdll
+a_smoke_a
 + Inspector(cxxdll_inspector)
 Hi, I'm the real DllMain, and I just got attached.
++ Inspector(crtexe)
++ Inspector(_tmain)
+argc = 2
+sizeof(_TCHAR) = 1
+argv[1] = cafe2
++ atexit
 The class Cat says: Meow~!
 animal exception test 1
 caught: oopsie!
 I think the Animal is a Cat, survey says: 1
-Hi, I'm an atexit function living in an EXE.
+- Inspector(_tmain)
+- atexit
+- Inspector(crtexe)
 Hi, I'm the real DllMain, and something else happened.
 Hi, I'm an atexit function living in a DLL.
 - Inspector(cxxdll_inspector)
+a_smoke_w
++ Inspector(cxxdll_inspector)
+Hi, I'm the real DllMain, and I just got attached.
++ Inspector(crtexe)
++ Inspector(_tmain)
+argc = 2
+sizeof(_TCHAR) = 2
+argv[1] = caf<00e9>2 <d83d><dee0>
++ atexit
+The class Cat says: Meow~!
+animal exception test 1
+caught: oopsie!
+I think the Animal is a Cat, survey says: 1
+- Inspector(_tmain)
+- atexit
+- Inspector(crtexe)
+Hi, I'm the real DllMain, and something else happened.
+Hi, I'm an atexit function living in a DLL.
+- Inspector(cxxdll_inspector)
+modular tests
+
+mod_exceptions_vs_destructors {
++ Inspector(global)
+	b
++ Inspector(longjmp)
+	a
++ Inspector(exception)
+- Inspector(exception)
+- Inspector(global)
+}
+
+
+mod_cout {
+	Hello, world!
+}
+
+
+mod_builtins {
+	0 131071
+}
+

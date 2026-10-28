@@ -3,7 +3,7 @@
 // #include <setjmpex.h>
 #include <stdio.h>
 #include <exception>
-#include "test_inspector.hpp"
+#include "test_inspector.hxx"
 
 Inspector global("global");
 

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <typeinfo>
 #include <exception>
-#include "test_inspector.hpp"
+#include "test_inspector.hxx"
 
 #define ANIMALDECL __declspec(dllexport)
 #include "c_cxxdll.hxx"
