@@ -153,3 +153,25 @@ llvm-lib /machine:amd64 vcruntime140.lib test.obj /out:vcruntime.lib
 ```
 
 This creates a 'mixed' library with both kinds of code. This is necessary to create the vcruntime.lib with `type_info` vtable.
+
+## Checking into `--rt` issues
+
+```
+$ clang -fuse-ld=lld-link -target i686-windows-msvc -Wl,/nodefaultlib -rtlib=compiler-rt check.c
+check.c:1:1: warning: return type of 'main' is not 'int' [-Wmain-return-type]
+    1 | void main() {} void mainCRTStartup() {}
+      | ^
+check.c:1:1: note: change return type to 'int'
+    1 | void main() {} void mainCRTStartup() {}
+      | ^~~~
+      | int
+1 warning generated.
+lld-link: error: could not open '/usr/lib/llvm-19/lib/clang/19/lib/i686-unknown-windows-msvc/clang_rt.builtins.lib': No such file or directory
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+```
+
+note also `-print-libgcc-file-name`
+
+`ToolChain::getCompilerRT` suggests it does actually try searching library paths before resorting to hardcoded path, can we do something with this?
+
+...'should be yes, but actually, no'. This seems to be ToolChain paths, not general library paths.

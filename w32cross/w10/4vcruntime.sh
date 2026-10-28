@@ -17,12 +17,8 @@ W32CROSS_SDKID=w10
 
 notvcrt/ext/sync.sh
 
-rm -rf "${IVTW_SDKPFX}ucrt/src/notvcrt"
-mkdir -p "${IVTW_SDKPFX}ucrt/src"
 mkdir -p "${IVTW_SDKPFX}ucrt/include"
 mkdir -p "${IVTW_SDKPFX}wsdk/include"
-
-cp -r notvcrt/src "${IVTW_SDKPFX}ucrt/src/notvcrt"
 
 # Note that different headers end up different places.
 # Specifically, eh.h and excpt.h are obviously Windows headers in disguise.
@@ -48,7 +44,6 @@ cp notvcrt/include/winnt.h "${IVTW_SDKPFX}ucrt/include"
 rm -rf "${IVTW_SDKPFX}build/notvcrt_obj"
 NOTVCRT_OBJDIR="${IVTW_SDKPFX}build/notvcrt_obj"
 NOTVCRT_LIBDIR="${IVTW_SDKPFX}ucrt/lib"
-NOTVCRT_SRCDIR="${IVTW_SDKPFX}ucrt/src/notvcrt"
 
 PATH="${IVTW_SDKPFX}bin:$PATH"
 
@@ -66,7 +61,7 @@ for arch in $SDK_VCARCHS; do
 	ivtw_import_defs oldnames "$arch" "$NOTVCRT_LIBDIR/$arch"
 
 	# Compile CRT0.
-	meson setup "$NOTVCRT_OBJDIR/$arch" "$NOTVCRT_SRCDIR" --cross-file "${IVTW_SDKPFX}etc/meson_bootstrap/${arch}"
+	meson setup "$NOTVCRT_OBJDIR/$arch" "notvcrt" --cross-file "${IVTW_SDKPFX}etc/meson_bootstrap/${arch}" >"$NOTVCRT_OBJDIR/$arch/setup.log"
 	meson compile -C "$NOTVCRT_OBJDIR/$arch"
 
 	# Merge all libraries to create the One True Library.
