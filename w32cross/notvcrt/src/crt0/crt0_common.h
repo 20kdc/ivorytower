@@ -60,16 +60,6 @@ void __NOTVCRUNTIME_dll_fini();
 #elif defined(__x86_64__)
 #pragma comment(linker, "/alternatename:__chkstk=___chkstk_ms")
 #endif
-/*
- * 2. https://github.com/llvm/llvm-project/blob/e9a93baac2f8aad3a2114ec25f6fdb9342a03cd4/llvm/include/llvm/IR/RuntimeLibcalls.td#L3412
- *    https://github.com/llvm/llvm-project/blob/fa5e5fcfc594f86297d0f3bfd3f15c37cfcb87c4/llvm/test/CodeGen/X86/win32-int-runtime-libcalls.ll#L26
- *    the .ll source shows this is __stdcall
- */
-#pragma comment(linker, "/alternatename:__alldiv=___divdi3")
-#pragma comment(linker, "/alternatename:__aulldiv=___udivdi3")
-#pragma comment(linker, "/alternatename:__allrem=___moddi3")
-#pragma comment(linker, "/alternatename:__aullrem=___umoddi3")
-#pragma comment(linker, "/alternatename:__allmul=___muldi3")
 
 /*
  * I'm not sure why, but Clang is really deathly afraid of emitting "??_7type_info@@6B@".

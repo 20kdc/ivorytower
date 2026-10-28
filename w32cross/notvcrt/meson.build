@@ -39,8 +39,9 @@ notvcrt_src = [
 
 # If needed in future.
 
-#if host_machine.cpu_family() == 'x86'
-#notvcrt_src += ['src/crtx/chkstk_x86.s']
+if host_machine.cpu_family() == 'x86'
+	notvcrt_src += ['src/crt0/msvc_int64_thunks.s']
+endif
 #elif host_machine.cpu_family() == 'x86_64'
 #notvcrt_src += ['src/crtx/chkstk_x64.s']
 #endif
