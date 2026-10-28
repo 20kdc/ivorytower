@@ -11,3 +11,9 @@ __declspec(dllexport) int narwhals() {
 	static int narwhals = 0;
 	return narwhals++;
 }
+
+__declspec(dllexport) int chkstktest(void (*other)(void * x)) {
+	int data[0x40000];
+	other(data);
+	return 0;
+}

@@ -61,7 +61,7 @@ for arch in $SDK_VCARCHS; do
 	ivtw_import_defs oldnames "$arch" "$NOTVCRT_LIBDIR/$arch"
 
 	# Compile CRT0.
-	meson setup "$NOTVCRT_OBJDIR/$arch" "notvcrt" --cross-file "${IVTW_SDKPFX}etc/meson_bootstrap/${arch}" >"$NOTVCRT_OBJDIR/$arch/setup.log"
+	meson setup "$NOTVCRT_OBJDIR/$arch" "notvcrt" --cross-file "${IVTW_SDKPFX}etc/meson_bootstrap/${arch}"
 	meson compile -C "$NOTVCRT_OBJDIR/$arch"
 
 	# Merge all libraries to create the One True Library.

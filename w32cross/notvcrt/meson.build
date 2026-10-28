@@ -3,7 +3,7 @@
 
 project('notvcrt', 'c', 'cpp')
 
-notvcrt_lib = static_library('notvcrt',
+notvcrt_src = [
 	'src/crt0/common.c',
 	'src/crt0/dll.c',
 	'src/crt0/dll_nomain.c',
@@ -35,4 +35,15 @@ notvcrt_lib = static_library('notvcrt',
 	'src/vcr/new8.cpp',
 	'src/vcr/new_nothrow.cpp',
 	'src/vcr/typeinfo.cpp'
-)
+]
+
+# If needed in future.
+
+#if host_machine.cpu_family() == 'x86'
+#notvcrt_src += ['src/crtx/chkstk_x86.s']
+#elif host_machine.cpu_family() == 'x86_64'
+#notvcrt_src += ['src/crtx/chkstk_x64.s']
+#endif
+#assert(false, host_machine.cpu_family())
+
+notvcrt_lib = static_library('notvcrt', notvcrt_src)
