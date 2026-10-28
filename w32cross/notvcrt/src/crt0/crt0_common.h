@@ -47,8 +47,13 @@ void __NOTVCRUNTIME_dll_fini();
 #pragma comment(linker, "/defaultlib:kernel32")
 
 /*
- * hack to use 'GNU' compiler-rt with 'MSVC' target
- * this should be literally the only difference
+ * hacks to use 'GNU' compiler-rt with 'MSVC' target
+ * ugh... to be clear, there is a better way, BUT we can't use it because then Clang tries to link against its personal copy of compiler-rt (which it doesn't have)
+ * 1. __chkstk
+ *    Note: According to https://github.com/llvm/llvm-project/blob/fa5e5fcfc594f86297d0f3bfd3f15c37cfcb87c4/llvm/lib/Target/X86/X86FrameLowering.cpp#L744 :
+ *    This function modifies SP on win32 (it's 'literally __alloca')
+ *    On win64/arm64, it does NOT modify SP.
+ *    If we were to use '__alloca' on win64, bad things would happen!
  */
 #if defined(__i386__)
 #pragma comment(linker, "/alternatename:__chkstk=__alloca")
@@ -56,9 +61,9 @@ void __NOTVCRUNTIME_dll_fini();
 #pragma comment(linker, "/alternatename:__chkstk=___chkstk_ms")
 #endif
 /*
- * so it is not in fact the only difference.
- * https://github.com/llvm/llvm-project/blob/e9a93baac2f8aad3a2114ec25f6fdb9342a03cd4/llvm/include/llvm/IR/RuntimeLibcalls.td#L3412
- * ugh... to be clear, there is a better way, BUT we can't use it because then Clang tries to link against its personal copy of compiler-rt (which it doesn't have)
+ * 2. https://github.com/llvm/llvm-project/blob/e9a93baac2f8aad3a2114ec25f6fdb9342a03cd4/llvm/include/llvm/IR/RuntimeLibcalls.td#L3412
+ *    https://github.com/llvm/llvm-project/blob/fa5e5fcfc594f86297d0f3bfd3f15c37cfcb87c4/llvm/test/CodeGen/X86/win32-int-runtime-libcalls.ll#L26
+ *    the .ll source shows this is __stdcall
  */
 #pragma comment(linker, "/alternatename:__alldiv=___divdi3")
 #pragma comment(linker, "/alternatename:__aulldiv=___udivdi3")

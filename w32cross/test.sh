@@ -32,4 +32,4 @@ cl=${IVTW_CL}
 clang=${IVTW_CLANG}
 EOF
 ninja -f "tests/01init.ninja"
-echo BE SURE TO RUN tests/bin/cl/x86/constructors.exe
+echo BE SURE TO RUN tests/bin/cl_x86/b_constructors.exe
