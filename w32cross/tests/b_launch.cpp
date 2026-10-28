@@ -31,4 +31,5 @@ int main(int argc, char ** argv) {
 	launch_test("mod_exceptions_vs_destructors");
 	launch_test("mod_cout");
 	launch_test("mod_builtins");
+	launch_test("mod_declspec_thread");
 }

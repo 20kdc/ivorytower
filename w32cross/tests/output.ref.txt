@@ -58,3 +58,7 @@ mod_builtins {
 	0 131071
 }
 
+
+mod_declspec_thread {
+}
+

@@ -21,6 +21,7 @@ build ${bin}/b_launch.exe: aexe tests/b_launch.cpp
 build ${bin}/mod_exceptions_vs_destructors.dll: rtdll tests/mods/exceptions_vs_destructors.cpp
 build ${bin}/mod_cout.dll: rtdll tests/mods/cout.cpp
 build ${bin}/mod_builtins.dll: rtdll tests/mods/builtins.cpp
+build ${bin}/mod_declspec_thread.dll: rtdll tests/mods/declspec_thread.cpp
 
 # other
 
