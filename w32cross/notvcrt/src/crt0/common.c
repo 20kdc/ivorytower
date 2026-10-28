@@ -48,6 +48,12 @@ _CRTALLOC(".CRT$XTA") _PVFV __xt_a[1];
 #pragma section(".CRT$XTZ", read)
 _CRTALLOC(".CRT$XTZ") _PVFV __xt_z[1];
 
+/* Thread init (NYI) */
+#pragma section(".CRT$XDA", read)
+_CRTALLOC(".CRT$XDA") _PVFV __xd_a[1];
+#pragma section(".CRT$XDZ", read)
+_CRTALLOC(".CRT$XDZ") _PVFV __xd_z[1];
+
 /*
  * EXE:
  *  Destructors: _crt_atexit

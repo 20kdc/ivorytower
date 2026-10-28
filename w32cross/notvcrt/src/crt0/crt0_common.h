@@ -26,6 +26,13 @@ extern _PVFV __xt_a[1];
 extern _PVFV __xt_z[1];
 
 /*
+ * Thread init
+ * https://github.com/llvm/llvm-project/blob/76e574c106cd4ae67ca6e0f6f44ea551e77212f5/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2456
+ */
+extern _PVFV __xd_a[1];
+extern _PVFV __xd_z[1];
+
+/*
  * crt0 init/finalizer functions.
  * 0 return in __NOTVCRUNTIME_init indicates mysterious failure.
  * Be warned: These functions *MUST* only be called once ever per module, each.
