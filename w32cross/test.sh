@@ -32,4 +32,25 @@ cl=${IVTW_CL}
 clang=${IVTW_CLANG}
 EOF
 ninja -f "tests/01init.ninja"
-echo BE SURE TO RUN tests/bin/cl_x86/b_constructors.exe
+
+# we can reasonably assume cl/clang 'compile the same'
+
+run_test_sequence_inner() {
+	echo "a_argsa"
+	wine "tests/bin/$1/a_argsa.exe" "🛠"
+	echo "a_argsw"
+	wine "tests/bin/$1/a_argsw.exe" "🛠"
+	echo "b_cppcrt"
+	wine "tests/bin/$1/b_cppcrt.exe"
+	echo "cxxdll"
+	wine "tests/bin/$1/cxxdll.exe"
+}
+
+run_test_sequence() {
+	run_test_sequence_inner "$1" | sed 's/\r//' > "tests/bin/$1/output.txt"
+}
+
+run_test_sequence cl_x86
+run_test_sequence cl_x64
+
+sha256sum "tests/output.ref.txt" "tests/bin/cl_x86/output.txt" "tests/bin/cl_x64/output.txt"

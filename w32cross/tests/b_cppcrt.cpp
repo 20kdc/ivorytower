@@ -3,17 +3,9 @@
 // #include <setjmpex.h>
 #include <stdio.h>
 #include <exception>
+#include "test_inspector.hpp"
 
-class Inspector {
-public:
-	const char * name;
-	Inspector(const char * name) : name(name) {
-		printf("+ Inspector(%s)\n", name);
-	}
-	~Inspector() {
-		printf("- Inspector(%s)\n", name);
-	}
-};
+Inspector global("global");
 
 void lj_inner(jmp_buf jb) {
 	longjmp(jb, 1);

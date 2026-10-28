@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <typeinfo>
 #include <exception>
+#include "test_inspector.hpp"
 
 #define ANIMALDECL __declspec(dllexport)
 #include "c_cxxdll.hxx"
@@ -33,6 +34,8 @@ ANIMALDECL void animalOopsie() {
 void atexittest() {
 	puts("Hi, I'm an atexit function living in a DLL.");
 }
+
+Inspector cxxdll_inspector("cxxdll_inspector");
 
 // This is to confirm the real DllMain takes precedence.
 int __stdcall DllMain(void * a, int reason, void * c) {

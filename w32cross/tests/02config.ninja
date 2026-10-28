@@ -6,13 +6,10 @@ include tests/03${chain}.ninja
 
 bin=tests/bin/${chain}_${vcarch}
 
-build ${bin}/a_args.exe: aexe tests/a_args.c
+build ${bin}/a_argsa.exe: aexe tests/a_args.c
+build ${bin}/a_argsw.exe: wexe tests/a_args.c
 
-build ${bin}/a_hello.exe: aexe tests/a_hello.c
-
-build ${bin}/b_constructors.exe: aexe tests/b_constructors.cpp
-
-build ${bin}/b_exceptions_vs_destructors.exe: aexe tests/b_exceptions_vs_destructors.cpp
+build ${bin}/b_cppcrt.exe: aexe tests/b_cppcrt.cpp
 
 build ${bin}/b_hellocpp.cpp: aexe tests/b_hellocpp.cpp
 

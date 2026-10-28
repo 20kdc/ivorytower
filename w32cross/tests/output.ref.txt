@@ -1,0 +1,24 @@
+a_argsa
+argc = 2
+argv[1] = ??
+a_argsw
+argc = 2
+argv[1] = b_cppcrt
++ Inspector(global)
+b
++ Inspector(longjmp)
+a
++ Inspector(exception)
+- Inspector(exception)
+- Inspector(global)
+cxxdll
++ Inspector(cxxdll_inspector)
+Hi, I'm the real DllMain, and I just got attached.
+The class Cat says: Meow~!
+animal exception test 1
+caught: oopsie!
+I think the Animal is a Cat, survey says: 1
+Hi, I'm an atexit function living in an EXE.
+Hi, I'm the real DllMain, and something else happened.
+Hi, I'm an atexit function living in a DLL.
+- Inspector(cxxdll_inspector)
