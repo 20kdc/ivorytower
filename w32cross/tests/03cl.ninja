@@ -1,13 +1,13 @@
 # see 01init.ninja
 
 rule aexe
-  command = "${cl}-${vcarch}" /EHs /clang:-Wl,/demangle:no $in -o $out
+  command = "${cl}-${vcarch}" /Zi /EHs /clang:-Wl,/demangle:no $in -o $out
 
 rule wexe
-  command = "${cl}-${vcarch}" /EHs /clang:-Wl,/demangle:no /D_UNICODE $in -o $out
+  command = "${cl}-${vcarch}" /Zi /EHs /clang:-Wl,/demangle:no /D_UNICODE $in -o $out
 
 rule dll
-  command = "${cl}-${vcarch}" /EHs /clang:-Wl,/demangle:no /LD $in -o ${out1}
+  command = "${cl}-${vcarch}" /Zi /EHs /clang:-Wl,/demangle:no /LD $in -o ${out1}
 
 rule rtdll
-  command = "${cl}-${vcarch}" /EHs /clang:-Wl,/demangle:no /LD $in -o $out
+  command = "${cl}-${vcarch}" /Zi /EHs /clang:-Wl,/demangle:no /LD $in -o $out
