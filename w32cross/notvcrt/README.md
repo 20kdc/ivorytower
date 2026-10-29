@@ -55,6 +55,10 @@ This allows the patches to be what's stored in Git while offering an easy develo
 		* `__tlregdtor`
 		* `_tls_index`
 		* `_tls_array`
+	* `_tls_index` / `_tls_used` / `_tls_array`
+		* <https://learn.microsoft.com/en-us/windows/win32/debug/pe-format>
+			* Indicates `_tls_array` points to `0x2C`/`0x58` (<https://en.wikipedia.org/wiki/Win32_Thread_Information_Block>)
+		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/lld/test/COFF/Inputs/tlssup-32.ll>
 	* `_tls_index` / `_tls_array`
 		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/llvm/test/CodeGen/X86/tls.ll#L32>
 	* `__tlregdtor`

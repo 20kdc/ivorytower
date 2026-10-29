@@ -60,5 +60,7 @@ mod_builtins {
 
 
 mod_declspec_thread {
+	tls counter 2 == 2
+	tls counter 2 == 2
 }
 

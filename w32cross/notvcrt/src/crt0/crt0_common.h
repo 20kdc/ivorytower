@@ -9,6 +9,7 @@
  * Contains stuff common to all CRT0 files.
  */
 
+#include <windows.h>
 #include <corecrt_startup.h>
 
 /* C init */
