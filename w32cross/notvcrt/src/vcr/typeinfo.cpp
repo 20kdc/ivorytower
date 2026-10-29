@@ -16,6 +16,15 @@ void __type_info_root_node_destructor() {
 	__std_type_info_destroy_list(&__type_info_root_node);
 }
 
+/*
+ * I'm not sure why, but Clang is really deathly afraid of emitting "??_7type_info@@6B@".
+ * Placing this here forces it to properly link to itself.
+ */
+__asm__(
+	".global \"??_7type_info@@6B@.1\"\n"
+    "\"??_7type_info@@6B@.1\" = \"??_7type_info@@6B@\"\n"
+);
+
 #pragma section(".CRT$XTY", read)
 __attribute__((used)) __declspec(allocate(".CRT$XTY")) static _PVFV __type_info_root_node_destructor_ptr = { __type_info_root_node_destructor };
 
