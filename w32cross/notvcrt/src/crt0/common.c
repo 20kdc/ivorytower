@@ -9,22 +9,12 @@
  * Init/term sections.
  */
 
-#include <windows.h>
+#include <stdlib.h>
 #include "crt0_common.h"
-#include "corecrt_startup.h"
-#include "interlockedapi.h"
-#include "stdlib.h"
-#include "vcruntime.h"
-#include "winnt.h"
 
 /*
- * We waste some bytes putting dummy values in here to prevent discard.
- * The 'merge comment' might get discarded, mmm.
+ * We waste some bytes putting dummy zero values in here to prevent discard.
  */
-
-#pragma comment(linker, "/merge:.CRT=.rdata")
-
-#define _CRTALLOC(s) __declspec(allocate(s))
 
 /* C init */
 #pragma section(".CRT$XIA", read)
@@ -47,18 +37,6 @@ _CRTALLOC(".CRT$XPZ") _PVFV __xp_z[1];
 _CRTALLOC(".CRT$XTA") _PVFV __xt_a[1];
 #pragma section(".CRT$XTZ", read)
 _CRTALLOC(".CRT$XTZ") _PVFV __xt_z[1];
-
-/* TLS callbacks (NYI) */
-#pragma section(".CRT$XLA", read)
-_CRTALLOC(".CRT$XLA") PIMAGE_TLS_CALLBACK __xl_a[1];
-#pragma section(".CRT$XLZ", read)
-_CRTALLOC(".CRT$XLZ") PIMAGE_TLS_CALLBACK __xl_z[1];
-
-/* Thread init (NYI) */
-#pragma section(".CRT$XDA", read)
-_CRTALLOC(".CRT$XDA") _PVFV __xd_a[1];
-#pragma section(".CRT$XDZ", read)
-_CRTALLOC(".CRT$XDZ") _PVFV __xd_z[1];
 
 /*
  * EXE:
@@ -117,43 +95,55 @@ int __cdecl at_quick_exit(_PVFV f) {
 	}
 }
 
-int __NOTVCRUNTIME_init(int isDLLV) {
+int __NOTVCRUNTIME_exe_init() {
 	/* yes, this is a stub, but one day it might not be. */
 	__security_init_cookie();
+
 	/*
 	 * It may seem sensible to call __acrt_initialize.
 	 * DON'T. It got called by appcrt_dllmain.cpp!
 	 */
-	isDLL = isDLLV;
-	if (isDLL)
-		InitializeSListHead(&dll_exit_list);
+	isDLL = 0;
+
 	/*
-	 * KNOW YOUR RELIABILITY CHECK:
-	 * ./w10/4vcruntime.sh ; ./test.sh ; wine tests/bin/cl/x86/constructors.exe
+	 * Constructor logic is tested in test 'a_smoke'
+	 * W32CROSS_REBUILDVCR=1 ./test.sh
 	 */
 	if (_initterm_e(__xi_a, __xi_z))
 		return 0;
 	_initterm(__xc_a, __xc_z);
+
 	/*
-	 * If we're NOT a DLL, then destructors are installed into _crt_atexit.
-	 * If we ARE a DLL, then they are handled in the dll_fini function below.
+	 * We're NOT a DLL; destructors are installed into _crt_atexit.
+	 * initterm runs from A to Z.
+	 * This means we should logically run destructors from Z to A.
+	 * But atexit runs in reverse, so we do this by... iterating forward again!
+	 * Isn't this fun?
 	 */
-	if (!isDLL) {
-		/*
-		 * initterm runs from A to Z.
-		 * This means we should logically run destructors from Z to A.
-		 * But atexit runs in reverse, so we do this by... iterating forward again!
-		 * Isn't this fun?
-		 */
-		/* term first (so run last) */
-		for (_PVFV * ptr = __xt_a; ptr != __xt_z; ptr++)
-			if (*ptr)
-				_crt_atexit(*ptr);
-		/* then pre-term (so run before) */
-		for (_PVFV * ptr = __xp_a; ptr != __xp_z; ptr++)
-			if (*ptr)
-				_crt_atexit(*ptr);
-	}
+	/* term first (so run last) */
+	for (_PVFV * ptr = __xt_a; ptr != __xt_z; ptr++)
+		if (*ptr)
+			_crt_atexit(*ptr);
+	/* then pre-term (so run before) */
+	for (_PVFV * ptr = __xp_a; ptr != __xp_z; ptr++)
+		if (*ptr)
+			_crt_atexit(*ptr);
+	return 1;
+}
+
+int __NOTVCRUNTIME_dll_init() {
+	/* yes, this is a stub, but one day it might not be. */
+	__security_init_cookie();
+
+	isDLL = 1;
+	InitializeSListHead(&dll_exit_list);
+
+	/* As above. */
+	if (_initterm_e(__xi_a, __xi_z))
+		return 0;
+	_initterm(__xc_a, __xc_z);
+
+	/* Destructors are handled in the dll_fini function below. */
 	return 1;
 }
 
@@ -168,3 +158,30 @@ void __NOTVCRUNTIME_dll_fini() {
 	_initterm(__xp_a, __xp_z);
 	_initterm(__xt_a, __xt_z);
 }
+
+/* -- LINKER ARG STUFFING AND RATIONALES THEREOF -- */
+
+/*
+ * interlocked etc.
+ */
+#pragma comment(linker, "/defaultlib:kernel32")
+
+/*
+ * hacks to use 'GNU' compiler-rt with 'MSVC' target
+ * ugh... to be clear, there is a better way, BUT we can't use it because then Clang tries to link against its personal copy of compiler-rt (which it doesn't have)
+ * 1. __chkstk
+ *    Note: According to https://github.com/llvm/llvm-project/blob/fa5e5fcfc594f86297d0f3bfd3f15c37cfcb87c4/llvm/lib/Target/X86/X86FrameLowering.cpp#L744 :
+ *    This function modifies SP on win32 (it's 'literally __alloca')
+ *    On win64/arm64, it does NOT modify SP.
+ *    If we were to use '__alloca' on win64, bad things would happen!
+ */
+#if defined(__i386__)
+#pragma comment(linker, "/alternatename:__chkstk=__alloca")
+#elif defined(__x86_64__)
+#pragma comment(linker, "/alternatename:__chkstk=___chkstk_ms")
+#endif
+
+/*
+ * Not included in general linker comment set. That might be a problem, mmm...
+ */
+#pragma comment(linker, "/merge:.CRT=.rdata")

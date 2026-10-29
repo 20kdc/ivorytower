@@ -71,6 +71,11 @@ This allows the patches to be what's stored in Git while offering an easy develo
 		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2517>
 	* `_Init_thread_header` / `_Init_thread_footer` / `_Init_thread_abort`
 		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2599>
+	* Basic structure from disasm of `declspec_thread` test:
+		* `.tls$` contains actual TLS data.
+		* `.CRT$XDU` section has `___tls_init` added.
+		* `___tls_init` is a `void __cdecl()`ish function which calls TLS initializers.
+		* TLS initializers call `void __cdecl ___tlregdtor(void (*)())`.
 * Dllmain
 	* <https://learn.microsoft.com/en-us/windows/win32/dlls/dllmain>
 	* Key points:

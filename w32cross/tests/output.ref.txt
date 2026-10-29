@@ -60,7 +60,13 @@ mod_builtins {
 
 
 mod_declspec_thread {
++ Inspector(example)
++ Inspector(example)
 	tls counter 2 == 2
+- Inspector(example)
++ Inspector(example)
 	tls counter 2 == 2
+- Inspector(example)
+- Inspector(example)
 }
 

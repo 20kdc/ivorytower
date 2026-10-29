@@ -50,11 +50,11 @@ subninja tests/02config.ninja
 
 chain=clang
 vcarch=x86
-subninja tests/02config.ninja
+subninja tests/02config_asm.ninja
 vcarch=x64
-subninja tests/02config.ninja
+subninja tests/02config_asm.ninja
 vcarch=arm64
-subninja tests/02config.ninja
+subninja tests/02config_asm.ninja
 
 chain=BROKEN
 vcarch=BROKEN

@@ -11,3 +11,6 @@ rule dll
 
 rule rtdll
   command = "${clang}-${vcarch}" -g -gcodeview -Wl,/demangle:no -shared $in -o $out
+
+rule rtdll_asm
+  command = "${clang}-${vcarch}" -S -shared $in -o $out

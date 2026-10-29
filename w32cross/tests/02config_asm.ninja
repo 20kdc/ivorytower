@@ -1,0 +1,5 @@
+# Runs 02config but also produces select assembly files
+
+include tests/02config.ninja
+
+build ${bin}/mod_declspec_thread.s: rtdll_asm tests/mods/declspec_thread.cpp

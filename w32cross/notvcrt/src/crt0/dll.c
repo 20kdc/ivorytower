@@ -15,7 +15,7 @@ int __stdcall _CRT_INIT(void * a, int reason, void * reserved) {
 	static int counter = 0;
 	if (reason == DLL_PROCESS_ATTACH) {
 		counter++;
-		return __NOTVCRUNTIME_init(1);
+		return __NOTVCRUNTIME_dll_init();
 	} else if (reason == DLL_PROCESS_DETACH) {
 		counter--;
 		if (counter == 0) {

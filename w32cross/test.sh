@@ -8,6 +8,10 @@ fi
 
 common/compilerinit.sh
 
+if [ "$W32CROSS_REBUILDVCR" != "" ]; then
+	w10/4vcruntime.sh
+fi
+
 . common/cbase.sh
 
 rm -rf tests/bin

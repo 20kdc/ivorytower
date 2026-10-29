@@ -9,8 +9,16 @@
  * Contains stuff common to all CRT0 files.
  */
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <corecrt_startup.h>
+
+#ifdef HAS_DEBUG_PUTS
+#warning Debug puts enabled do not commit
+#include <stdio.h>
+#endif
+
+#define _CRTALLOC(s) __declspec(allocate(s))
 
 /* C init */
 extern _PIFV __xi_a[1];
@@ -27,24 +35,12 @@ extern _PVFV __xt_a[1];
 extern _PVFV __xt_z[1];
 
 /*
- * TLS callbacks
- */
-extern PIMAGE_TLS_CALLBACK __xl_a[1];
-extern PIMAGE_TLS_CALLBACK __xl_z[1];
-
-/*
- * Thread init
- * https://github.com/llvm/llvm-project/blob/76e574c106cd4ae67ca6e0f6f44ea551e77212f5/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2456
- */
-extern _PVFV __xd_a[1];
-extern _PVFV __xd_z[1];
-
-/*
  * crt0 init/finalizer functions.
- * 0 return in __NOTVCRUNTIME_init indicates mysterious failure.
+ * 0 return in __NOTVCRUNTIME_*_init indicates mysterious failure.
  * Be warned: These functions *MUST* only be called once ever per module, each.
  */
-int __NOTVCRUNTIME_init(int isDLL);
+int __NOTVCRUNTIME_dll_init();
+int __NOTVCRUNTIME_exe_init();
 
 /*
  * This only runs for DLLs.
@@ -53,24 +49,13 @@ int __NOTVCRUNTIME_init(int isDLL);
  */
 void __NOTVCRUNTIME_dll_fini();
 
-/* -- LINKER ARG STUFFING AND RATIONALES THEREOF -- */
-
 /*
- * interlocked etc.
+ * A pointer to this lives directly before __xl_a if-and-only-if TLS is in use.
+ * This is for two reasons:
+ * 1. So that LLVM doesn't drop our (rather important) symbols if we are using TLS
+ * 2. So that we only do this IF we are using TLS
  */
-#pragma comment(linker, "/defaultlib:kernel32")
-
-/*
- * hacks to use 'GNU' compiler-rt with 'MSVC' target
- * ugh... to be clear, there is a better way, BUT we can't use it because then Clang tries to link against its personal copy of compiler-rt (which it doesn't have)
- * 1. __chkstk
- *    Note: According to https://github.com/llvm/llvm-project/blob/fa5e5fcfc594f86297d0f3bfd3f15c37cfcb87c4/llvm/lib/Target/X86/X86FrameLowering.cpp#L744 :
- *    This function modifies SP on win32 (it's 'literally __alloca')
- *    On win64/arm64, it does NOT modify SP.
- *    If we were to use '__alloca' on win64, bad things would happen!
- */
-#if defined(__i386__)
-#pragma comment(linker, "/alternatename:__chkstk=__alloca")
-#elif defined(__x86_64__)
-#pragma comment(linker, "/alternatename:__chkstk=___chkstk_ms")
-#endif
+typedef struct {
+	/* __xl_z entry */
+	PIMAGE_TLS_CALLBACK * xl_z;
+} exttls_t;

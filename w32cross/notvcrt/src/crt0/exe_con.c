@@ -5,12 +5,10 @@
  * For more information, please refer to <http://unlicense.org>, supplied as COPYING in the W32Cross source code.
  */
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include "crt0_common.h"
+
 #include <stdlib.h>
 #include <tchar.h>
-
-#include "crt0_common.h"
 
 int _tmain(int argc, _TCHAR ** argv, _TCHAR ** evx);
 
@@ -28,7 +26,7 @@ int _tmain(int argc, _TCHAR ** argv, _TCHAR ** evx);
 
 void _tmainCRTStartup() {
 	_set_app_type(_crt_console_app);
-	__NOTVCRUNTIME_init(0);
+	__NOTVCRUNTIME_exe_init();
 	_configure_t_argv(_crt_argv_unexpanded_arguments);
 	exit(_tmain(*__p___argc(), *__p___targv(), _get_initial_t_environment()));
 }
