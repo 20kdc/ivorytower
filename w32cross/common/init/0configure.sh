@@ -55,9 +55,12 @@ xlink_compat() {
 ivtw_find_command "lld-link"
 
 OUR_FUSELD="-fuse-ld=$ivtw_find_command_result"
-# For clang-cl, we need to forcibly inject /safeseh:no because it won't otherwise listen.
-# this is stuff that is forcibly injected via that mechanism
-OUR_FORCEDLINKARGS="/safeseh:no"
+
+# These args are forcibly injected into *ALL* links.
+# That is, they are installed in w32cross-link.
+# They are space-separated so they can be separated into lines.
+OUR_FORCEDLINKARGS="/safeseh:no /subsystem:default,4.0"
+
 # Some notes:
 # * -fuse-ld=w32cross-link is used to ensure /safeseh:no is injected
 #   * remember that we do PATH injection, so this WILL work
@@ -89,6 +92,8 @@ done
 
 gen_clangargs_lst_common() {
 	echo "$OUR_FUSELD"
+	# We can't provide -Wl, without causing warnings.
+	# See gen_clangargs_lst_ld.
 	for package in $SDK_PACKAGES; do
 		echo "-isystem"
 		echo "\${W32CROSS_SDKROOT}/$package/include"
@@ -119,14 +124,18 @@ gen_clangargs_lst_ld() {
 	echo "-Wl,-defaultlib:msvcrt"
 	echo "-Wl,-defaultlib:msvcprt"
 	echo "-Wl,-defaultlib:oldnames"
-	for package in $SDK_PACKAGES; do
-		echo "-L\${W32CROSS_SDKROOT}/$package/lib/$1"
+	for gcll_package in $SDK_PACKAGES; do
+		echo "-L\${W32CROSS_SDKROOT}/$gcll_package/lib/$1"
 	done
 	# This has to be defined outside because clang-cl just won't listen anyway I guess.
 	# See-also: OUR_FUSELD_CL, lld-link args
 	# Rationale: lld-link: error: /safeseh: ../../../../VCRUNTIME140.dll is not compatible with SEH
 	# (looks like the forwarder did it somehow)
-	echo "-Wl,-safeseh:no"
+	for gcll_arg in $OUR_FORCEDLINKARGS; do
+		# commas may appear
+		echo "-Xlinker"
+		echo "$gcll_arg"
+	done
 	# The following are defined also in crt0_common.h and are described there.
 	echo "-Wl,-defaultlib:kernel32"
 	if [ "$1" = "x86" ]; then
