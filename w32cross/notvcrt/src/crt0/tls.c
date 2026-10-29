@@ -5,6 +5,7 @@
  * For more information, please refer to <http://unlicense.org>, supplied as COPYING in the W32Cross source code.
  */
 
+/* #define HAS_DEBUG_PUTS */
 #include "crt0_common.h"
 
 #include <stdlib.h>
@@ -17,13 +18,42 @@ _CRTALLOC(".CRT$XDA") _PVFV __xd_a[1];
 #pragma section(".CRT$XDZ", read)
 _CRTALLOC(".CRT$XDZ") _PVFV __xd_z[1];
 
+#ifdef HAS_DEBUG_PUTS
+static int debugExceptionFilter(int code, PEXCEPTION_POINTERS ex) {
+	fprintf(stderr, "TLS INIT EXCEPTION\n");
+	fprintf(stderr, "\tCODE %08x\n", code);
+#ifdef __i386__
+	fprintf(stderr, "\tEIP %p\n", (void *) ex->ContextRecord->Eip);
+	fprintf(stderr, "\tEAX %p\n", (void *) ex->ContextRecord->Eax);
+	fprintf(stderr, "\tEBX %p\n", (void *) ex->ContextRecord->Ebx);
+	fprintf(stderr, "\tECX %p\n", (void *) ex->ContextRecord->Ecx);
+	fprintf(stderr, "\tEDX %p\n", (void *) ex->ContextRecord->Edx);
+	fprintf(stderr, "\tESI %p\n", (void *) ex->ContextRecord->Esi);
+	fprintf(stderr, "\tEDI %p\n", (void *) ex->ContextRecord->Edi);
+	fprintf(stderr, "\tEBP %p\n", (void *) ex->ContextRecord->Ebp);
+	fprintf(stderr, "\tESP %p\n", (void *) ex->ContextRecord->Esp);
+#endif
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+#endif
+
 /*
  * LLVM only /include: s this without further elaboration.
  * Note this is included in __xl_a.
  */
 void __stdcall __dyn_tls_init(void * a, unsigned long reason, void * reserved) {
-	if (reason == DLL_PROCESS_ATTACH || reason == DLL_THREAD_ATTACH)
+	if (reason == DLL_PROCESS_ATTACH || reason == DLL_THREAD_ATTACH) {
+		DEBUGF("start\n");
+#ifdef HAS_DEBUG_PUTS
+		__try {
+#endif
 		_initterm(__xd_a, __xd_z);
+#ifdef HAS_DEBUG_PUTS
+		} __except(debugExceptionFilter(GetExceptionCode(), GetExceptionInformation())) {
+		}
+#endif
+		DEBUGF("end\n");
+	}
 }
 
 /* -- TLS C++ destructors -- */
@@ -37,6 +67,7 @@ static __declspec(thread) size_t __tlregdtor_count;
  * So we're being expected to maintain a per-thread TLS dtor list now.
  */
 int __tlregdtor(_PVFV f) {
+	DEBUGF("dtor register %p\n", f);
 	if (!__tlregdtor_list) {
 		__tlregdtor_list = (_PVFV *) malloc(sizeof(_PVFV));
 		/* Not sure what's more responsible on error */
@@ -60,10 +91,12 @@ int __tlregdtor(_PVFV f) {
 
 static void __stdcall __dyn_tls_fini(void * a, unsigned long reason, void * reserved) {
 	if (reason == DLL_PROCESS_DETACH || reason == DLL_THREAD_DETACH) {
+		DEBUGF("start\n");
 		while (__tlregdtor_count > 0) {
 			_PVFV fn = __tlregdtor_list[--__tlregdtor_count];
 			fn();
 		}
+		DEBUGF("end\n");
 	}
 }
 

@@ -7,7 +7,6 @@ notvcrt_src = [
 	'src/crt0/common.c',
 	'src/crt0/dll.c',
 	'src/crt0/dll_nomain.c',
-	'src/crt0/dll_tlsemu.c',
 	'src/crt0/exe_con.c',
 	'src/crt0/exe_gui.c',
 	'src/crt0/exe_con_w.c',
@@ -42,7 +41,9 @@ notvcrt_src = [
 # If needed in future.
 
 if host_machine.cpu_family() == 'x86'
-	notvcrt_src += ['src/crt0/msvc_int64_thunks.s']
+	notvcrt_src += [
+		'src/crt0/msvc_int64_thunks.s'
+	]
 endif
 #elif host_machine.cpu_family() == 'x86_64'
 #notvcrt_src += ['src/crtx/chkstk_x64.s']

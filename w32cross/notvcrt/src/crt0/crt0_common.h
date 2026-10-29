@@ -16,7 +16,7 @@
 #ifdef HAS_DEBUG_PUTS
 #warning Debug puts enabled do not commit
 #include <stdio.h>
-#define DEBUGF(...) fprintf(stderr, __VA_ARGS__)
+#define DEBUGF(fmt, ...) fprintf(stderr, "%s: " fmt, __func__, __VA_ARGS__)
 #else
 #define DEBUGF(...)
 #endif
@@ -51,9 +51,6 @@ int __NOTVCRUNTIME_exe_init();
  * This is based on logic implied by https://devblogs.microsoft.com/oldnewthing/20141017-00/?p=43823/
  */
 void __NOTVCRUNTIME_dll_fini();
-
-/* TLS emulator */
-void __stdcall __NOTVCRUNTIME_tlsemu(HMODULE * module, int reason, void * reserved);
 
 /*
  * A pointer to this lives directly before __xl_a if-and-only-if TLS is in use.

@@ -50,6 +50,10 @@ This allows the patches to be what's stored in Git while offering an easy develo
 	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/security-init-cookie?view=msvc-140>
 * `__declspec(thread)` / TLS
 	* <https://learn.microsoft.com/en-us/cpp/c-language/thread-local-storage?view=msvc-140>
+	* **BIG IMPORTANT SCARY NOTE!** \
+	  On at least Windows XP and ReactOS, _static_ TLS indexes are not _dynamic_ TLS indexes.
+	  That is, you cannot by-default take a `TlsAlloc()` value and use it as a `_tls_index` value.
+	  This explains why, unfortunately, TLS emulation is not possible without changing the LLVM-generated code.
 	* Testing shows symbols are:
 		* `__dyn_tls_init`
 		* `__tlregdtor`

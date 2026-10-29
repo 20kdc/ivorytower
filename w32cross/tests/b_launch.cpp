@@ -14,8 +14,11 @@ void launch_test(const char * testid) {
 	printf("\n%s {\n", testid);
 	HMODULE lib = LoadLibraryA(testid);
 	if (!lib) {
-		printf("MISSING: %s\n", testid);
-		exit(1);
+		// might have been intentionally omitted
+		// for instance exception testing kinda messes with OllyDbg
+		// can use 'pass to program' but easier to just not have them
+		printf("} MISSING\n");
+		return;
 	}
 	TapTestSeq ** testptr = (TapTestSeq **) GetProcAddress(lib, "X_4AE");
 	if (!testptr) {
