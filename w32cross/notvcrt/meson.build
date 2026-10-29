@@ -13,6 +13,7 @@ notvcrt_src = [
 	'src/crt0/exe_gui_w.c',
 	'src/crt0/fltused.c',
 	'src/crt0/gs.c',
+	'src/crt0/tls.c',
 	'src/vcr/del01.cpp',
 	'src/vcr/del02.cpp',
 	'src/vcr/del03.cpp',

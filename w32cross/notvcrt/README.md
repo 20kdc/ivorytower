@@ -34,9 +34,12 @@ This allows the patches to be what's stored in Git while offering an easy develo
 
 ## Useful Reference Material
 
-* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-140>
-* <https://learn.microsoft.com/en-us/cpp/build/run-time-library-behavior?view=msvc-140>
-* <https://learn.microsoft.com/en-us/cpp/build/reference/entry-entry-point-symbol?view=msvc-140>
+* Which `.lib` is which
+	* _Note: For various complex reasons, everything goes to `msvcrt.lib` here._
+	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-140>
+* `_CRT_INIT` / `mainCRTStartup` / `_DllMainCRTStartup` etc.
+	* <https://learn.microsoft.com/en-us/cpp/build/run-time-library-behavior?view=msvc-140>
+	* <https://learn.microsoft.com/en-us/cpp/build/reference/entry-entry-point-symbol?view=msvc-140>
 * Init/Fini
 	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-initialization?view=msvc-140>
 	* `Source/10.0.19041.0/ucrt/internal/initialization.cpp`
@@ -45,6 +48,25 @@ This allows the patches to be what's stored in Git while offering an easy develo
 	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/atexit?view=msvc-170>
 * Security cookie
 	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/security-init-cookie?view=msvc-140>
+* `__declspec(thread)` / TLS
+	* <https://learn.microsoft.com/en-us/cpp/c-language/thread-local-storage?view=msvc-140>
+	* Testing shows symbols are:
+		* `__dyn_tls_init`
+		* `__tlregdtor`
+		* `_tls_index`
+		* `_tls_array`
+	* `_tls_index` / `_tls_array`
+		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/llvm/test/CodeGen/X86/tls.ll#L32>
+	* `__tlregdtor`
+		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2413>
+	* `__dyn_tls_init` / `.CRT$XDU`
+		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2451>
+	* `__tls_guard`
+		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2496>
+	* `__dyn_tls_on_demand_init`
+		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2517>
+	* `_Init_thread_header` / `_Init_thread_footer` / `_Init_thread_abort`
+		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2599>
 * Dllmain
 	* <https://learn.microsoft.com/en-us/windows/win32/dlls/dllmain>
 	* Key points:
@@ -54,3 +76,6 @@ This allows the patches to be what's stored in Git while offering an easy develo
 	* 4. The CRT entrypoint (*** THIS IS US ***) needs to call C++ constructors/destructors.
 * `type_info`:
 	* <https://learn.microsoft.com/en-us/windows/win32/memory/stdtypeinfodestroylist>
+* 32-bit I64 Libcalls (`__alldiv`/`__aulldiv`/`__allrem`/`__aullrem`/`__allmul`)
+	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/llvm/include/llvm/IR/RuntimeLibcalls.td#L3412>
+	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/llvm/test/CodeGen/X86/win32-int-runtime-libcalls.ll#L26>

@@ -5,8 +5,7 @@
 
 .text
 
-# https://github.com/llvm/llvm-project/blob/e9a93baac2f8aad3a2114ec25f6fdb9342a03cd4/llvm/include/llvm/IR/RuntimeLibcalls.td#L3412
-# https://github.com/llvm/llvm-project/blob/fa5e5fcfc594f86297d0f3bfd3f15c37cfcb87c4/llvm/test/CodeGen/X86/win32-int-runtime-libcalls.ll#L26
+# See 'Libcalls' in reference material
 
 # So the main thing to keep in mind here is that the compiler-rt functions are cdecl.
 # And the MSVC functions are stdcall.

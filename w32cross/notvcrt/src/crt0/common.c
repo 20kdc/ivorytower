@@ -48,6 +48,12 @@ _CRTALLOC(".CRT$XTA") _PVFV __xt_a[1];
 #pragma section(".CRT$XTZ", read)
 _CRTALLOC(".CRT$XTZ") _PVFV __xt_z[1];
 
+/* TLS callbacks (NYI) */
+#pragma section(".CRT$XLA", read)
+_CRTALLOC(".CRT$XLA") PIMAGE_TLS_CALLBACK __xl_a[1];
+#pragma section(".CRT$XLZ", read)
+_CRTALLOC(".CRT$XLZ") PIMAGE_TLS_CALLBACK __xl_z[1];
+
 /* Thread init (NYI) */
 #pragma section(".CRT$XDA", read)
 _CRTALLOC(".CRT$XDA") _PVFV __xd_a[1];

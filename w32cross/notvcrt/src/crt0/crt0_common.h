@@ -26,6 +26,12 @@ extern _PVFV __xt_a[1];
 extern _PVFV __xt_z[1];
 
 /*
+ * TLS callbacks
+ */
+extern PIMAGE_TLS_CALLBACK __xl_a[1];
+extern PIMAGE_TLS_CALLBACK __xl_z[1];
+
+/*
  * Thread init
  * https://github.com/llvm/llvm-project/blob/76e574c106cd4ae67ca6e0f6f44ea551e77212f5/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2456
  */

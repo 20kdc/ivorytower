@@ -22,16 +22,18 @@ int __stdcall _CRT_INIT(void * a, int reason, void * reserved) {
 			__NOTVCRUNTIME_dll_fini();
 			return 0;
 		}
+	} else if (reason == DLL_THREAD_ATTACH) {
+	} else if (reason == DLL_THREAD_DETACH) {
 	}
 	return 1;
 }
 
 int __stdcall _DllMainCRTStartup(void * a, int reason, void * reserved) {
-	if (reason == DLL_PROCESS_ATTACH) {
+	if (reason == DLL_PROCESS_ATTACH || reason == DLL_THREAD_ATTACH) {
 		if (!_CRT_INIT(a, reason, reserved))
 			return 0;
 		return DllMain(a, reason, reserved);
-	} else if (reason == DLL_PROCESS_DETACH) {
+	} else if (reason == DLL_PROCESS_DETACH || reason == DLL_THREAD_DETACH) {
 		DllMain(a, reason, reserved);
 		return _CRT_INIT(a, reason, reserved);
 	} else {

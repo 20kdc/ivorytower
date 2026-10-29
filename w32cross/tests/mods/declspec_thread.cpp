@@ -3,6 +3,7 @@
 #include "../test_inspector.hxx"
 
 __declspec(thread) Inspector myInspector("example");
+__declspec(thread) int counter = 0;
 
 // temporary stuff, NYI
 // https://github.com/llvm/llvm-project/blob/76e574c106cd4ae67ca6e0f6f44ea551e77212f5/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2451
@@ -13,12 +14,12 @@ extern "C" int __tlregdtor(void (*f)()) {
 	return 0;
 }
 extern "C" {
-	int _tls_index;
 	void * _tls_array;
 }
 
 WINAPI unsigned long myThreadFn(void *) {
-	// do nothing
+	// do a small TLS access test
+	// counter++;
 	return 0;
 }
 
