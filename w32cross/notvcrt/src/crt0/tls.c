@@ -38,12 +38,21 @@ static __declspec(thread) size_t __tlregdtor_count;
  */
 int __tlregdtor(_PVFV f) {
 	if (!__tlregdtor_list) {
-		__tlregdtor_list = malloc(sizeof(_PVFV));
+		__tlregdtor_list = (_PVFV *) malloc(sizeof(_PVFV));
+		/* Not sure what's more responsible on error */
+		if (!__tlregdtor_list)
+			return 0;
+
 		__tlregdtor_list[0] = f;
 		__tlregdtor_count = 1;
 		return 0;
 	} else {
-		__tlregdtor_list = realloc(__tlregdtor_list, sizeof(_PVFV) * (__tlregdtor_count + 1));
+		_PVFV * newlist = (_PVFV *) realloc(__tlregdtor_list, sizeof(_PVFV) * (__tlregdtor_count + 1));
+		/* Still not sure what's more responsible on error */
+		if (!newlist)
+			return 0;
+
+		__tlregdtor_list = newlist;
 		__tlregdtor_list[__tlregdtor_count++] = f;
 		return 0;
 	}

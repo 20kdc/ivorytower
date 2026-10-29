@@ -7,6 +7,7 @@ notvcrt_src = [
 	'src/crt0/common.c',
 	'src/crt0/dll.c',
 	'src/crt0/dll_nomain.c',
+	'src/crt0/dll_tlsemu.c',
 	'src/crt0/exe_con.c',
 	'src/crt0/exe_gui.c',
 	'src/crt0/exe_con_w.c',

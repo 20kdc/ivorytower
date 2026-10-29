@@ -128,6 +128,7 @@ int __NOTVCRUNTIME_exe_init() {
 	for (_PVFV * ptr = __xp_a; ptr != __xp_z; ptr++)
 		if (*ptr)
 			_crt_atexit(*ptr);
+
 	return 1;
 }
 

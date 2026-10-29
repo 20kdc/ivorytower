@@ -6,37 +6,36 @@
  */
 
 /* We could define WIN32_LEAN_AND_MEAN here, but it's more useful to exercise the includes. */
-#include <windows.h>
+
 #include "crt0_common.h"
 
-int __stdcall DllMain(void * a, int reason, void * reserved);
+int __stdcall DllMain(HMODULE * module, int reason, void * reserved);
 
-int __stdcall _CRT_INIT(void * a, int reason, void * reserved) {
-	static int counter = 0;
+int __stdcall _CRT_INIT(HMODULE * module, int reason, void * reserved) {
 	if (reason == DLL_PROCESS_ATTACH) {
-		counter++;
+		__NOTVCRUNTIME_tlsemu(module, reason, reserved);
 		return __NOTVCRUNTIME_dll_init();
 	} else if (reason == DLL_PROCESS_DETACH) {
-		counter--;
-		if (counter == 0) {
-			__NOTVCRUNTIME_dll_fini();
-			return 0;
-		}
+		__NOTVCRUNTIME_dll_fini();
+		__NOTVCRUNTIME_tlsemu(module, reason, reserved);
+		return 0;
 	} else if (reason == DLL_THREAD_ATTACH) {
+		__NOTVCRUNTIME_tlsemu(module, reason, reserved);
 	} else if (reason == DLL_THREAD_DETACH) {
+		__NOTVCRUNTIME_tlsemu(module, reason, reserved);
 	}
 	return 1;
 }
 
-int __stdcall _DllMainCRTStartup(void * a, int reason, void * reserved) {
+int __stdcall _DllMainCRTStartup(HMODULE * module, int reason, void * reserved) {
 	if (reason == DLL_PROCESS_ATTACH || reason == DLL_THREAD_ATTACH) {
-		if (!_CRT_INIT(a, reason, reserved))
+		if (!_CRT_INIT(module, reason, reserved))
 			return 0;
-		return DllMain(a, reason, reserved);
+		return DllMain(module, reason, reserved);
 	} else if (reason == DLL_PROCESS_DETACH || reason == DLL_THREAD_DETACH) {
-		DllMain(a, reason, reserved);
-		return _CRT_INIT(a, reason, reserved);
+		DllMain(module, reason, reserved);
+		return _CRT_INIT(module, reason, reserved);
 	} else {
-		return DllMain(a, reason, reserved);
+		return DllMain(module, reason, reserved);
 	}
 }

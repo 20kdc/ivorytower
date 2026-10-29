@@ -16,6 +16,9 @@
 #ifdef HAS_DEBUG_PUTS
 #warning Debug puts enabled do not commit
 #include <stdio.h>
+#define DEBUGF(...) fprintf(stderr, __VA_ARGS__)
+#else
+#define DEBUGF(...)
 #endif
 
 #define _CRTALLOC(s) __declspec(allocate(s))
@@ -49,11 +52,14 @@ int __NOTVCRUNTIME_exe_init();
  */
 void __NOTVCRUNTIME_dll_fini();
 
+/* TLS emulator */
+void __stdcall __NOTVCRUNTIME_tlsemu(HMODULE * module, int reason, void * reserved);
+
 /*
  * A pointer to this lives directly before __xl_a if-and-only-if TLS is in use.
- * This is for two reasons:
- * 1. So that LLVM doesn't drop our (rather important) symbols if we are using TLS
- * 2. So that we only do this IF we are using TLS
+ * This is:
+ * 1. So that LLVM doesn't drop the (rather important) symbols
+ * 2.
  */
 typedef struct {
 	/* __xl_z entry */
