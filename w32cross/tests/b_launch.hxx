@@ -2,9 +2,18 @@
 
 #include <stdio.h>
 
+/*
+ * Test environment.
+ * This contains 'observe' (a function that 'could theoretically do anything with ptr' for deoptimization purposes).
+ * The test environment also has a 'background thread'.
+ * This thread was started before the test is even loaded, which makes it useful to test things like TLS which behave interestingly in that case.
+ * It also can outlive the test, which is interesting for similar reasons.
+ */
 class TapTestEnv {
 public:
 	virtual void observe(void * ptr) = 0;
+	virtual void callBkgThreadAndWait(void (*fn)(void * data), void * data) = 0;
+	virtual void setBkgThread(bool active) = 0;
 };
 
 class TapTestSeq {

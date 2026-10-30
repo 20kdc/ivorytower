@@ -1,13 +1,15 @@
 # see 01init.ninja
 
+clcomopts = /Zi /EHs /clang:-Wl,/demangle:no
+
 rule aexe
-  command = "${cl}-${vcarch}" /Zi /EHs /clang:-Wl,/demangle:no $in -o $out
+  command = "${cl}-${vcarch}" $clcomopts $in -o $out
 
 rule wexe
-  command = "${cl}-${vcarch}" /Zi /EHs /clang:-Wl,/demangle:no /D_UNICODE $in -o $out
+  command = "${cl}-${vcarch}" $clcomopts /D_UNICODE $in -o $out
 
 rule dll
-  command = "${cl}-${vcarch}" /Zi /EHs /clang:-Wl,/demangle:no /LD $in -o ${out1}
+  command = "${cl}-${vcarch}" $clcomopts /LD $in -o ${out1}
 
 rule rtdll
-  command = "${cl}-${vcarch}" /Zi /EHs /clang:-Wl,/demangle:no /LD $in -o $out
+  command = "${cl}-${vcarch}" $clcomopts /LD $in -o $out

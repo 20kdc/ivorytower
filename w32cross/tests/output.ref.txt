@@ -38,35 +38,56 @@ Hi, I'm an atexit function living in a DLL.
 - Inspector(cxxdll_inspector)
 modular tests
 
-mod_exceptions_vs_destructors {
+mod_exceptions_vs_destructors [load] {
 + Inspector(global)
+} [invoke] {
 	b
 + Inspector(longjmp)
 	a
 + Inspector(exception)
 - Inspector(exception)
+} [free] {
 - Inspector(global)
 }
 
 
-mod_cout {
+mod_cout [load] {
+} [invoke] {
 	Hello, world!
+} [free] {
 }
 
 
-mod_builtins {
+mod_builtins [load] {
+} [invoke] {
 	0 131071
+} [free] {
 }
 
 
-mod_declspec_thread {
+mod_declspec_thread [load] {
 + Inspector(example)
+} [invoke] {
+	creating new thread
 + Inspector(example)
+	about to check inspector
+	inspector alive 1 == 1
 	tls counter 2 == 2
+	tls interior subcounter 2 == 2
 - Inspector(example)
+	running guard test on background thread
+	about to check inspector
 + Inspector(example)
+	inspector alive 1 == 1
 	tls counter 2 == 2
+	tls interior subcounter 2 == 2
+	halting the bkg thread
 - Inspector(example)
+	halted the bkg thread, restarting it
++ Inspector(example)
+	making bkg thread poke guard
+	during free only main inspector should die, leaving a 'leaked' inspector
+} [free] {
 - Inspector(example)
 }
 

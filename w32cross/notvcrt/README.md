@@ -176,3 +176,5 @@ aka `__declspec(thread)`.
 	* `.CRT$XDU` section has `___tls_init` added.
 	* `___tls_init` is a `void __cdecl()`ish function which calls TLS initializers.
 	* TLS initializers call `void __cdecl ___tlregdtor(void (*)())`.
+* TLS guard stuff:
+	* Clang checks `__tls_guard`, a thread-local variable. If it's 0, it calls `__dyn_tls_on_demand_init`, which [supposedly](https://reviews.llvm.org/D115456?id=393206) itself checks `__tls_guard` (but it prevents a bunch of calls).

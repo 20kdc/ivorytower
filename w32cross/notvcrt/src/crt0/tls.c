@@ -38,22 +38,37 @@ static int debugExceptionFilter(int code, PEXCEPTION_POINTERS ex) {
 #endif
 
 /*
+ * This is a thread-local variable that is set to 1 to indicate TLS is ready.
+ */
+__declspec(thread) BYTE __tls_guard;
+
+/*
  * LLVM only /include: s this without further elaboration.
  * Note this is included in __xl_a.
  */
 void __stdcall __dyn_tls_init(void * a, unsigned long reason, void * reserved) {
-	if (reason == DLL_PROCESS_ATTACH || reason == DLL_THREAD_ATTACH) {
-		DEBUGF("start\n");
+	if (reason != DLL_PROCESS_ATTACH && reason != DLL_THREAD_ATTACH)
+		return;
+	if (__tls_guard)
+		return;
+	__tls_guard = 1;
+	DEBUGF("start\n");
 #ifdef HAS_DEBUG_PUTS
-		__try {
+	__try {
 #endif
-		_initterm(__xd_a, __xd_z);
+	_initterm(__xd_a, __xd_z);
 #ifdef HAS_DEBUG_PUTS
-		} __except(debugExceptionFilter(GetExceptionCode(), GetExceptionInformation())) {
-		}
-#endif
-		DEBUGF("end\n");
+	} __except(debugExceptionFilter(GetExceptionCode(), GetExceptionInformation())) {
 	}
+#endif
+	DEBUGF("end\n");
+}
+
+/*
+ * Basically 'translates' to __dyn_tls_init.
+ */
+void __dyn_tls_on_demand_init() {
+	__dyn_tls_init(NULL, DLL_THREAD_ATTACH, NULL);
 }
 
 /* -- TLS C++ destructors -- */
@@ -157,7 +172,7 @@ _CRTALLOC(".CRT$XLZ") PIMAGE_TLS_CALLBACK __xl_z[] = {
 	NULL
 };
 
-/* -- TLS state -- */
+/* -- Directories and fs: stuff -- */
 
 #if defined(__i386__)
 __asm__(
@@ -165,10 +180,6 @@ __asm__(
 	"__tls_array = 0x2C\n"
 );
 #endif
-
-BYTE __tls_guard;
-
-/* -- Directories -- */
 
 DWORD _tls_index = TLS_OUT_OF_INDEXES;
 
