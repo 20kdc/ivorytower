@@ -5,7 +5,11 @@ With the failure of Meson integration under the `clang-cl` approach, it's pretty
 This seems to be the intended approach by Meson, and it does have the key advantage of allowing for a consistent command-line syntax between targets in ivorytower proper, which will likely matter as expansion continues outside of Meson.
 
 * `bin/`: '`PATH`able wrappers' (`w32cross-` prefix)
-	* `w32cross-clang[++]`: Sets up environment and runs `clang`. **Does not do any further setup; direct use is 'advanced'.**
+	* `w32cross-clang[++]`: Does the following magic:
+		1. Sets up environment.
+		2. Undoes 'Bad Meson Rewriting' (see `CLANG_ARGS.md`)
+		3. Runs `clang`.
+		**Does not do any further setup; direct use is 'advanced'.**
 	* `w32cross-clang[++]-ARCH`: 'Proper' compiler wrapper. **This sets up everything you actually need to setup to build executables.**
 	* `w32cross-link` / `w32cross-lld-link`: Linker wrapper.
 	* `w32cross-cl` / `w32cross-clang-cl`: 'Proper' compiler wrapper. More unstable in practice, but doesn't require as much command-line trickery, so no need for per-arch links.

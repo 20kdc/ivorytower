@@ -24,6 +24,15 @@ The `clang-args` files are basically like `compile_flags.txt` except `${W32CROSS
 
 The order of args is basically a suggestion given how Meson behaves.
 
+## Bad Meson Rewriting
+
+As of Meson 1.7.0, Meson appears to incorrectly rewrite some args into being linker args when it really shouldn't.
+
+This feels like something I would have noticed earlier if this wasn't a regression, but anyway, here's how the compiler wrapper (_not_ the linker wrapper) fixes it:
+
+* `-Wl,-L` is fixed to `-L`
+* `-Wl,-nostartfiles` is fixed to `-nostartfiles`
+
 ## `clang-cl` and translating between `cl` and `clang`
 
 `clang-cl` requires a lot less prodding, because it knows about things like MSVC CRT variations. But also it's the _original_ reason that `w32cross-link` needed to be a comprehensive wrapper, because it's the _worst_ if you need to tweak anything.

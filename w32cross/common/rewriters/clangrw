@@ -1,0 +1,4 @@
+#!/bin/sh -e
+sed \
+-e "s/^-Wl,-nostartfiles$/-nostartfiles/" \
+-e "s/^-Wl,-L/-L/"

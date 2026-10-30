@@ -26,6 +26,8 @@ fi
 IVTW_DLPFX="downloaded/"
 IVTW_SDKPFX="sdk_$W32CROSS_SDKID/"
 IVTW_MACRO_WHEREAMI='W32CROSS_BINDIR="$(dirname "$(readlink -f "$0")")"'
+IVTW_MACRO_BINDIR2SDKROOT='W32CROSS_SDKROOT="$(dirname "$W32CROSS_BINDIR")"'
+IVTW_MACRO_SDKCOMMON='. "$W32CROSS_SDKROOT/etc/sdkcommon.sh"'
 
 # -- Core Utilities --
 

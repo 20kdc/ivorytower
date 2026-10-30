@@ -5,6 +5,9 @@
 
 mkdir -p "${IVTW_SDKPFX}bin"
 mkdir -p "${IVTW_SDKPFX}etc"
+mkdir -p "${IVTW_SDKPFX}etc/rewriters"
+cp common/sdkcommon.sh "${IVTW_SDKPFX}etc/sdkcommon.sh"
+cp common/rewriters/* "${IVTW_SDKPFX}etc/rewriters/"
 
 # clang-cl is only linked by version on at least Ubuntu 24.04 for clang-cl-18.
 # We have to thus find by version.
@@ -19,16 +22,29 @@ connect() {
 #!/bin/sh -e
 # W32Cross-generated tool configuration file.
 $IVTW_MACRO_WHEREAMI
-# just in case any w32cross- wrappers are needed
-export PATH="\$W32CROSS_BINDIR:\$PATH"
-W32CROSS_SDKROOT="\$(dirname "\$W32CROSS_BINDIR")"
-# echo "\$PATH"
-# echo "W32CROSS_SDKROOT: \$W32CROSS_SDKROOT"
+$IVTW_MACRO_BINDIR2SDKROOT
+$IVTW_MACRO_SDKCOMMON
 
 exec "$ivtw_find_command_result" $3 "\$@"
 EOF
 	chmod +x "${IVTW_SDKPFX}bin/w32cross-$2"
 }
+
+# connect_rewriter FULL SUB OPTS REWRITER
+connect_rewriter() {
+	ivtw_find_command "$1"
+	cat <<EOF > "${IVTW_SDKPFX}bin/w32cross-$2"
+#!/bin/sh -e
+# W32Cross-generated compiler workaround wrapper.
+$IVTW_MACRO_WHEREAMI
+$IVTW_MACRO_BINDIR2SDKROOT
+$IVTW_MACRO_SDKCOMMON
+
+ivtw_args2lines "\$@" | "\$W32CROSS_SDKROOT/etc/rewriters/$4" | ivtw_lines2args "$ivtw_find_command_result" $3
+EOF
+	chmod +x "${IVTW_SDKPFX}bin/w32cross-$2"
+}
+
 # SRC DST
 xlink() {
 	rm -f "${IVTW_SDKPFX}bin/w32cross-$2"
@@ -176,14 +192,14 @@ set_our_clangargs() {
 }
 
 for plusplus in "" "++"; do
-	connect "clang${plusplus}" "clang${plusplus}" ""
+	connect_rewriter "clang${plusplus}" "clang${plusplus}" "" clangrw
 	xlink_compat "clang${plusplus}" "../bin/w32cross-clang${plusplus}"
 
 	# per-arch ('ready to use')
 	for arch in $IVTW_VCARCHS; do
 		set_our_clangargs < "${IVTW_SDKPFX}etc/clang-args/$arch.ld.lst"
 		# Disable -Wno-unused-command-line-argument because we attach linker args which may not be used.
-		connect "clang${plusplus}" "clang${plusplus}-${arch}" "-Wno-unused-command-line-argument $OUR_CLANGARGS"
+		connect_rewriter "clang${plusplus}" "clang${plusplus}-${arch}" "-Wno-unused-command-line-argument $OUR_CLANGARGS" clangrw
 		xlink_compat "${arch}/clang${plusplus}" "../../bin/w32cross-clang${plusplus}-${arch}"
 	done
 done
