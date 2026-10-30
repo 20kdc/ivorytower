@@ -15,6 +15,7 @@ Some headers come from MinGW-w64 (see `../thirdparty/mingw-w64-headers`) and are
 * `excpt.h`: SEH structures, etc.
 * `setjmp.h`: `setjmp`/`longjmp`/`jmp_buf`
 * `setjmpex.h`: Fancy MS extension support header
+* `stdint.h`: `stdint.h` with things the Clang version omits
 
 ## _When adding files_
 
@@ -34,61 +35,144 @@ This allows the patches to be what's stored in Git while offering an easy develo
 
 ## Useful Reference Material
 
-* Which `.lib` is which
-	* _Note: For various complex reasons, everything goes to `msvcrt.lib` here._
-	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-140>
-* `_CRT_INIT` / `mainCRTStartup` / `_DllMainCRTStartup` etc.
-	* <https://learn.microsoft.com/en-us/cpp/build/run-time-library-behavior?view=msvc-140>
-	* <https://learn.microsoft.com/en-us/cpp/build/reference/entry-entry-point-symbol?view=msvc-140>
-* Init/Fini
-	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-initialization?view=msvc-140>
-	* `Source/10.0.19041.0/ucrt/internal/initialization.cpp`
-	* <https://devblogs.microsoft.com/oldnewthing/20141017-00/?p=43823/>
-* Atexit behaviour
-	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/atexit?view=msvc-170>
-* Security cookie
-	* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/security-init-cookie?view=msvc-140>
-* `__declspec(thread)` / TLS
-	* <https://learn.microsoft.com/en-us/cpp/c-language/thread-local-storage?view=msvc-140>
-	* **BIG IMPORTANT SCARY NOTE!** \
-	  On at least Windows XP and ReactOS, _static_ TLS indexes are not _dynamic_ TLS indexes.
-	  That is, you cannot by-default take a `TlsAlloc()` value and use it as a `_tls_index` value.
-	  This explains why, unfortunately, TLS emulation is not possible without changing the LLVM-generated code.
-	* Testing shows symbols are:
-		* `__dyn_tls_init`
-		* `__tlregdtor`
-		* `_tls_index`
-		* `_tls_array`
-	* `_tls_index` / `_tls_used` / `_tls_array`
-		* <https://learn.microsoft.com/en-us/windows/win32/debug/pe-format>
-			* Indicates `_tls_array` points to `0x2C`/`0x58` (<https://en.wikipedia.org/wiki/Win32_Thread_Information_Block>)
-		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/lld/test/COFF/Inputs/tlssup-32.ll>
-	* `_tls_index` / `_tls_array`
-		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/llvm/test/CodeGen/X86/tls.ll#L32>
-	* `__tlregdtor`
-		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2413>
-	* `__dyn_tls_init` / `.CRT$XDU`
-		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2451>
-	* `__tls_guard`
-		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2496>
-	* `__dyn_tls_on_demand_init`
-		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2517>
-	* `_Init_thread_header` / `_Init_thread_footer` / `_Init_thread_abort`
-		* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2599>
-	* Basic structure from disasm of `declspec_thread` test:
-		* `.tls$` contains actual TLS data.
-		* `.CRT$XDU` section has `___tls_init` added.
-		* `___tls_init` is a `void __cdecl()`ish function which calls TLS initializers.
-		* TLS initializers call `void __cdecl ___tlregdtor(void (*)())`.
-* Dllmain
-	* <https://learn.microsoft.com/en-us/windows/win32/dlls/dllmain>
-	* Key points:
-	* 1. If we return FALSE in entrypoint, the system will call DLL_PROCESS_DETACH for us.
-	* 2. There's a loader lock, so we can treat this as 'thread-safe-ish'.
-	* 3. Destructors are UNSAFE TO RUN unless we are being unloaded dynamically.
-	* 4. The CRT entrypoint (*** THIS IS US ***) needs to call C++ constructors/destructors.
-* `type_info`:
-	* <https://learn.microsoft.com/en-us/windows/win32/memory/stdtypeinfodestroylist>
+### Linking
+
+Which `.lib` is which.
+
+_Note: For various complex reasons, everything is packed into `msvcrt.lib` here._
+
+* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-140>
+
+### Entrypoints
+
+`_CRT_INIT` / `mainCRTStartup` / `_DllMainCRTStartup` etc.
+
+* <https://learn.microsoft.com/en-us/cpp/build/run-time-library-behavior?view=msvc-140>
+* <https://learn.microsoft.com/en-us/cpp/build/reference/entry-entry-point-symbol?view=msvc-140>
+* <https://learn.microsoft.com/en-us/windows/win32/dlls/dllmain>
+	* If we return FALSE in entrypoint, the system will call `DLL_PROCESS_DETACH` for us.
+	* There's a loader lock, so we can treat this as 'thread-safe-ish'.
+	* The CRT entrypoint needs to call C++ constructors/destructors.
+
+### Libcalls
+
 * 32-bit I64 Libcalls (`__alldiv`/`__aulldiv`/`__allrem`/`__aullrem`/`__allmul`)
 	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/llvm/include/llvm/IR/RuntimeLibcalls.td#L3412>
 	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/llvm/test/CodeGen/X86/win32-int-runtime-libcalls.ll#L26>
+
+### `atexit`
+
+* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/atexit?view=msvc-170>
+	* `atexit` handlers are run in reverse of addition order.
+	* `atexit` is local to the calling module (thus must be implemented in `notvcrt`).
+
+### `/GS` aka `security_cookie`
+
+* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/security-init-cookie?view=msvc-140>
+	* If `__security_init_cookie` is used, it must be called before any `/GS` check can be established.
+		* For now this isn't necessarily implemented.
+* <https://learn.microsoft.com/en-us/archive/msdn-magazine/2017/december/c-visual-c-support-for-stack-based-buffer-protection>
+	* A failure is _supposed_ to jump to `__report_gsfailure`.
+
+Note: `notvcrt` only implements `/GS` checks for 32-bit Windows with a single global cookie and forcing `__fastfail` (messing around with `UnhandledExceptionFilter` on Windows XP is not particularly useful and is hard to test)
+Implementing `/GS` there helps catch ABI mismatches, a relatively common and subtle bug.
+For 64-bit targets the check is omitted entirely, as it's hard to test and unnecessary in this case.
+
+### C++ constructors and destructors
+
+* <https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-initialization?view=msvc-140>
+* `Source/10.0.19041.0/ucrt/internal/initialization.cpp`
+* <https://devblogs.microsoft.com/oldnewthing/20141017-00/?p=43823/>
+
+### C++ `type_info` (the `type_info` itself)
+
+This took some looking into due to various fun issues.
+
+To explain why, first, consider these points:
+
+* [`MicrosoftCXXABI::getTypeInfoVTable`](https://github.com/llvm/llvm-project/blob/llvmorg-19.1.7/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L3594) makes the explicit assumption that `??_7type_info@@6B@` aka `const type_info::vftable` is generated by 'some other' translation unit. (That's us, by the way. We're the translation unit.)
+	* The check for an existing global returns `GlobalVariable *`.
+	* If the global does not exist, it will create it as `GlobalVariable`.
+* [`MicrosoftCXXABI::getAddrOfVTable`](https://github.com/llvm/llvm-project/blob/llvmorg-19.1.7/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L1867) makes the explicit assumption that vftables are always generated in translation units that require them.
+	* The check for an existing global returns `GlobalValue *` which can be cast to `GlobalVariable` or `GlobalAlias`.
+	* If the global does not exist, it will create it as `GlobalVariable` but then also creates `GlobalAlias` later and existing-global code clearly expects the latter to occur. I'm not sure if the `GlobalVariable` ever ends up accessible to `getNamedGlobal`, and frankly if it did I would be concerned there was a bug right there, since the missing alias could hypothetically trigger an ICE.
+
+Secondly, have this micro-test (valid up to at _least_ `clang-cl-23` judging by compiler explorer, need to poke more)
+
+```c++
+class type_info {
+public:
+	virtual ~type_info();
+	type_info(const type_info &) = delete;
+	type_info& operator=(const type_info &) = delete;
+};
+
+namespace std {
+	using type_info = ::type_info;
+}
+
+type_info::~type_info() {
+	/* but what is ??_7type_info@@6B@.1 ? */
+	(void) typeid(type_info);
+}
+```
+
+(The same outcome also happens if a private non-inline constructor for `type_info()` is created rather than using `typeid`. But `typeid` is more convenient due to not generating any unnecessary code or creating unexpected API surface area. The rule seems to be 'virtual function declared _and_ code that relies on the vtable/RTTI complex.')
+
+To examine it, try:
+* `w32cross-clang++-x86 -emit-llvm -S typeinfo.cpp`
+* Looking at `doc/typeinfo_odd.ll`
+
+The symptom of the problem is that `??_R0?AVtype_info@@@8` refers to `??_7type_info@@6B@.1` rather than `??_7type_info@@6B@`.
+
+This is very much a _'I probably shouldn't have been doing this in the first place'_ kind of bug, but there it is.
+
+It's also worth noting that the position of the `typeid(type_info)` _matters._
+
+If I move the `typeid` call into a function above the destructor, instead _the vtable disappears entirely (but the rest of the RTTI is present and the `.1` alias disappears)._
+
+In any case, this is a 'fun compiler moment', and the only way to work around it which doesn't involve hand-writing tables is to just 'nudge' the compiler a little with a symbol alias.
+
+### C++ `type_info` (destructor)
+
+TLDR is that the 'runtime info' field as LLVM calls it contains a pointer which gets filled in with the undecorated name. That undecorated name comes from allocated memory which must then be freed when the module is unloaded, which is of course the CRT's problem.
+
+_Most_ of the glue code here is either generated by the C++ compiler or is in the `VCRUNTIME140` DLL, but `extern "C++" SLIST_HEADER __type_info_root_node;` must be declared _somewhere_ and [`__std_type_info_destroy_list`](https://learn.microsoft.com/en-us/windows/win32/memory/stdtypeinfodestroylist) must be called to clean it up.
+
+Notably, the _actual virtual destructor_ is not involved in this process. It is solely there to make `type_info` virtual.
+
+### 'Static' Thread-Local Storage
+
+aka `__declspec(thread)`.
+
+* <https://learn.microsoft.com/en-us/cpp/c-language/thread-local-storage?view=msvc-140>
+* **BIG IMPORTANT SCARY NOTE!** \
+	On at least Windows XP and ReactOS, _static_ TLS indexes are not _dynamic_ TLS indexes.
+	That is, you cannot by-default take a `TlsAlloc()` value and use it as a `_tls_index` value.
+	This explains why, unfortunately, TLS emulation is not possible without changing the LLVM-generated code.
+* Testing shows symbols are:
+	* `__dyn_tls_init`
+	* `__tlregdtor`
+	* `_tls_index`
+	* `_tls_array`
+* `_tls_index` / `_tls_used` / `_tls_array`
+	* <https://learn.microsoft.com/en-us/windows/win32/debug/pe-format>
+		* Indicates `_tls_array` points to `0x2C`/`0x58` (<https://en.wikipedia.org/wiki/Win32_Thread_Information_Block>)
+	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/lld/test/COFF/Inputs/tlssup-32.ll>
+* `_tls_index` / `_tls_array`
+	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/llvm/test/CodeGen/X86/tls.ll#L32>
+* `__tlregdtor`
+	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2413>
+* `__dyn_tls_init` / `.CRT$XDU`
+	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2451>
+* `__tls_guard`
+	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2496>
+* `__dyn_tls_on_demand_init`
+	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2517>
+* `_Init_thread_header` / `_Init_thread_footer` / `_Init_thread_abort`
+	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2599>
+* Basic structure from disasm of `declspec_thread` test:
+	* `.tls$` contains actual TLS data.
+	* `.CRT$XDU` section has `___tls_init` added.
+	* `___tls_init` is a `void __cdecl()`ish function which calls TLS initializers.
+	* TLS initializers call `void __cdecl ___tlregdtor(void (*)())`.

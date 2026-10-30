@@ -10,9 +10,10 @@
 #include <corecrt_startup.h>
 #include <vcruntime_typeinfo.h>
 
+/* No, this is not extern "C". */
 SLIST_HEADER __type_info_root_node = {};
 
-void __type_info_root_node_destructor() {
+static void __type_info_root_node_destructor() {
 	__std_type_info_destroy_list(&__type_info_root_node);
 }
 
