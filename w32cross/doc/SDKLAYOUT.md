@@ -5,9 +5,11 @@ With the failure of Meson integration under the `clang-cl` approach, it's pretty
 This seems to be the intended approach by Meson, and it does have the key advantage of allowing for a consistent command-line syntax between targets in ivorytower proper, which will likely matter as expansion continues outside of Meson.
 
 * `bin/`: '`PATH`able wrappers' (`w32cross-` prefix)
-	* `w32cross-clang`: Main compiler wrapper. Does not set target.
-	* `w32cross-clang-ARCH`: Compiler wrapper with target set.
-	* `w32cross-link` / `w32cross-lld-link`: Linker wrapper
+	* `w32cross-clang[++]`: Sets up environment and runs `clang`. **Does not do any further setup; direct use is 'advanced'.**
+	* `w32cross-clang[++]-ARCH`: 'Proper' compiler wrapper. **This sets up everything you actually need to setup to build executables.**
+	* `w32cross-link` / `w32cross-lld-link`: Linker wrapper.
+	* `w32cross-cl` / `w32cross-clang-cl`: 'Proper' compiler wrapper. More unstable in practice, but doesn't require as much command-line trickery, so no need for per-arch links.
+	* `w32cross-cl-ARCH` / `w32cross-clang-cl-ARCH`: All these do is add `--target`.
 	* Other tools also wrapped for consistency and possible also options nudging by w32cross.
 * `bin_compat/`: friendlier to compiler autodetectors (no `w32cross-` prefix, architecture-named dirs)
 * `wbin/ARCH/`: things like `dxc.exe`
@@ -19,7 +21,6 @@ This seems to be the intended approach by Meson, and it does have the key advant
 		* These files _absolutely_ require `bin/` to be in PATH.
 		* These files are left intentionally incomplete. `ivorytower` provides a _proper_ set of Meson crossfiles; these are specifically for bootstrap compilation.
 	* `clang-args`: Metadata for setting up Clang correctly without using the wrapper scripts. Has `${W32CROSS_SDKROOT}` substitution.
-		* `any.lst`: Base list. Not parameterized with architecture. Does not contain `lib` directories.
 		* `ARCH.lst`: List for a given architecture. Contains Clang target. Non-linking, does not contain `lib` directories.
 		* `ARCH.ld.lst`: List for a given architecture. Contains Clang target and `lib` directories.
 * `build/`: Build internal files that can be safely removed.

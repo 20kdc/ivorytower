@@ -14,9 +14,16 @@ public:
 		CompilerCfg compiler;
 		compiler.machine = &mach;
 		compiler.variant = "w32cross";
-		// To make clangd work properly, this hell had to be created.
-		compiler.c = {"clang"};
-		compiler.cpp = {"clang++"};
+
+		// If a story of suffering
+		//  that made this code
+		//  fits your heart's desire
+		// Then head to w32cross/
+		//  doc/CLANG_ARGS.md
+		//  and weep.
+
+		compiler.c = {sdkP->toolPath("w32cross-clang")};
+		compiler.cpp = {sdkP->toolPath("w32cross-clang++")};
 
 		compiler.args.addCArgs = sdkP->getClangArgs(arch);
 		compiler.args.addCLinkArgs = sdkP->getClangArgs(arch + ".ld");
