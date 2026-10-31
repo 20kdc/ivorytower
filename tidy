@@ -1,0 +1,9 @@
+#!/bin/sh -e
+
+ITSETUP_DIR="`readlink -e "$0"`"
+export ITSETUP_DIR="`dirname $ITSETUP_DIR`"
+. "$ITSETUP_DIR/helpers/setupcore.sh"
+
+setupcore_setup
+cd build
+run-clang-tidy
