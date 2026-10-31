@@ -59,7 +59,9 @@ namespace iblis {
 	public:
 		L lambda;
 		LambdaSubsystemFactory(L lambda) : lambda(lambda) {}
-		virtual void * build() { return lambda(); }
+		virtual void * build() {
+			return lambda();
+		}
 	};
 
 	// A subsystem activates when requested by explicit reference.
@@ -69,7 +71,9 @@ namespace iblis {
 		T * content;
 		SubsystemFactory * builder;
 	public:
-		template<typename... Params> Subsystem(Params ...params) : content(nullptr), builder(new LambdaSubsystemFactory([=] { return (T *) T::build(params...); })) {
+		template<typename... Params> Subsystem(Params ...params) : content(nullptr), builder(new LambdaSubsystemFactory([=] {
+			return (T *) T::build(params...);
+		})) {
 		}
 		~Subsystem() {
 			if (content)

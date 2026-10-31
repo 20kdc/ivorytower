@@ -1,0 +1,6 @@
+--style=java
+--indent=force-tab
+--indent-namespaces
+--indent-after-parens
+--align-pointer=middle
+--align-reference=middle

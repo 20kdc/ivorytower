@@ -13,7 +13,7 @@
 
 using namespace iblis;
 
-extern char **environ;
+extern char ** environ;
 
 Environ iblis::Environ::readProcess() {
 	std::vector<std::string> inner;
@@ -94,7 +94,7 @@ std::string iblis::realPath(const std::string & path) {
 			// the path was already absolute to begin with
 			return path;
 		}
-		char *  resolve = realpath(left.c_str(), nullptr);
+		char  * resolve = realpath(left.c_str(), nullptr);
 		if (!resolve) {
 			char * buf_dirname = strdup(left.c_str());
 			char * buf_basename = strdup(left.c_str());
