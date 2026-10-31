@@ -193,7 +193,7 @@ bool setupcore::meson::installCrossFiles(const CompilerCfg & comp) {
 		path += referent;
 		if (!hasDoneCrossFileMkdir) {
 			hasDoneCrossFileMkdir = true;
-			runCmd({"mkdir", "-p", crossPath.value});
+			mkdirs(crossPath.value);
 		}
 		printf(" Installing Meson crossfile 'ivt/%s'.\n", referent.c_str());
 		bool res = writeFile(path, iniContent);

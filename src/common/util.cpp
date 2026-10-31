@@ -54,16 +54,7 @@ static void fireArgTeg(const char ** argva, const std::vector<std::string> & arg
 	argva[argv.size()] = nullptr;
 }
 
-int iblis::runCmd(const std::vector<std::string> & argv, const Environ & envp) {
-	if (argv.size() == 0)
-		return -1;
-	const char ** argva = (const char **) alloca(sizeof(char *) * (argv.size() + 1));
-	fireArgTeg(argva, argv);
-	const char ** envpa = (const char **) alloca(sizeof(char *) * (envp.inner.size() + 1));
-	fireArgTeg(envpa, envp.inner);
-	pid_t pid;
-	if (posix_spawnp(&pid, argv[0].c_str(), nullptr, nullptr, (char * const *) argva, (char * const *) envpa))
-		return -1;
+static int waitForProcess(pid_t pid) {
 	while (1) {
 		int status;
 		if (waitpid(pid, &status, WUNTRACED) == -1)
@@ -71,6 +62,19 @@ int iblis::runCmd(const std::vector<std::string> & argv, const Environ & envp) {
 		if (WIFEXITED(status) || WIFSIGNALED(status))
 			return WEXITSTATUS(status);
 	}
+}
+
+int iblis::Subprocess::run() {
+	if (argv.size() == 0)
+		return -1;
+	const char ** argva = (const char **) alloca(sizeof(char *) * (argv.size() + 1));
+	fireArgTeg(argva, argv);
+	const char ** envpa = (const char **) alloca(sizeof(char *) * (environ.inner.size() + 1));
+	fireArgTeg(envpa, environ.inner);
+	pid_t pid;
+	if (posix_spawnp(&pid, argv[0].c_str(), nullptr, nullptr, (char * const *) argva, (char * const *) envpa))
+		return -1;
+	return waitForProcess(pid);
 }
 
 std::string iblis::realPath(const std::string & path) {
@@ -143,6 +147,13 @@ bool iblis::writeFile(const std::string & path, const std::string & content) {
 	fwrite(content.c_str(), content.length(), 1, data);
 	fclose(data);
 	return true;
+}
+
+void iblis::mkdirs(const std::string & path) {
+	Subprocess sub = {
+		.argv = {"mkdir", "-p", path}
+	};
+	sub.run();
 }
 
 void iblis::warn(const char * subsystem, const std::string & message) {

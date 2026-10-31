@@ -11,7 +11,10 @@ W32CrossSys * W32CrossSys::build(const char * sdk) {
 		IBLIS_WARN("Couldn't initialize, HelperSys dead.");
 		return nullptr;
 	}
-	if (iblis::runCmd({helper->helper("w32cross-wizard"), sdk}) == 0) {
+	Subprocess wizard = {
+		.argv = {helper->helper("w32cross-wizard"), sdk}
+	};
+	if (wizard.run() == 0) {
 		return new W32CrossSys(helper->w32crossSDK(sdk));
 	}
 	return nullptr;

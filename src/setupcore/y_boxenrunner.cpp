@@ -18,7 +18,10 @@ BoxenrunnerSys * iblis::BoxenrunnerSys::build() {
 	}
 	std::string helper = helpy->helper("boxenrunner");
 	std::string runner = cvar_boxenrunner.value;
-	if (iblis::runCmd({helper, runner, "check"})) {
+	Subprocess cmd = {
+		.argv = {helper, runner, "check"}
+	};
+	if (cmd.run()) {
 		IBLIS_WARN("Couldn't initialize, selftest failed.");
 		return nullptr;
 	}
@@ -29,12 +32,18 @@ bool iblis::BoxenrunnerSys::create(const std::string & container, const std::str
 	if (!cvar_box_create.value)
 		return true;
 	std::string containerRes = cvar_box_prefix.value + container;
-	return iblis::runCmd({helper, runner, "create", containerRes, image}) == 0;
+	Subprocess cmd = {
+		.argv = {helper, runner, "create", containerRes, image}
+	};
+	return cmd.run() == 0;
 }
 
 bool iblis::BoxenrunnerSys::test(const std::string & container) {
 	std::string containerRes = cvar_box_prefix.value + container;
-	return iblis::runCmd({helper, runner, "test", containerRes}) == 0;
+	Subprocess cmd = {
+		.argv = {helper, runner, "test", containerRes}
+	};
+	return cmd.run() == 0;
 }
 
 std::vector<std::string> iblis::BoxenrunnerSys::prefix(const std::string & container) {

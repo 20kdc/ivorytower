@@ -35,9 +35,14 @@ This feels like something I would have noticed earlier if this wasn't a regressi
 
 Notably, it seems like this is happening for any arg that's in `c_link_args` but not `c_args` and is _not_ already prefixed with `-Wl,`; this may suggest a misunderstanding on my part or may explain a Meson bug. I don't know which.
 
-The culprit appears to be <https://github.com/mesonbuild/meson/blob/0ef4bf221dcb4d81d05b34801310d212511ada50/mesonbuild/compilers/mixins/clang.py#L243>, which seems to be a well-meaning attempt to ensure that MSVC-style link args actually reach the linker.
+Some sites for figuring out what's going on and what is 'correct' would be:
+
+* <https://github.com/mesonbuild/meson/blob/0ef4bf221dcb4d81d05b34801310d212511ada50/mesonbuild/compilers/mixins/clike.py#L374>
+* <https://github.com/mesonbuild/meson/blob/0ef4bf221dcb4d81d05b34801310d212511ada50/mesonbuild/compilers/mixins/clang.py#L243>
 
 And it would have worked, too, if it wasn't for that meddling thing called 'reality' where there are potentially args which the compiler driver (and potentially even build system) do in fact know about which need to go there.
+
+Further reading of the code _suggests_ that Meson has reached some kind of consensus where `c_link_args` and co. are intended to be `lld-link` args by-definition.
 
 ## `clang-cl` and translating between `cl` and `clang`
 

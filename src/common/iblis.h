@@ -22,16 +22,28 @@ namespace iblis {
 		void set(const std::string & key, const std::string & val);
 	};
 
-	// Runs a command, returns exit status.
-	int runCmd(const std::vector<std::string> & argv, const Environ & environ = Environ::readProcess());
+	struct Subprocess {
+		std::vector<std::string> argv;
+		Environ environ = Environ::readProcess();
+
+		// Runs the command, returns exit status.
+		int run();
+	};
+
 	// Canonicalizes a path. This implements a 'graceful path collapse' algorithm and thus cannot fail.
 	// However, use with extreme caution; absolute paths can be brittle if the user prefers symlinks for organizational purposes.
 	std::string realPath(const std::string & path);
+
 	// Reads a file to a series of lines.
 	// Returns empty list on error (would return an empty string if the file is empty)
 	std::vector<std::string> readFile(const std::string & path);
+
 	// Writes a file from a string.
 	bool writeFile(const std::string & path, const std::string & content);
+
+	// mkdir -p
+	void mkdirs(const std::string & path);
+
 	void warn(const char * subsystem, const std::string & message);
 
 	// Template magic underlying Subsystem
@@ -45,14 +57,17 @@ namespace iblis {
 	template <class L>
 	class LambdaSubsystemFactory : public SubsystemFactory {
 	public:
-		LambdaSubsystemFactory(L lambda) : lambda(lambda) {}
 		L lambda;
+		LambdaSubsystemFactory(L lambda) : lambda(lambda) {}
 		virtual void * build() { return lambda(); }
 	};
 
 	// A subsystem activates when requested by explicit reference.
 	template <class T>
 	class Subsystem {
+	private:
+		T * content;
+		SubsystemFactory * builder;
 	public:
 		template<typename... Params> Subsystem(Params ...params) : content(nullptr), builder(new LambdaSubsystemFactory([=] { return (T *) T::build(params...); })) {
 		}
@@ -67,17 +82,14 @@ namespace iblis {
 				content = (T *) builder->build();
 			return content;
 		}
-	private:
-		SubsystemFactory * builder;
-		T * content;
 	};
 
 	class HelperSys {
 	public:
+		std::string itsetupDir;
 		HelperSys(std::string itsetupDir) : itsetupDir(itsetupDir) {}
 		IBLIS_IMMOVABLE(HelperSys);
 		static HelperSys * build();
-		std::string itsetupDir;
 		std::string helper(const char * name);
 		std::string osxcrossBinLink();
 		std::string w32crossSDK(const char * sdk);

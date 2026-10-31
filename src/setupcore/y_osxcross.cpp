@@ -1,4 +1,5 @@
 #include "y_osxcross.h"
+#include "common/iblis.h"
 #include <unistd.h>
 
 using namespace iblis;
@@ -13,7 +14,10 @@ OSXCrossSys * OSXCrossSys::build() {
 		IBLIS_WARN("Couldn't initialize, HelperSys dead.");
 		return nullptr;
 	}
-	if (iblis::runCmd({helper->helper("osxcross-wizard"), cvar_osxcross_checkpath.value ? "1" : "0"}) == 0) {
+	Subprocess wizardProc = {
+		.argv = {helper->helper("osxcross-wizard"), cvar_osxcross_checkpath.value ? "1" : "0"}
+	};
+	if (wizardProc.run() == 0) {
 		auto targetinfo = readFile(helper->itsetupDir + "/osxcross.target");
 		if (targetinfo.size() == 0) {
 			IBLIS_WARN("OSXCross helper did not acquire OSXCROSS_TARGET");
