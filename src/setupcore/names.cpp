@@ -39,16 +39,16 @@ const STLDisposition STLDisposition::q_default = [] {
 const STLDisposition STLDisposition::q_static = [] {
 	STLDisposition result;
 	result.ivtName = "static";
-	result.compilerArgs.addCppLinkArgs = {"-static-libstdc++"};
+	result.compilerArgs.addCppLinkArgs = { "-static-libstdc++" };
 	return result;
 }();
 
 const STLDisposition STLDisposition::q_zero = [] {
 	STLDisposition result;
 	result.ivtName = "zero";
-	result.compilerArgs.addCArgs = {"-fno-exceptions"};
-	result.compilerArgs.addCppArgs = {"-nostdinc++", "-fno-rtti", "-fno-exceptions"};
-	result.compilerArgs.addCppLinkArgs = {"-nostdlib++"};
+	result.compilerArgs.addCArgs = { "-fno-exceptions" };
+	result.compilerArgs.addCppArgs = { "-nostdinc++", "-fno-rtti", "-fno-exceptions" };
+	result.compilerArgs.addCppLinkArgs = { "-nostdlib++" };
 	result.compilerArgs.cppEh = "none";
 	result.compilerArgs.cppRtti = "false";
 	return result;
@@ -59,18 +59,18 @@ const STLDisposition STLDisposition::q_zero = [] {
 const STLDisposition STLDisposition::q_staticW = [] {
 	STLDisposition result;
 	result.ivtName = "static",
-	result.compilerArgs.addCLinkArgs = {"-static-libgcc"};
-	result.compilerArgs.addCppLinkArgs = {"-static-libstdc++", "-static-libgcc", "-l:libatomic.a"};
+	result.compilerArgs.addCLinkArgs = { "-static-libgcc" };
+	result.compilerArgs.addCppLinkArgs = { "-static-libstdc++", "-static-libgcc", "-l:libatomic.a" };
 	return result;
 }();
 
 const STLDisposition STLDisposition::q_zeroW = [] {
 	STLDisposition result;
 	result.ivtName = "zero";
-	result.compilerArgs.addCArgs = {"-fno-exceptions"};
-	result.compilerArgs.addCLinkArgs = {"-static-libgcc"};
-	result.compilerArgs.addCppArgs = {"-nostdinc++", "-fno-rtti", "-fno-exceptions"};
-	result.compilerArgs.addCppLinkArgs = {"-nostdlib++", "-static-libgcc", "-l:libatomic.a"};
+	result.compilerArgs.addCArgs = { "-fno-exceptions" };
+	result.compilerArgs.addCLinkArgs = { "-static-libgcc" };
+	result.compilerArgs.addCppArgs = { "-nostdinc++", "-fno-rtti", "-fno-exceptions" };
+	result.compilerArgs.addCppLinkArgs = { "-nostdlib++", "-static-libgcc", "-l:libatomic.a" };
 	result.compilerArgs.cppEh = "none";
 	result.compilerArgs.cppRtti = "false";
 	return result;
@@ -82,8 +82,8 @@ const STLDisposition STLDisposition::q_zeroL = [] {
 	STLDisposition result;
 	result.ivtName = "zero";
 	result.hackCPPWithC = true;
-	result.compilerArgs.addCArgs = {"-fno-exceptions"};
-	result.compilerArgs.addCppArgs = {"-fno-rtti", "-fno-exceptions"};
+	result.compilerArgs.addCArgs = { "-fno-exceptions" };
+	result.compilerArgs.addCppArgs = { "-fno-rtti", "-fno-exceptions" };
 	result.compilerArgs.cppEh = "none";
 	result.compilerArgs.cppRtti = "false";
 	return result;

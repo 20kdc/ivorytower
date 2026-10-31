@@ -10,6 +10,7 @@ namespace setupcore {
 		std::vector<CompilerCfg> getTargets() {
 			return targets;
 		}
+
 	private:
 		std::vector<CompilerCfg> targets;
 	};

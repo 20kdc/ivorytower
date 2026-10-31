@@ -8,10 +8,16 @@
 /* ivorytower build initialization system */
 
 // Immovable (rule of three)
-#define IBLIS_IMMOVABLE(T) T(const T &) = delete; T & operator=(const T &) = delete;
+#define IBLIS_IMMOVABLE(T) \
+	T(const T &) = delete; \
+	T & operator=(const T &) = delete;
 #define IBLIS_WARN(str) iblis::warn(__PRETTY_FUNCTION__, str)
-#define IBLIS_HAS_KIND static const char * kind; virtual const char * getKind() override;
-#define IBLIS_KIND(T, value) const char * T::kind = value; const char * T::getKind() { return T::kind; }
+#define IBLIS_HAS_KIND        \
+	static const char * kind; \
+	virtual const char * getKind() override;
+#define IBLIS_KIND(T, value)      \
+	const char * T::kind = value; \
+	const char * T::getKind() { return T::kind; }
 
 namespace iblis {
 	// Environ abstraction.
@@ -54,7 +60,7 @@ namespace iblis {
 	};
 
 	// Template magic underlying Subsystem
-	template <class L>
+	template<class L>
 	class LambdaSubsystemFactory : public SubsystemFactory {
 	public:
 		L lambda;
@@ -63,13 +69,15 @@ namespace iblis {
 	};
 
 	// A subsystem activates when requested by explicit reference.
-	template <class T>
+	template<class T>
 	class Subsystem {
 	private:
 		T * content;
 		SubsystemFactory * builder;
+
 	public:
-		template<typename... Params> Subsystem(Params ...params) : content(nullptr), builder(new LambdaSubsystemFactory([=] { return (T *) T::build(params...); })) {
+		template<typename... Params>
+		Subsystem(Params... params) : content(nullptr), builder(new LambdaSubsystemFactory([=] { return (T *) T::build(params...); })) {
 		}
 		~Subsystem() {
 			if (content)
@@ -111,7 +119,8 @@ namespace iblis {
 		virtual ~Registerable();
 		Registerable * regNext;
 		static Registerable * regFirst;
-		template<class T> static T * find(const char * name) {
+		template<class T>
+		static T * find(const char * name) {
 			for (Registerable * i = regFirst; i; i = i->regNext) {
 				if (strcmp(name, i->name))
 					continue;

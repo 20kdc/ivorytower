@@ -15,7 +15,7 @@ OSXCrossSys * OSXCrossSys::build() {
 		return nullptr;
 	}
 	Subprocess wizardProc = {
-		.argv = {helper->helper("osxcross-wizard"), cvar_osxcross_checkpath.value ? "1" : "0"}
+		.argv = { helper->helper("osxcross-wizard"), cvar_osxcross_checkpath.value ? "1" : "0" }
 	};
 	if (wizardProc.run() == 0) {
 		auto targetinfo = readFile(helper->itsetupDir + "/osxcross.target");

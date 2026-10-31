@@ -23,7 +23,6 @@ bool Component::isMeta() {
 class ComponentAll : public Component {
 public:
 	ComponentAll() : Component("all", "Shorthand to enable/disable all components.", false) {
-
 	}
 	bool parse(const char * val) override {
 		if (Component::parse(val)) {

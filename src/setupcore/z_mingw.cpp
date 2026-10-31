@@ -25,11 +25,11 @@ public:
 		CompilerCfg compiler;
 		compiler.machine = &mach,
 		compiler.variant = "mingw",
-		compiler.c = {formatCompCom(archpfx, "gcc", 1)},
-		compiler.cpp = {formatCompCom(archpfx, "g++", 1)},
-		compiler.ar = {formatCompCom(archpfx, "ar", 0)},
-		compiler.windres = {formatCompCom(archpfx, "windres", 0)},
-		compiler.strip = {formatCompCom(archpfx, "strip", 0)},
+		compiler.c = { formatCompCom(archpfx, "gcc", 1) },
+		compiler.cpp = { formatCompCom(archpfx, "g++", 1) },
+		compiler.ar = { formatCompCom(archpfx, "ar", 0) },
+		compiler.windres = { formatCompCom(archpfx, "windres", 0) },
+		compiler.strip = { formatCompCom(archpfx, "strip", 0) },
 		compiler.dispositions = {
 			&STLDisposition::q_default,
 			&STLDisposition::q_staticW,

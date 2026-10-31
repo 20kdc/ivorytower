@@ -9,6 +9,7 @@ namespace iblis {
 		std::string toolPath(const std::string & tool);
 		std::string toolCompatPath(const std::string & tool);
 		std::vector<std::string> getClangArgs(const std::string & config);
+
 	private:
 		W32CrossSys(std::string prefix) : prefix(prefix) {}
 	};

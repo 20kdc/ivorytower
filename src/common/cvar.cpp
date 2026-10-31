@@ -70,7 +70,7 @@ std::string CvarStr::get() {
 	return value;
 }
 
-HelpCategory::HelpCategory(const char * name, const char * purpose) :Registerable(name, purpose) {
+HelpCategory::HelpCategory(const char * name, const char * purpose) : Registerable(name, purpose) {
 }
 
 IBLIS_KIND(HelpCategory, "HelpCategory");

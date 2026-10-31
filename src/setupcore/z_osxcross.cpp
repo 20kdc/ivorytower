@@ -13,11 +13,11 @@ public:
 		CompilerCfg compiler;
 		compiler.machine = &mach;
 		compiler.variant = "";
-		compiler.c = {osxcross->archToolPath(archpfx, "clang")},
-		compiler.cpp = {osxcross->archToolPath(archpfx, "clang++")},
-		compiler.ar = {osxcross->archToolPath(archpfx, "ar")},
-		compiler.strip = {osxcross->archToolPath(archpfx, "strip")},
-		compiler.generic = {osxcross->archToolPath(archpfx, "")};
+		compiler.c = { osxcross->archToolPath(archpfx, "clang") },
+		compiler.cpp = { osxcross->archToolPath(archpfx, "clang++") },
+		compiler.ar = { osxcross->archToolPath(archpfx, "ar") },
+		compiler.strip = { osxcross->archToolPath(archpfx, "strip") },
+		compiler.generic = { osxcross->archToolPath(archpfx, "") };
 		compiler.dispositions = {
 			&STLDisposition::q_default,
 			&STLDisposition::q_static,

@@ -19,10 +19,7 @@ public:
 		const char * name, const char * purpose, bool def,
 		const Machine * machine, const char * variant, const CompilerCfg * compiler,
 		const char * container, const char * image
-	) :
-		Component(name, purpose, def),
-		machine(machine), variant(variant), compiler(compiler),
-		container(container), image(image) {
+	) : Component(name, purpose, def), machine(machine), variant(variant), compiler(compiler), container(container), image(image) {
 	}
 	bool install(InstallData * prepare) override {
 		auto boxSys = iblis::boxenrunnerSys.get();
@@ -60,12 +57,12 @@ public:
 
 static CompilerCfg sensibleDefaultGCC = [] {
 	CompilerCfg result;
-	result.c = {"gcc"};
-	result.cpp = {"g++"};
-	result.ar = {"ar"};
-	result.strip = {"strip"};
-	result.cmake = {"cmake"};
-	result.generic = {""};
+	result.c = { "gcc" };
+	result.cpp = { "g++" };
+	result.ar = { "ar" };
+	result.strip = { "strip" };
+	result.cmake = { "cmake" };
+	result.generic = { "" };
 	result.dispositions = {
 		&STLDisposition::q_default,
 		&STLDisposition::q_static,

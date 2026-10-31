@@ -22,8 +22,8 @@ public:
 		//  doc/CLANG_ARGS.md
 		//  and weep.
 
-		compiler.c = {sdkP->toolPath("w32cross-clang")};
-		compiler.cpp = {sdkP->toolPath("w32cross-clang++")};
+		compiler.c = { sdkP->toolPath("w32cross-clang") };
+		compiler.cpp = { sdkP->toolPath("w32cross-clang++") };
 
 		compiler.args.addCArgs = sdkP->getClangArgs(arch);
 		compiler.args.addCLinkArgs = sdkP->getClangArgs(arch + ".ld");
@@ -33,10 +33,10 @@ public:
 
 		compiler.args.bVSCRT = "md";
 
-		compiler.ar = {sdkP->toolCompatPath("llvm-lib")},
-		compiler.strip = {sdkP->toolPath("w32cross-strip")};
-		compiler.windres = {sdkP->toolPath("w32cross-windres-" + arch)};
-		//compiler.generic = {sdkP->toolPath("")};
+		compiler.ar = { sdkP->toolCompatPath("llvm-lib") },
+		compiler.strip = { sdkP->toolPath("w32cross-strip") };
+		compiler.windres = { sdkP->toolPath("w32cross-windres-" + arch) };
+		// compiler.generic = {sdkP->toolPath("")};
 		compiler.dispositions = {
 			// We only support 'default' STL disposition for this compiler.
 			// Explanation is in w32cross/doc/WHY_STL.md

@@ -12,7 +12,7 @@ W32CrossSys * W32CrossSys::build(const char * sdk) {
 		return nullptr;
 	}
 	Subprocess wizard = {
-		.argv = {helper->helper("w32cross-wizard"), sdk}
+		.argv = { helper->helper("w32cross-wizard"), sdk }
 	};
 	if (wizard.run() == 0) {
 		return new W32CrossSys(helper->w32crossSDK(sdk));
@@ -21,11 +21,11 @@ W32CrossSys * W32CrossSys::build(const char * sdk) {
 }
 
 std::string W32CrossSys::toolPath(const std::string & tool) {
-	return {prefix + "/bin/" + tool};
+	return { prefix + "/bin/" + tool };
 }
 
 std::string W32CrossSys::toolCompatPath(const std::string & tool) {
-	return {prefix + "/bin_compat/" + tool};
+	return { prefix + "/bin_compat/" + tool };
 }
 
 std::vector<std::string> W32CrossSys::getClangArgs(const std::string & config) {

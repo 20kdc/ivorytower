@@ -6,7 +6,8 @@ static CvarStr cvar_boxenrunner("box",
 	"The 'box wrapper' used for crosscompilation.\n"
 	"  ivt_docker: uses Docker to manage unprivileged containers.\n"
 	"  distrobox: one of the steamrt recommended boxes, but runs --privileged. Recommend export DBX_CONTAINER_MANAGER=docker in profile.\n"
-	"  ", "ivt_docker");
+	"  ",
+	"ivt_docker");
 static iblis::CvarStr cvar_box_prefix("box_prefix", "Prefix for containers created/used by ivorytower.", "");
 iblis::CvarBool iblis::cvar_box_create("box_create", "Control creating containers. If 0, operations which create containers will proceed as if they were created if possible.", true);
 
@@ -19,7 +20,7 @@ BoxenrunnerSys * iblis::BoxenrunnerSys::build() {
 	std::string helper = helpy->helper("boxenrunner");
 	std::string runner = cvar_boxenrunner.value;
 	Subprocess cmd = {
-		.argv = {helper, runner, "check"}
+		.argv = { helper, runner, "check" }
 	};
 	if (cmd.run()) {
 		IBLIS_WARN("Couldn't initialize, selftest failed.");
@@ -33,7 +34,7 @@ bool iblis::BoxenrunnerSys::create(const std::string & container, const std::str
 		return true;
 	std::string containerRes = cvar_box_prefix.value + container;
 	Subprocess cmd = {
-		.argv = {helper, runner, "create", containerRes, image}
+		.argv = { helper, runner, "create", containerRes, image }
 	};
 	return cmd.run() == 0;
 }
@@ -41,7 +42,7 @@ bool iblis::BoxenrunnerSys::create(const std::string & container, const std::str
 bool iblis::BoxenrunnerSys::test(const std::string & container) {
 	std::string containerRes = cvar_box_prefix.value + container;
 	Subprocess cmd = {
-		.argv = {helper, runner, "test", containerRes}
+		.argv = { helper, runner, "test", containerRes }
 	};
 	return cmd.run() == 0;
 }
@@ -51,9 +52,9 @@ std::vector<std::string> iblis::BoxenrunnerSys::prefix(const std::string & conta
 	if (runner == "distrobox") {
 		// decouple generated files from boxenrunner if on distrobox
 		// we can't do this for ivt_docker, since boxenrunner manages that.
-		return {"distrobox", "enter", containerRes, "--"};
+		return { "distrobox", "enter", containerRes, "--" };
 	} else {
-		return {helper, runner, "enter", containerRes};
+		return { helper, runner, "enter", containerRes };
 	}
 }
 

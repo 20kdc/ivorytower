@@ -1,0 +1,42 @@
+# to find 'best fit' philosophically
+# for style in LLVM GNU Google Chromium Microsoft Mozilla WebKit; do echo ; echo $style ; clang-format -style=$style --dump-config | grep -E "BreakBeforeBraces(: Attach)?|AlwaysBreakAfterDefinitionReturnType(: None)?|NamespaceIndentation(: All)?|PointerAlignment(: Middle)?|AccessModifierOffset(: -)?|SpaceAfterCStyleCast(: true)?|PackConstructorInitializers(: CurrentLine)?|SpaceAfterTemplateKeyword(: false)?|FixNamespaceComments(: false)?|BreakTemplateDeclarations(: MultiLine)?|DerivePointerAlignment(: false)?|SpaceInEmptyBraces(: Never)?|SpacesInParens(: Never)?|SpacesInContainerLiterals(: false)?|SpaceBeforeParens(: ControlStatements)?|IndentCaseLabels(: false)?|Cpp11BracedListStyle(: Block)?|BreakBeforeCloseBracketFunction(: true)?" ; done
+
+# current candidates:
+# LLVM(7) GNU(5) Google(5) Chromium(5) Microsoft(6) Mozilla(5) WebKit(7)
+# you could use this as a personality test, huh
+
+# ...by the way, you need clang-format-22 to use this file.
+# I know, I know, but there is a good reason, I promise.
+# I ended up using: ln -s /usr/bin/clang-format-22 ~/.local/bin/clang-format
+
+BasedOnStyle: WebKit
+
+BreakBeforeBraces: Attach
+AlwaysBreakAfterDefinitionReturnType: None
+NamespaceIndentation: All
+PointerAlignment: Middle
+AccessModifierOffset: -4
+SpaceAfterCStyleCast: true
+PackConstructorInitializers: CurrentLine
+SpaceAfterTemplateKeyword: false
+FixNamespaceComments: false
+BreakTemplateDeclarations: MultiLine
+DerivePointerAlignment: false
+SpaceInEmptyBraces: Never
+SpaceInEmptyParentheses: false # compat
+SpacesInParens: Never
+SpacesInContainerLiterals: false
+SpaceBeforeParens: ControlStatements
+IndentCaseLabels: false
+Cpp11BracedListStyle: Block
+BreakBeforeCloseBracketBracedList: true
+BreakBeforeCloseBracketFunction: true
+SortIncludes:
+  Enabled: false
+
+# bikeshed stuff, doesn't really factor into style philosophy
+# so don't use this for base selection
+UseTab: AlignWithSpaces
+TabWidth: 4
+IndentWidth: 4
+ColumnLimit: 0

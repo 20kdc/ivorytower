@@ -7,3 +7,4 @@ export ITSETUP_DIR="`dirname $ITSETUP_DIR`"
 setupcore_setup
 cd build
 run-clang-tidy
+ninja clang-format
