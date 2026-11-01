@@ -8,14 +8,14 @@ using namespace setupcore;
 
 class ComponentHelpCategory : public HelpCategory {
 public:
-	ComponentHelpCategory() : HelpCategory("components", "Components (specified as 'component=on' or 'component=off')") {
+	ComponentHelpCategory() : HelpCategory("components", "Components (specified as '--component=on' or '--component=off')") {
 	}
 	void execute() override {
 		for (Registerable * reg = Registerable::regFirst; reg; reg = reg->regNext) {
 			if (reg->getKind() != Component::kind)
 				continue;
 			Component * comp = static_cast<Component *>(reg);
-			printf(" %s: %s (currently %s)\n", reg->name, reg->purpose, comp->value ? "on" : "off");
+			printf(" --%s: %s (currently %s)\n", reg->name, reg->purpose, comp->value ? "on" : "off");
 		}
 	}
 };
@@ -23,7 +23,7 @@ static ComponentHelpCategory theComponentHelpCategory;
 
 class InstallAct : public Act {
 public:
-	InstallAct() : Act("--install", "Install all enabled components.") {
+	InstallAct() : Act("install", "Install all enabled components.") {
 	}
 	int execute() override {
 		InstallData iData;
@@ -57,5 +57,5 @@ public:
 static InstallAct theInstallAct;
 
 int main(int argc, char ** argv) {
-	return iblis::main(argc, argv);
+	return iblis::main("./setup", argc, argv);
 }

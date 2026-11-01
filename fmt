@@ -5,4 +5,4 @@ export ITSETUP_DIR="`dirname $ITSETUP_DIR`"
 . "$ITSETUP_DIR/helpers/setupcore.sh"
 
 setupcore_setup
-astyle --options=astylerc --recursive "src/*.cpp,*.h" --exclude=src/tests/realpath_util -n
+astyle --options=astylerc --recursive "src/*.cpp,*.h" --exclude=src/tests/realpath_util -n "$@"

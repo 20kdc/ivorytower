@@ -4,7 +4,7 @@ using namespace iblis;
 
 class VersionAct : public Act {
 public:
-	VersionAct() : Act("--version", "Give version.") {
+	VersionAct() : Act("version", "Give version.") {
 	}
 	int execute() override {
 		printf("ivorytower %s\n", iblis::version);
@@ -13,13 +13,15 @@ public:
 };
 static VersionAct theVersionAct;
 
+static const char * cmdNameVar = "?";
+
 class HelpAct : public Act {
 public:
-	HelpAct() : Act("--help", "Shows helpful information.") {
+	HelpAct() : Act("help", "Shows helpful information.") {
 	}
 	int execute() override {
 		printf("ivorytower %s\n", iblis::version);
-		puts("Usage: ./setup --ACT <example=VALUE...>");
+		printf("Usage: %s --ACT <--example=VALUE...>\n", cmdNameVar);
 		puts("If multiple ACTs are specified, last wins.");
 		for (Registerable * reg = Registerable::regFirst; reg; reg = reg->regNext) {
 			if (reg->getKind() != HelpCategory::kind)
@@ -41,7 +43,7 @@ public:
 		for (Registerable * reg = Registerable::regFirst; reg; reg = reg->regNext) {
 			if (reg->getKind() != Act::kind)
 				continue;
-			printf(" %s: %s\n", reg->name, reg->purpose);
+			printf(" --%s: %s\n", reg->name, reg->purpose);
 		}
 		return;
 	}
@@ -58,37 +60,46 @@ public:
 				continue;
 			Cvar * cvar = static_cast<Cvar *>(reg);
 			auto val = cvar->get();
-			printf(" %s: %s (currently '%s')\n", reg->name, reg->purpose, val.c_str());
+			printf(" --%s=%s: %s (currently '%s')\n", reg->name, cvar->valdesc, reg->purpose, val.c_str());
 		}
 		return;
 	}
 };
 static CvarHelpCategory theCvarHelpCategory;
 
-int iblis::main(int argc, char ** argv) {
+int iblis::main(const char * cmdName, int argc, char ** argv) {
+	cmdNameVar = cmdName;
 	Act * queuedAct = &theHelpAct;
+	bool forcePositional = false;
 	for (int i = 1; i < argc; i++) {
 		char * arg = argv[i];
-		char * equ = strchr(arg, '=');
-		if (equ) {
-			*equ = 0;
-			auto cvar = Registerable::find<Cvar>(arg);
-			if (cvar) {
-				if (!cvar->parse(equ + 1)) {
-					printf("Couldn't parse value '%s' for '%s'. Try --help.\n", equ + 1, arg);
-					return 1;
+		if ((!forcePositional) && (arg[0] == '-' && arg[1] == '-')) {
+			if (arg[2] == 0) {
+				forcePositional = true;
+			} else {
+				char * argNeq = arg + 2;
+				char * equ = strchr(argNeq, '=');
+				if (equ) {
+					*equ = 0;
+					auto cvar = Registerable::find<Cvar>(argNeq);
+					if (cvar) {
+						if (!cvar->parse(equ + 1)) {
+							printf("Couldn't parse value '%s' for '%s'. Try --help.\n", equ + 1, arg);
+							return 1;
+						}
+					} else {
+						printf("Failed to find cvar '%s'. Try --help.\n", arg);
+						return 1;
+					}
+				} else {
+					auto act = Registerable::find<Act>(argNeq);
+					if (act) {
+						queuedAct = act;
+					} else {
+						printf("Failed to parse act '%s'. Try --help.\n", arg);
+						return 1;
+					}
 				}
-			} else {
-				printf("Failed to find cvar '%s'. Try --help.\n", arg);
-				return 1;
-			}
-		} else {
-			auto act = Registerable::find<Act>(arg);
-			if (act) {
-				queuedAct = act;
-			} else {
-				printf("Failed to parse act '%s'. Try --help.\n", arg);
-				return 1;
 			}
 		}
 	}

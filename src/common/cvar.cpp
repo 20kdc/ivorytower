@@ -30,12 +30,12 @@ Act::Act(const char * name, const char * purpose) : Registerable(name, purpose) 
 
 IBLIS_KIND(Act, "Act");
 
-Cvar::Cvar(const char * name, const char * purpose) : Registerable(name, purpose) {
+Cvar::Cvar(const char * name, const char * valdesc, const char * purpose) : Registerable(name, purpose), valdesc(valdesc) {
 }
 
 IBLIS_KIND(Cvar, "Cvar");
 
-CvarBool::CvarBool(const char * name, const char * purpose, bool def) : Cvar(name, purpose), value(def) {
+CvarBool::CvarBool(const char * name, const char * purpose, bool def) : Cvar(name, "1/0", purpose), value(def) {
 }
 
 static bool boolParseInner(bool * value, const char * val) {
@@ -58,7 +58,7 @@ std::string CvarBool::get() {
 	return std::string(value ? "1" : "0");
 }
 
-CvarStr::CvarStr(const char * name, const char * purpose, std::string def) : Cvar(name, purpose), value(def) {
+CvarStr::CvarStr(const char * name, const char * purpose, std::string def) : Cvar(name, "...", purpose), value(def) {
 }
 
 bool CvarStr::parse(const char * val) {

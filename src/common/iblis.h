@@ -136,7 +136,8 @@ namespace iblis {
 
 	class Cvar : public Registerable {
 	public:
-		Cvar(const char * name, const char * purpose);
+		const char * valdesc;
+		Cvar(const char * name, const char * valdesc, const char * purpose);
 		IBLIS_HAS_KIND;
 		virtual bool parse(const char * value) = 0;
 		virtual std::string get() = 0;
@@ -169,5 +170,5 @@ namespace iblis {
 	extern const char * version;
 
 	// main.cpp
-	int main(int argc, char ** argv);
+	int main(const char * cmdName, int argc, char ** argv);
 }

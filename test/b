@@ -1,5 +1,5 @@
 #!/bin/sh -e
-../setup --install all=on
+../setup --install --all=on
 echo "(passed install)"
 
 meson wrap install sdl2 || true
