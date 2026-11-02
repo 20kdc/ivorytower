@@ -1,6 +1,6 @@
 project('ivorytower-driver', 'cpp')
 
-version_str_cmdout = run_command(['git', 'describe', '--all', '--long'], capture : true, check : true).stdout()
+version_str_cmdout = run_command(['git', 'describe', '--long', '--tags'], capture : true, check : true).stdout()
 version_str = version_str_cmdout.strip()
 
 version_cpp = configure_file(

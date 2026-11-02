@@ -23,9 +23,9 @@ static ComponentHelpCategory theComponentHelpCategory;
 
 class InstallAct : public Act {
 public:
-	InstallAct() : Act("install", "Install all enabled components.") {
+	InstallAct() : Act("install", "", "Install all enabled components.") {
 	}
-	int execute() override {
+	int execute(const std::vector<const char *> & args) override {
 		InstallData iData;
 		for (Registerable * reg = Registerable::regFirst; reg; reg = reg->regNext) {
 			if (reg->getKind() != Component::kind)

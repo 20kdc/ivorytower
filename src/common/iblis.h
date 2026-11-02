@@ -129,9 +129,13 @@ namespace iblis {
 
 	class Act : public Registerable {
 	public:
-		Act(const char * name, const char * purpose);
+		const char * argsum;
+		Act(const char * name, const char * argsum, const char * purpose);
 		IBLIS_HAS_KIND;
-		virtual int execute() = 0;
+		virtual bool checkArgc(size_t argc) {
+			return argc == 0;
+		}
+		virtual int execute(const std::vector<const char *> & args) = 0;
 	};
 
 	class Cvar : public Registerable {

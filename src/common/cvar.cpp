@@ -25,7 +25,7 @@ Registerable::~Registerable() {
 	// technically, this should probably unlink the Registerable, but we don't.
 }
 
-Act::Act(const char * name, const char * purpose) : Registerable(name, purpose) {
+Act::Act(const char * name, const char * argsum, const char * purpose) : Registerable(name, purpose), argsum(argsum) {
 }
 
 IBLIS_KIND(Act, "Act");

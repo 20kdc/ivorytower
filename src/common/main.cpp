@@ -4,9 +4,9 @@ using namespace iblis;
 
 class VersionAct : public Act {
 public:
-	VersionAct() : Act("version", "Give version.") {
+	VersionAct() : Act("version", "", "Give version.") {
 	}
-	int execute() override {
+	int execute(const std::vector<const char *> & args) override {
 		printf("ivorytower %s\n", iblis::version);
 		return 0;
 	}
@@ -17,9 +17,9 @@ static const char * cmdNameVar = "?";
 
 class HelpAct : public Act {
 public:
-	HelpAct() : Act("help", "Shows helpful information.") {
+	HelpAct() : Act("help", "", "Shows helpful information.") {
 	}
-	int execute() override {
+	int execute(const std::vector<const char *> & args) override {
 		printf("ivorytower %s\n", iblis::version);
 		printf("Usage: %s --ACT <--example=VALUE...>\n", cmdNameVar);
 		puts("If multiple ACTs are specified, last wins.");
@@ -43,7 +43,8 @@ public:
 		for (Registerable * reg = Registerable::regFirst; reg; reg = reg->regNext) {
 			if (reg->getKind() != Act::kind)
 				continue;
-			printf(" --%s: %s\n", reg->name, reg->purpose);
+			Act * act = (Act *) reg;
+			printf(" --%s%s: %s\n", reg->name, act->argsum, reg->purpose);
 		}
 		return;
 	}
@@ -70,6 +71,7 @@ static CvarHelpCategory theCvarHelpCategory;
 int iblis::main(const char * cmdName, int argc, char ** argv) {
 	cmdNameVar = cmdName;
 	Act * queuedAct = &theHelpAct;
+	std::vector<const char *> args;
 	bool forcePositional = false;
 	for (int i = 1; i < argc; i++) {
 		char * arg = argv[i];
@@ -101,7 +103,13 @@ int iblis::main(const char * cmdName, int argc, char ** argv) {
 					}
 				}
 			}
+		} else {
+			args.push_back(arg);
 		}
 	}
-	return queuedAct->execute();
+	if (!queuedAct->checkArgc(args.size())) {
+		printf("--%s%s: %i args incorrect\n", queuedAct->name, queuedAct->argsum, (int) args.size());
+		return 1;
+	}
+	return queuedAct->execute(args);
 }
