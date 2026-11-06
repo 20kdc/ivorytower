@@ -1,7 +1,9 @@
 #!/bin/sh -e
 # 'Boxenrunner' abstraction.
 # This is to let ivorytower be semi-independent of distrobox.
-# boxenrunner RUNNER enter NAME COMMAND...
+# Also, it's actually really important that we DON'T have '-' args in the 'enter' chain (and this program in general)!
+# We don't want to do anything that could confuse clangd. See doc/TOOLING_REQS.md
+# boxenrunner RUNNER enter NAME IGNORED... : COMMAND...
 # boxenrunner RUNNER create CONTAINER IMAGE
 # boxenrunner RUNNER test CONTAINER
 # boxenrunner RUNNER check
@@ -15,6 +17,7 @@ ITSETUP_BOX_DIR="`dirname $ITSETUP_BOX_WHERE`"
 
 boxenrunner="$1"
 shift
+
 subcmd="$1"
 shift
 
@@ -41,6 +44,9 @@ if [ "$boxenrunner" = "distrobox" ]; then
 	if [ "$subcmd" = "enter" ]; then
 		container="$1"
 		shift
+		# drop until --
+		dummy_arg=""; while [ "$dummy_arg" != ":" ]; do dummy_arg="$1"; shift; done
+		# actual exec
 		exec distrobox enter "$container" -- "$@"
 	elif [ "$subcmd" = "create" ]; then
 		container="$1"
@@ -70,6 +76,8 @@ elif [ "$boxenrunner" = "ivt_docker" ]; then
 	if [ "$subcmd" = "enter" ]; then
 		container="$1"
 		shift
+		# drop until --
+		dummy_arg=""; while [ "$dummy_arg" != ":" ]; do dummy_arg="$1"; shift; done
 		# ensure container is running
 		docker start "$container" >/dev/null
 		# create env file

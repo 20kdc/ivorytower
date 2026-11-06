@@ -2,16 +2,14 @@
 
 Like many parts of ivorytower, this is a mess due to a number of important conflicting concerns.
 
-1. Meson has to actually function, which is difficult when it will rearrange your compiler args as it likes, breaking things like `-Xlinker`.
+1. See everything in `TOOLING_REQS.md`.
 2. Using the `clang` driver with the MSVC ABI causes it to need to be supplied a lot of args to stop it from making a red bloody mess of the carpet.
 	* The least-bad is that `--target` and library and include paths must be specified.
 	* `-fms-runtime-lib=dll` will not stop `libcmt` being linked. `-nostartfiles` is mandatory.
 	* `--ld-path` appears to be a lie.
 	* `--fuse-ld=` only works for executables in PATH.
 	* There are some linker args installed here to work around `notvcrt` linker comments not necessarily propagating through.
-3. The `clangd` tool needs as many of those args as possible, especially all of the per-architecture stuff from earlier.
-	* _That means that Meson needs to see these args._
-4. If some of these args should actually secretly be stuffed into the part of the command line that Meson _can't_ see is 'open to interpretation'. But the same thing is basically being done more robustly using the command wrappers already anyway where it's truly needed.
+3. If some of these args should actually secretly be stuffed into the part of the command line that Meson _can't_ see is 'open to interpretation'. But the same thing is basically being done more robustly using the command wrappers already anyway where it's truly needed.
 
 As a result of all of this, a 'layered approach' is used.
 

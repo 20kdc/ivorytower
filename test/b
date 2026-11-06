@@ -22,7 +22,7 @@ do_stlp() {
 	suffix="$1"
 	shift
 	do_variant "${prefix}default${suffix}" $@
-	do_variant "${prefix}static${suffix}" $@
+	do_variant "${prefix}static${suffix}" $@ -Dsdl2=false
 	do_variant "${prefix}zero${suffix}" $@ -Dstl=false -Dsdl2=false
 }
 

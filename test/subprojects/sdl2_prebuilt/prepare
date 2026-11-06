@@ -13,7 +13,7 @@ endl sdl2.mac.dmg https://github.com/libsdl-org/SDL/releases/download/release-2.
 mkdir -p mac/inc/SDL2
 mkdir -p mac/lib
 
-if [ ! -e "mac/include/SDL2/SDL.h" ]; then
+if [ ! -e "mac/inc/SDL2/SDL.h" ]; then
 	7z x sdl2.mac.dmg
 	# This dissection needs to be done because includes here refer to SDL2/ directory.
 	# I tried the nice way, it didn't work.

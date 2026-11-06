@@ -46,15 +46,13 @@ bool iblis::BoxenrunnerSys::test(const std::string & container) {
 	return cmd.run() == 0;
 }
 
-std::vector<std::string> iblis::BoxenrunnerSys::prefix(const std::string & container) {
+std::vector<std::string> iblis::BoxenrunnerSys::prefix(const std::string & container, const std::vector<std::string> & dropped) {
 	std::string containerRes = cvar_box_prefix.value + container;
-	if (runner == "distrobox") {
-		// decouple generated files from boxenrunner if on distrobox
-		// we can't do this for ivt_docker, since boxenrunner manages that.
-		return {"distrobox", "enter", containerRes, "--"};
-	} else {
-		return {helper, runner, "enter", containerRes};
-	}
+	std::vector<std::string> args = {helper, runner, "enter", containerRes};
+	for (const std::string & arg : dropped)
+		args.push_back(arg);
+	args.push_back(":");
+	return args;
 }
 
 Subsystem<BoxenrunnerSys> iblis::boxenrunnerSys;

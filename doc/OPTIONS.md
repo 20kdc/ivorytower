@@ -8,7 +8,7 @@ However, some of them deserve better explaination.
 
 Those specific options will be described here.
 
-## `box=`
+## `--box=`
 
 Portable Linux compilation is best achieved using Docker containers.
 
@@ -16,7 +16,7 @@ However, build systems are not specifically adapted to the situation of the comp
 
 Two of these mechanisms are available: A custom wrapper around Docker, and Distrobox.
 
-* `box=ivt_docker`: Uses `docker` directly. I've found this is the best experience and thus it's the default.
+* `--box=ivt_docker`: Uses `docker` directly. I've found this is the best experience and thus it's the default.
     * This is implemented in `helpers/boxenrunner`.
     * The environment variable `ITSETUP_BOX_MOUNTS` defaults to `-v /home:/home -v /media:/media -v /run/user:/run/user` and can be used to adjust exposed mounts.
     * The environment variable `ITSETUP_BOX_ETCFILES` defaults to `-v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro` and adjusts exposed etcfiles.

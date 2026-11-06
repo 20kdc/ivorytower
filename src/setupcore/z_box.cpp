@@ -11,16 +11,18 @@ static iblis::CvarBool cvar_box_rebuild("box_rebuild", "If 1, containers will be
 class ContainerCCComponent : public Component {
 public:
 	const Machine * machine;
-	const char * variant;
+	const char * variant, * clangTarget;
 	const CompilerCfg * compiler;
 	const char * container;
 	const char * image;
 	ContainerCCComponent(
 		const char * name, const char * purpose, bool def,
+		const char * clangTarget,
 		const Machine * machine, const char * variant, const CompilerCfg * compiler,
 		const char * container, const char * image
 	) :
 		Component(name, purpose, def),
+		clangTarget(clangTarget),
 		machine(machine), variant(variant), compiler(compiler),
 		container(container), image(image) {
 	}
@@ -47,7 +49,7 @@ public:
 		for (auto x = cfgCmds.begin(); x != cfgCmds.end(); x++) {
 			std::vector<std::string> * baseCmd = *x;
 			if (baseCmd->size()) {
-				std::vector<std::string> newCmd = boxSys->prefix(container);
+				std::vector<std::string> newCmd = boxSys->prefix(container, {"-target", clangTarget});
 				for (auto y = baseCmd->begin(); y != baseCmd->end(); y++)
 					newCmd.push_back(*y);
 				*baseCmd = newCmd;
@@ -76,16 +78,19 @@ static CompilerCfg sensibleDefaultGCC = [] {
 
 ContainerCCComponent theSteamRTScoutComponent(
 	"scout", "'scout' SteamRT (most/all x86_64 glibc Linuxes)", true,
+	"x86_64-linux-gnu",
 	&Machine::lgx64, "scout", &sensibleDefaultGCC,
 	"scout", "registry.gitlab.steamos.cloud/steamrt/scout/sdk"
 );
 ContainerCCComponent theSteamRTScouti686Component(
 	"scout_i386", "'scout-i386' SteamRT (most/all x86 glibc Linuxes)", false,
+	"i686-linux-gnu",
 	&Machine::lgx32, "scout", &sensibleDefaultGCC,
 	"scout-i386", "registry.gitlab.steamos.cloud/steamrt/scout/sdk/i386"
 );
 ContainerCCComponent theSteamRTSniperComponent(
 	"sniper", "'sniper' SteamRT (most newer x86_64 glibc Linuxes)", false,
+	"x86_64-linux-gnu",
 	&Machine::lgx64, "sniper", &sensibleDefaultGCC,
 	"sniper", "registry.gitlab.steamos.cloud/steamrt/sniper/sdk"
 );
