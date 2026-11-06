@@ -1,0 +1,23 @@
+#!/bin/sh -e
+
+endl() {
+	if [ -e "$1" ]; then
+		true
+	else
+		wget -O "$1" "$2"
+	fi
+}
+
+endl sdl2.mac.dmg https://github.com/libsdl-org/SDL/releases/download/release-2.30.10/SDL2-2.30.10.dmg
+
+mkdir -p mac/inc/SDL2
+mkdir -p mac/lib
+
+if [ ! -e "mac/include/SDL2/SDL.h" ]; then
+	7z x sdl2.mac.dmg
+	# This dissection needs to be done because includes here refer to SDL2/ directory.
+	# I tried the nice way, it didn't work.
+	mv SDL2/SDL2.framework/Versions/A/Headers/* mac/inc/SDL2/
+	mv SDL2/SDL2.framework/Versions/A/SDL2 mac/lib/libSDL2.dylib
+	rm -rf SDL2
+fi

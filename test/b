@@ -4,6 +4,8 @@ echo "(passed install)"
 
 meson wrap install sdl2 || true
 
+cd subprojects/sdl2_prebuilt ; ./prepare ; cd ../..
+
 rm -rf build
 mkdir -p build
 
@@ -53,6 +55,7 @@ do_stlp lgx64_ _sniper -Dsdl2=false
 do_stlp wx32_ _mingw -Dsdl2=false
 do_stlp wx64_ _mingw
 
-# Mac isn't capable of the SDL2 build due to @available. We need to switch to prebuilts for this test.
-do_stlp mx64_ "" -Dsdl2=false
-do_stlp ma64_ "" -Dsdl2=false
+# Mac isn't capable of the SDL2 build due to @available.
+# But we have prebuilts now.
+do_stlp mx64_ ""
+do_stlp ma64_ ""
