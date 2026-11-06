@@ -1,10 +1,6 @@
 #!/bin/sh -e
-../setup --install --all=on
+../../setup --install --all=on
 echo "(passed install)"
-
-meson wrap install sdl2 || true
-
-cd subprojects/sdl2_prebuilt ; ./prepare ; cd ../..
 
 rm -rf build
 mkdir -p build
@@ -22,8 +18,8 @@ do_stlp() {
 	suffix="$1"
 	shift
 	do_variant "${prefix}default${suffix}" $@
-	do_variant "${prefix}static${suffix}" $@ -Dsdl2=false
-	do_variant "${prefix}zero${suffix}" $@ -Dstl=false -Dsdl2=false
+	do_variant "${prefix}static${suffix}" $@
+	do_variant "${prefix}zero${suffix}" $@
 }
 
 # Test most things reasonably available to Ubuntu 24.04.
@@ -42,20 +38,13 @@ do_stlp lgx32_ _scout
 # This is because it relies *heavily* on dynamic linking to do all its work from more reasonably licensed resources.
 do_variant wx32_default_w32cross
 do_variant wx64_default_w32cross
-# arm64 is sacrificable in the name of test speed
-do_variant wa64_default_w32cross -Dsdl2=false
+do_variant wa64_default_w32cross
 
-# stuff we more-or-less expect to continue working
 do_stlp lgx64_ _scout
+do_stlp lgx64_ _sniper
 
-# we don't need to run SDL2 tests on sniper, it's not significantly different from scout
-do_stlp lgx64_ _sniper -Dsdl2=false
-
-# there's no significant difference between arches for the MinGW stuff, so disable anything complicated
-do_stlp wx32_ _mingw -Dsdl2=false
+do_stlp wx32_ _mingw
 do_stlp wx64_ _mingw
 
-# Mac isn't capable of the SDL2 build due to @available.
-# But we have prebuilts now.
 do_stlp mx64_ ""
 do_stlp ma64_ ""

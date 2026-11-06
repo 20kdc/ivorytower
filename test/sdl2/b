@@ -1,0 +1,42 @@
+#!/bin/sh -e
+../../setup --install --all=on
+echo "(passed install)"
+
+meson wrap install sdl2 || true
+
+cd subprojects/sdl2_prebuilt ; ./prepare ; cd ../..
+
+rm -rf build
+mkdir -p build
+
+do_variant() {
+	variant="$1"
+	shift
+	meson setup "build/${variant}" --cross-file "ivt/${variant}" $@ > "build/${variant}_setup.log" || (echo "error in setup ${variant}" ; exit 1)
+	meson compile -C "build/${variant}"
+}
+
+if [ "$#" != 0 ]; then
+	do_variant "$1"
+	exit
+fi
+
+# 'important' ('this will break and it is important if it breaks') cases
+
+do_variant lgx32_default_scout
+do_variant lgx64_default_scout
+# we don't need to run SDL2 tests on sniper, it's not significantly different from scout
+
+# we don't bother doing this test for mingw; it can be taken as given that it works
+# or at least, if it didn't work, but allconfigs did work, it wouldn't be our fault
+
+do_variant mx64_default
+do_variant ma64_default
+
+# each of these are VERY costly as they rebuild SDL2
+# however, w32cross kinda 'needs' the testing on large codebases
+do_variant wx32_default_w32cross # <- BUILDS SDL2
+do_variant wx64_default_w32cross # <- BUILDS SDL2
+# Errors right now due to intrin.h not being included.
+# There's an implied difference between w32cross and MSVC here.
+# do_variant wa64_default_w32cross # <- BUILDS SDL2

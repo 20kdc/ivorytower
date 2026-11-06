@@ -16,13 +16,32 @@
 #define __MINGW_ATTRIB_NORETURN __declspec(noreturn)
 /* } */
 
+/*
+ * Other included things.
+ * Be very careful with this list; most things you 'could' add causes circularity.
+ * The general rule you should follow for inclusion is,
+ * 'Does deleting this break w10/4vcruntime.sh ?'
+ */
+
 #include <stdint.h>
+
+/*
+ * Not 'critical', but dependencyless and generally wise to include.
+ * Note that upstream UCRT stddef.h ends up including this file.
+ * So maybe not that wise. Should review at some point
+ */
 #include <stddef.h>
 
-/* Stuff and things */
+/* Intentionally circular for now. More thought on this is necessary. */
 #include <crtdefs.h>
+
+/* Same kinda reasoning as stddef. */
 #include <vadefs.h>
-/* Critically important. _Inout_ and all the rest live here. */
+
+/*
+ * Critically important. _Inout_ and all the rest live here.
+ * If this is not on-path for CRT functions things go VERY wrong.
+ */
 #include <sal.h>
 
 /* Feature flags. */
