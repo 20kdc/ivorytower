@@ -175,3 +175,15 @@ note also `-print-libgcc-file-name`
 `ToolChain::getCompilerRT` suggests it does actually try searching library paths before resorting to hardcoded path, can we do something with this?
 
 ...'should be yes, but actually, no'. This seems to be ToolChain paths, not general library paths.
+
+## SDL2/3 `_BitScanReverse` arm64 mystery
+
+`SDL_bits.h` on MSVC requires/assumes `_BitScanReverse` exists.
+
+So this means it has to be available from `SDL_stdinc.h`?
+
+In turn, pulls in platform `stdarg`, `string`, `wchar` and a few others.
+
+Really need to graph out the includes here and figure out how `intrin.h` was _supposed_ to be pulled in.
+
+Really, should figure out an 'evidence-based' include structure in general.
