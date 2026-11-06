@@ -14,6 +14,15 @@
 /* MinGW compatibility. This must be handled as early as possible. { */
 #define __MINGW_EXTENSION
 #define __MINGW_ATTRIB_NORETURN __declspec(noreturn)
+/* For excpt.h __try1 */
+#define __MINGW64_STRINGIFY_2(x) #x
+#define __MINGW64_STRINGIFY(x) __MINGW64_STRINGIFY_2(x)
+#ifdef __i386__
+#define __MINGW_USYMBOL_2(x) _ ## x
+#define __MINGW_USYMBOL(x) __MINGW_USYMBOL_2(x)
+#else
+#define __MINGW_USYMBOL(x) x
+#endif
 /* } */
 
 /*
