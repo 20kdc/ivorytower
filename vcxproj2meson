@@ -1,0 +1,203 @@
+#!/usr/bin/env python3
+# A hacky script theoretically intended for use with the output of "vpc.exe"
+# Kinda failed horribly because Clang can't actually deal with all of the VC-isms in Valve's code.
+# Never actually completed a build and has some missing declarations as a result.
+# It still might be worth adapting.
+
+import xml.etree.ElementTree as ET
+import sys
+
+tree = ET.parse(sys.argv[1])
+root = tree.getroot()
+
+# -- project examiner and Meson conversion annex --
+
+def meson_string(v: str):
+	return "'" + v + "'"
+
+class Configuration:
+	def __init__(self):
+		self.target_name = "project"
+		self.props = {}
+		self.lists = {
+			"cdefs": [],
+			"libfiles": [],
+			"incdirs": [],
+			"libdirs": [],
+			"clcompile": []
+		}
+
+	def test_cond(self, element: ET.Element):
+		condition = element.attrib.get("Condition")
+		if condition == None:
+			return True
+		# This is a hack, but it works for VPC output.
+		if condition.startswith("'$(Configuration)|$(Platform)'=='") and condition.endswith("'") and condition.count("'") == 4:
+			chkval = "'$(Configuration)|$(Platform)'=='" + self.props["Configuration"] + "|" + self.props["Platform"] + "'"
+			return condition == chkval
+		elif condition.startswith("exists("):
+			return True
+		else:
+			raise Exception("Not able to handle condition: " + condition)
+		return False
+
+	def extract_list(self, element: ET.Element):
+		res = []
+		for v in element.text.split(";"):
+			if v == "":
+				continue
+			if v == "%(PreprocessorDefinitions)":
+				continue
+			res.append(v.replace("\\", "/"))
+		return res
+
+	def recurse(self, element: ET.Element, is_rc: bool):
+		if not self.test_cond(element):
+			return
+		# handle various types
+		if not is_rc:
+			if element.tag.endswith("TargetName"):
+				self.target_name = element.text
+			elif element.tag.endswith("PreprocessorDefinitions"):
+				self.lists["cdefs"] = self.extract_list(element)
+				return
+			elif element.tag.endswith("AdditionalDependencies"):
+				self.lists["libfiles"] = self.extract_list(element)
+				return
+			elif element.tag.endswith("AdditionalIncludeDirectories"):
+				self.lists["incdirs"] = self.extract_list(element)
+				return
+			elif element.tag.endswith("AdditionalLibraryDirectories"):
+				self.lists["libdirs"] = self.extract_list(element)
+				return
+			elif element.tag.endswith("ClCompile"):
+				if "Include" in element.attrib:
+					self.lists["clcompile"].append(element.attrib["Include"].replace("\\", "/"))
+					return
+		else:
+			pass
+		# things that affect subelement flags
+		if element.tag.endswith("ResourceCompile"):
+			is_rc = True
+		# handle sub-elements
+		for sub in element:
+			self.recurse(sub, is_rc)
+
+	def mesonize(self) -> list[str]:
+		res = []
+		prj = self.target_name
+
+		for cdef in self.lists["cdefs"]:
+			res.append("add_project_arguments(" + meson_string("-D" + cdef) + ", language: ['c', 'cpp'])")
+
+		for lsk in ["libfiles", "libdirs", "clcompile"]:
+			res.append(prj + "_" + lsk + " = []")
+			for cdef in self.lists[lsk]:
+				stmt_core = prj + "_" + lsk + " += " + meson_string(cdef)
+				res.append(stmt_core)
+
+		for lsk in ["incdirs"]:
+			res.append(prj + "_" + lsk + " = []")
+			for cdef in self.lists[lsk]:
+				stmt_core = prj + "_" + lsk + " += " + meson_string(cdef)
+				res.append("if fs.is_dir(" + meson_string(cdef) + ")\n" + stmt_core + "\nendif")
+
+		the_main_body = prj + "_lib = shared_library(\n"
+		the_main_body += meson_string(prj) + ", \n"
+		the_main_body += prj + "_clcompile, \n"
+		the_main_body += "include_directories: " + prj + "_incdirs\n"
+		the_main_body += ")\n"
+		res.append(the_main_body)
+
+		return res
+
+# -- configuration setup --
+
+cfg_dbg = Configuration()
+cfg_dbg.props["Platform"] = "Win32"
+cfg_dbg.props["Configuration"] = "Debug"
+cfg_dbg.recurse(root, False)
+meson_stmts_dbg = cfg_dbg.mesonize()
+
+cfg_rel = Configuration()
+cfg_rel.props["Platform"] = "Win32"
+cfg_rel.props["Configuration"] = "Release"
+cfg_rel.recurse(root, False)
+meson_stmts_rel = cfg_rel.mesonize()
+
+# PRINTER CHECK
+if False:
+	meson_stmts_dbg = ["A", "B", "Debug", "C"]
+	meson_stmts_rel = ["A", "B", "Release", "C"]
+
+class ConditionalMesonPrinter:
+	def __init__(self):
+		self.condition = "none"
+	def print(self, condition, text):
+		if self.condition != condition:
+			if condition == "none":
+				print("endif")
+			elif self.condition == "none":
+				print("if cfg == '" + condition + "'")
+			else:
+				print("elif cfg == '" + condition + "'")
+			self.condition = condition
+		if condition != "none":
+			print("\t" + text)
+		else:
+			print(text)
+
+# Do a sort of awkward diff.
+rel_idx = 0
+dbg_idx = 0
+pr = ConditionalMesonPrinter()
+
+# Header
+pr.print("none", "project('" + cfg_rel.target_name + "', 'c', 'cpp')")
+pr.print("none", "fs = import('fs')")
+pr.print("none", "cfg = 'release'")
+
+# Main diff loop.
+while rel_idx < len(meson_stmts_rel) and dbg_idx < len(meson_stmts_dbg):
+	rel_stmt = meson_stmts_rel[rel_idx]
+	if rel_stmt == meson_stmts_dbg[dbg_idx]:
+		# match, handle as similar
+		pr.print("none", rel_stmt)
+		rel_idx += 1
+		dbg_idx += 1
+	else:
+		# differing block!
+		# continue writing release until we find a statement that appears in debug's future.
+		debug_future_idx = -1
+		try:
+			debug_future_idx = meson_stmts_dbg.index(rel_stmt, dbg_idx)
+		except:
+			pass # ignored, see -1 check
+
+		if debug_future_idx == -1:
+			# still in differing section, write another release line
+			pr.print("release", rel_stmt)
+			rel_idx += 1
+		else:
+			# found sync point!
+			while dbg_idx < debug_future_idx:
+				pr.print("debug", meson_stmts_dbg[dbg_idx])
+				dbg_idx += 1
+			# now rel_stmt must == dbg_stmt
+			assert rel_stmt == meson_stmts_dbg[dbg_idx]
+			pr.print("none", rel_stmt)
+			rel_idx += 1
+			dbg_idx += 1
+
+# Add anything missing at the end of the release statements.
+while rel_idx < len(meson_stmts_rel):
+	pr.print("release", meson_stmts_rel[dbg_idx])
+	rel_idx += 1
+
+# Add anything missing at the end of the debug statements.
+while dbg_idx < len(meson_stmts_dbg):
+	pr.print("debug", meson_stmts_dbg[dbg_idx])
+	dbg_idx += 1
+
+# Clean up
+pr.print("none", "")
