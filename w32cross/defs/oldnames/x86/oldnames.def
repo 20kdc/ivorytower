@@ -24,3 +24,27 @@ LIBRARY "api-ms-win-crt-convert-l1-1-0.dll"
 EXPORTS
 	; SDL2 needs this, funnily enough
 	itoa==_itoa
+
+LIBRARY "api-ms-win-crt-string-l1-1-0.dll"
+EXPORTS
+	; explicitly oldnames.lib per string.h {
+	strdup==_strdup
+	strcmpi==_stricmp
+	stricmp==_stricmp
+	strlwr==_strlwr
+	strnicmp==_strnicmp
+	strnset==_strnset
+	strrev==_strrev
+	strset==_strset
+	strupr==_strupr
+	; }
+	; explicitly oldnames.lib per corecrt_wstring.h {
+	wcsicmp==_wcsicmp
+	wcsnicmp==_wcsnicmp
+	wcsnset==_wcsnset
+	wcsrev==_wcsrev
+	wcsset==_wcsset
+	wcslwr==_wcslwr
+	wcsupr==_wcsupr
+	wcsicoll==_wcsicoll
+	; }

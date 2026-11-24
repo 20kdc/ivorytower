@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
-# A hacky script theoretically intended for use with the output of "vpc.exe"
+
+# Usage might be along the lines of:
+# vcxproj2meson hldll.vcxproj > meson.build && rm -rf build && meson setup build --cross-file=ivt/wx32_default_w32cross && ninja -C build
+
+# A hacky script originally intended for use with the output of "vpc.exe"
 # Kinda failed horribly because Clang can't actually deal with all of the VC-isms in Valve's code.
-# Never actually completed a build and has some missing declarations as a result.
-# It still might be worth adapting.
+# However, it does work for GoldSrc assuming minor SDK modifications:
+# * hl.def needs SECTIONS section removed
+# * vgui_TeamFortressViewport.cpp tries to catch an exception type it knows nothing about in some Windows-only code.
+#   Frankly, this looks like a shipping-date hack.
+# * a number of places use static variables that w32cross can't handle yet.
+#   these statics can safely be pushed out of their functions
 
 import xml.etree.ElementTree as ET
 import sys
@@ -18,7 +26,10 @@ def meson_string(v: str):
 class Configuration:
 	def __init__(self):
 		self.target_name = "project"
-		self.props = {}
+		self.props = {
+			"ProjectDir": "",
+			"UserRootDir": ""
+		}
 		self.lists = {
 			"cdefs": [],
 			"libfiles": [],
@@ -26,15 +37,40 @@ class Configuration:
 			"libdirs": [],
 			"clcompile": []
 		}
+		self.vs_module_defs = ""
+
+	def substitute(self, text: str) -> str:
+		"""
+		Run variable substitutions.
+		"""
+		out_text = ""
+		start = 0
+		while True:
+			varstart = text.find("$(", start)
+			varend = -1
+			if varstart != -1:
+				varend = text.find(")", varstart)
+			if varstart != -1 and varend != -1:
+				# Variable substitution
+				out_text += text[start:varstart]
+				out_text += self.props[text[varstart + 2:varend]]
+				start = varend + 1
+			else:
+				out_text += text[start:]
+				return out_text
 
 	def test_cond(self, element: ET.Element):
 		condition = element.attrib.get("Condition")
 		if condition == None:
 			return True
+		# Run substitution ('$(Configuration)|$(Platform)' -> 'Debug|Win32')
+		condition = self.substitute(condition)
 		# This is a hack, but it works for VPC output.
-		if condition.startswith("'$(Configuration)|$(Platform)'=='") and condition.endswith("'") and condition.count("'") == 4:
-			chkval = "'$(Configuration)|$(Platform)'=='" + self.props["Configuration"] + "|" + self.props["Platform"] + "'"
-			return condition == chkval
+		eqeqpos = condition.find("'=='", 1)
+		if eqeqpos != -1 and condition.startswith("'") and condition.endswith("'") and (not condition.endswith("'=='")) and condition.count("'") == 4:
+			# This is a bit hacky. We basically want to find the regex: '([^']*)'=='([^']*)'
+			# As this (after substitution) is the result of the singular idiom used for 'is X == Y?'
+			return condition[1:eqeqpos] == condition[eqeqpos + 4:len(condition) - 1]
 		elif condition.startswith("exists("):
 			return True
 		else:
@@ -46,7 +82,8 @@ class Configuration:
 		for v in element.text.split(";"):
 			if v == "":
 				continue
-			if v == "%(PreprocessorDefinitions)":
+			if v == "%(PreprocessorDefinitions)" or v == "%(AdditionalDependencies)":
+				# weird quasi-inheritance thing
 				continue
 			res.append(v.replace("\\", "/"))
 		return res
@@ -70,6 +107,8 @@ class Configuration:
 			elif element.tag.endswith("AdditionalLibraryDirectories"):
 				self.lists["libdirs"] = self.extract_list(element)
 				return
+			elif element.tag.endswith("ModuleDefinitionFile"):
+				self.vs_module_defs = self.substitute(element.text).replace("\\", "/")
 			elif element.tag.endswith("ClCompile"):
 				if "Include" in element.attrib:
 					self.lists["clcompile"].append(element.attrib["Include"].replace("\\", "/"))
@@ -90,22 +129,41 @@ class Configuration:
 		for cdef in self.lists["cdefs"]:
 			res.append("add_project_arguments(" + meson_string("-D" + cdef) + ", language: ['c', 'cpp'])")
 
-		for lsk in ["libfiles", "libdirs", "clcompile"]:
+		res.append(prj + "_linkargs = []")
+
+		for cdef in self.lists["libdirs"]:
+			stmt_core = prj + "_linkargs += " + meson_string("-L" + cdef)
+			res.append(stmt_core)
+
+		for cdef in self.lists["libfiles"]:
+			if "/" in cdef:
+				# this is probably a project-relative path
+				stmt_core = prj + "_linkargs += '-Wl,' + meson.project_source_root() + '/' + " + meson_string(cdef)
+			elif cdef.endswith(".lib"):
+				# this may be meant to be found by -L paths
+				stmt_core = prj + "_linkargs += " + meson_string("-l" + cdef[:-4])
+			else:
+				stmt_core = prj + "_linkargs += " + meson_string("-Wl," + cdef)
+			res.append(stmt_core)
+
+		for lsk in ["clcompile"]:
 			res.append(prj + "_" + lsk + " = []")
 			for cdef in self.lists[lsk]:
 				stmt_core = prj + "_" + lsk + " += " + meson_string(cdef)
 				res.append(stmt_core)
 
-		for lsk in ["incdirs"]:
-			res.append(prj + "_" + lsk + " = []")
-			for cdef in self.lists[lsk]:
-				stmt_core = prj + "_" + lsk + " += " + meson_string(cdef)
-				res.append("if fs.is_dir(" + meson_string(cdef) + ")\n" + stmt_core + "\nendif")
+		res.append(prj + "_incdirs = []")
+		for cdef in self.lists["incdirs"]:
+			stmt_core = prj + "_incdirs += " + meson_string(cdef)
+			res.append("if fs.is_dir(" + meson_string(cdef) + ")\n" + stmt_core + "\nendif")
 
 		the_main_body = prj + "_lib = shared_library(\n"
-		the_main_body += meson_string(prj) + ", \n"
-		the_main_body += prj + "_clcompile, \n"
-		the_main_body += "include_directories: " + prj + "_incdirs\n"
+		the_main_body += "\t" + meson_string(prj) + ",\n"
+		the_main_body += "\t" + prj + "_clcompile,\n"
+		the_main_body += "\tlink_args: " + prj + "_linkargs,\n"
+		the_main_body += "\tinclude_directories: " + prj + "_incdirs,\n"
+		if self.vs_module_defs != "":
+			the_main_body += "\tvs_module_defs: " + meson_string(self.vs_module_defs) + ",\n"
 		the_main_body += ")\n"
 		res.append(the_main_body)
 
@@ -170,6 +228,8 @@ while rel_idx < len(meson_stmts_rel) and dbg_idx < len(meson_stmts_dbg):
 		# continue writing release until we find a statement that appears in debug's future.
 		debug_future_idx = -1
 		try:
+			# I saw 'find' on strings and thought it'd work here. It doesn't.
+			# So the code remains awkward.
 			debug_future_idx = meson_stmts_dbg.index(rel_stmt, dbg_idx)
 		except:
 			pass # ignored, see -1 check
