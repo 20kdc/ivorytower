@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Usage might be along the lines of:
-# vcxproj2meson hldll.vcxproj > meson.build && rm -rf build && meson setup build --cross-file=ivt/wx32_default_w32cross && ninja -C build
+# vcxproj2meson hldll.vcxproj hl_cdll.vcxproj > meson.build && rm -rf build && meson setup build --cross-file=ivt/wx32_default_w32cross && ninja -C build
 
 # A hacky script originally intended for use with the output of "vpc.exe"
 # Kinda failed horribly because Clang can't actually deal with all of the VC-isms in Valve's code.
@@ -11,12 +11,36 @@
 #   Frankly, this looks like a shipping-date hack.
 # * a number of places use static variables that w32cross can't handle yet.
 #   these statics can safely be pushed out of their functions
+# Notably, multiple projects can be specified.
 
 import xml.etree.ElementTree as ET
 import sys
 
-tree = ET.parse(sys.argv[1])
-root = tree.getroot()
+# -- arg parses --
+
+meson_project_name = "sln"
+vcxprojs = []
+
+def do_argparsing():
+	idx = 1
+	while idx < len(sys.argv):
+		arg = sys.argv[idx]
+		idx += 1
+		if arg.startswith("-"):
+			if arg == "-meson-project-name":
+				meson_project_name = sys.argv[idx]
+				idx += 1
+			elif arg == "-name":
+				vcxprojs[-1][1] = sys.argv[idx]
+				idx += 1
+			else:
+				raise Exception("unknown arg " + arg)
+		else:
+			tree = ET.parse(arg)
+			root = tree.getroot()
+			vcxprojs.append([root, None])
+
+do_argparsing()
 
 # -- project examiner and Meson conversion annex --
 
@@ -24,8 +48,9 @@ def meson_string(v: str):
 	return "'" + v + "'"
 
 class Configuration:
-	def __init__(self):
+	def __init__(self, override_name):
 		self.target_name = "project"
+		self.override_name = override_name
 		self.props = {
 			"ProjectDir": "",
 			"UserRootDir": ""
@@ -125,9 +150,13 @@ class Configuration:
 	def mesonize(self) -> list[str]:
 		res = []
 		prj = self.target_name
+		if self.override_name != None:
+			prj = self.override_name
+
+		res.append(prj + "_comargs = []")
 
 		for cdef in self.lists["cdefs"]:
-			res.append("add_project_arguments(" + meson_string("-D" + cdef) + ", language: ['c', 'cpp'])")
+			res.append(prj + "_comargs += " + meson_string("-D" + cdef))
 
 		res.append(prj + "_linkargs = []")
 
@@ -160,6 +189,8 @@ class Configuration:
 		the_main_body = prj + "_lib = shared_library(\n"
 		the_main_body += "\t" + meson_string(prj) + ",\n"
 		the_main_body += "\t" + prj + "_clcompile,\n"
+		the_main_body += "\tc_args: " + prj + "_comargs,\n"
+		the_main_body += "\tcpp_args: " + prj + "_comargs,\n"
 		the_main_body += "\tlink_args: " + prj + "_linkargs,\n"
 		the_main_body += "\tinclude_directories: " + prj + "_incdirs,\n"
 		if self.vs_module_defs != "":
@@ -171,17 +202,21 @@ class Configuration:
 
 # -- configuration setup --
 
-cfg_dbg = Configuration()
-cfg_dbg.props["Platform"] = "Win32"
-cfg_dbg.props["Configuration"] = "Debug"
-cfg_dbg.recurse(root, False)
-meson_stmts_dbg = cfg_dbg.mesonize()
+meson_stmts_dbg = []
+meson_stmts_rel = []
 
-cfg_rel = Configuration()
-cfg_rel.props["Platform"] = "Win32"
-cfg_rel.props["Configuration"] = "Release"
-cfg_rel.recurse(root, False)
-meson_stmts_rel = cfg_rel.mesonize()
+for vcxproj_root, vcxproj_override_name in vcxprojs:
+	cfg_dbg = Configuration(vcxproj_override_name)
+	cfg_dbg.props["Platform"] = "Win32"
+	cfg_dbg.props["Configuration"] = "Debug"
+	cfg_dbg.recurse(vcxproj_root, False)
+	meson_stmts_dbg.extend(cfg_dbg.mesonize())
+
+	cfg_rel = Configuration(vcxproj_override_name)
+	cfg_rel.props["Platform"] = "Win32"
+	cfg_rel.props["Configuration"] = "Release"
+	cfg_rel.recurse(vcxproj_root, False)
+	meson_stmts_rel.extend(cfg_rel.mesonize())
 
 # PRINTER CHECK
 if False:
@@ -211,7 +246,7 @@ dbg_idx = 0
 pr = ConditionalMesonPrinter()
 
 # Header
-pr.print("none", "project('" + cfg_rel.target_name + "', 'c', 'cpp')")
+pr.print("none", "project('prj', 'c', 'cpp')")
 pr.print("none", "fs = import('fs')")
 pr.print("none", "cfg = 'release'")
 
