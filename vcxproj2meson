@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
 
-# Usage might be along the lines of:
-# vcxproj2meson hldll.vcxproj hl_cdll.vcxproj > meson.build && rm -rf build && meson setup build --cross-file=ivt/wx32_default_w32cross && ninja -C build
+# Usage might be along the lines of (very long line ahead):
+# vcxproj2meson projects/vs2019/hldll.vcxproj projects/vs2019/hl_cdll.vcxproj projects/vs2010/xwad.vcxproj -name xwad projects/vs2010/qlumpy.vcxproj -name qlumpy > meson.build && rm -rf build && meson setup build --cross-file=ivt/wx32_default_w32cross && ninja -C build
 
-# A hacky script originally intended for use with the output of "vpc.exe"
+# A hacky script originally intended to convert Windows Valve VPC output to Meson for compilation with w32cross.
 # Kinda failed horribly because Clang can't actually deal with all of the VC-isms in Valve's code.
-# However, it does work for GoldSrc assuming minor SDK modifications:
+
+# However, it does work for GoldSrc's projects assuming minor SDK modifications:
 # * hl.def needs SECTIONS section removed
 # * vgui_TeamFortressViewport.cpp tries to catch an exception type it knows nothing about in some Windows-only code.
 #   Frankly, this looks like a shipping-date hack.
 # * a number of places use static variables that w32cross can't handle yet.
 #   these statics can safely be pushed out of their functions
-# Notably, multiple projects can be specified.
+
+# Notably, multiple projects can be specified, and in different directories.
+# Target names can be overridden, which is important because a lot of them tend to be just be 'project'.
+# Therefore, when vcxproj2meson works, it's possible to automate its use to get a crude MSBuild substitute.
 
 import xml.etree.ElementTree as ET
+import os
 import sys
 
 # -- arg parses --
@@ -36,9 +41,7 @@ def do_argparsing():
 			else:
 				raise Exception("unknown arg " + arg)
 		else:
-			tree = ET.parse(arg)
-			root = tree.getroot()
-			vcxprojs.append([root, None])
+			vcxprojs.append([arg, None])
 
 do_argparsing()
 
@@ -47,49 +50,112 @@ do_argparsing()
 def meson_string(v: str):
 	return "'" + v + "'"
 
+def parse_varsub(text: str, early_applier):
+	"""
+	Parses a variable substitution string.
+	Early-applies and collapses substitutions from the given 'early applier'.
+	"""
+	segments = []
+	constant_bank = ""
+	start = 0
+
+	while start != len(text):
+		# this is where segment is prepared for processing
+		rs_ty = "c"
+		rs_cd = ""
+		varstart = text.find("$(", start)
+		varend = -1
+		if varstart != -1:
+			varend = text.find(")", varstart)
+		if varstart != -1 and varend != -1:
+			# Variable substitution
+			if start != varstart:
+				constant_bank += text[start:varstart]
+			rs_ty = "$"
+			rs_cd = text[varstart + 2:varend]
+			early_result = early_applier(rs_cd)
+			if early_result != None:
+				rs_ty = "c"
+				rs_cd = early_result
+			start = varend + 1
+		else:
+			# nothing left
+			rs_ty = "c"
+			rs_cd = text[start:]
+			start = len(text)
+
+		if rs_ty == "c":
+			# 'Wait, why are you doing this here?'
+			# See all the weird conversion call sites like early-result.
+			constant_bank += rs_cd
+		else:
+			# non-constant segment for commit
+			if constant_bank != "":
+				segments.append(["c", constant_bank])
+				constant_bank = ""
+			segments.append([rs_ty, rs_cd])
+
+	# done, flush constant bank
+	if constant_bank != "":
+		segments.append(["c", constant_bank])
+
+	return segments
+
 class Configuration:
-	def __init__(self, override_name):
-		self.target_name = "project"
+	def __init__(self, relative_pfx: str, override_name):
+		# - stuff from world -
+		self.relative_pfx = relative_pfx
 		self.override_name = override_name
 		self.props = {
+			# Whenever this is used, it actually means nothing, it seems?
+			# All paths are project dir relative anyway.
 			"ProjectDir": "",
 			"UserRootDir": ""
 		}
-		self.lists = {
-			"cdefs": [],
-			"libfiles": [],
-			"incdirs": [],
-			"libdirs": [],
-			"clcompile": []
-		}
+		# - stuff from vcxproj -
+		self.target_name = "project"
+		self.configuration_type = "DynamicLibrary"
+		self.cdefs = []
+		self.libfiles = []
+		self.incdirs = []
+		self.libdirs = []
+		self.clcompile = []
 		self.vs_module_defs = ""
 
-	def substitute(self, text: str) -> str:
+	def substitute_now(self, text: str) -> str:
 		"""
-		Run variable substitutions.
+		Run variable substitutions immediately and return results.
 		"""
 		out_text = ""
-		start = 0
-		while True:
-			varstart = text.find("$(", start)
-			varend = -1
-			if varstart != -1:
-				varend = text.find(")", varstart)
-			if varstart != -1 and varend != -1:
-				# Variable substitution
-				out_text += text[start:varstart]
-				out_text += self.props[text[varstart + 2:varend]]
-				start = varend + 1
-			else:
-				out_text += text[start:]
-				return out_text
+
+		def getprop(prop: str):
+			return self.props.get(prop)
+
+		for ty, cd in parse_varsub(text, getprop):
+			if ty == "c":
+				out_text += cd
+			elif ty == "$":
+				raise Exception("unknown prop: " + cd)
+		return out_text
+
+	def meson_path_relative(self, path: str) -> str:
+		if path == "":
+			return "''"
+		return meson_string((self.relative_pfx + path).replace("\\", "/"))
+
+	def meson_path_absolute(self, path: str) -> str:
+		if path == "":
+			return "''"
+		# this is bad and doesn't re-resolve but ehhhhh world will keep turning
+		# it looks sane if you put your meson.build at repo root
+		return "(meson.project_source_root() + '/' + " + meson_string((self.relative_pfx + path).replace("\\", "/")) + ")"
 
 	def test_cond(self, element: ET.Element):
 		condition = element.attrib.get("Condition")
 		if condition == None:
 			return True
 		# Run substitution ('$(Configuration)|$(Platform)' -> 'Debug|Win32')
-		condition = self.substitute(condition)
+		condition = self.substitute_now(condition)
 		# This is a hack, but it works for VPC output.
 		eqeqpos = condition.find("'=='", 1)
 		if eqeqpos != -1 and condition.startswith("'") and condition.endswith("'") and (not condition.endswith("'=='")) and condition.count("'") == 4:
@@ -107,10 +173,10 @@ class Configuration:
 		for v in element.text.split(";"):
 			if v == "":
 				continue
-			if v == "%(PreprocessorDefinitions)" or v == "%(AdditionalDependencies)":
+			if v == "%(PreprocessorDefinitions)" or v == "%(AdditionalDependencies)" or v == "%(AdditionalIncludeDirectories)":
 				# weird quasi-inheritance thing
 				continue
-			res.append(v.replace("\\", "/"))
+			res.append(v)
 		return res
 
 	def recurse(self, element: ET.Element, is_rc: bool):
@@ -119,24 +185,28 @@ class Configuration:
 		# handle various types
 		if not is_rc:
 			if element.tag.endswith("TargetName"):
-				self.target_name = element.text
+				self.target_name = self.substitute_now(element.text)
+				return
+			elif element.tag.endswith("ConfigurationType"):
+				self.configuration_type = self.substitute_now(element.text)
+				return
 			elif element.tag.endswith("PreprocessorDefinitions"):
-				self.lists["cdefs"] = self.extract_list(element)
+				self.cdefs = self.extract_list(element)
 				return
 			elif element.tag.endswith("AdditionalDependencies"):
-				self.lists["libfiles"] = self.extract_list(element)
+				self.libfiles = self.extract_list(element)
 				return
 			elif element.tag.endswith("AdditionalIncludeDirectories"):
-				self.lists["incdirs"] = self.extract_list(element)
+				self.incdirs = self.extract_list(element)
 				return
 			elif element.tag.endswith("AdditionalLibraryDirectories"):
-				self.lists["libdirs"] = self.extract_list(element)
+				self.libdirs = self.extract_list(element)
 				return
 			elif element.tag.endswith("ModuleDefinitionFile"):
-				self.vs_module_defs = self.substitute(element.text).replace("\\", "/")
+				self.vs_module_defs = self.substitute_now(element.text)
 			elif element.tag.endswith("ClCompile"):
 				if "Include" in element.attrib:
-					self.lists["clcompile"].append(element.attrib["Include"].replace("\\", "/"))
+					self.clcompile.append(self.substitute_now(element.attrib["Include"]))
 					return
 		else:
 			pass
@@ -155,19 +225,19 @@ class Configuration:
 
 		res.append(prj + "_comargs = []")
 
-		for cdef in self.lists["cdefs"]:
+		for cdef in self.cdefs:
 			res.append(prj + "_comargs += " + meson_string("-D" + cdef))
 
 		res.append(prj + "_linkargs = []")
 
-		for cdef in self.lists["libdirs"]:
-			stmt_core = prj + "_linkargs += " + meson_string("-L" + cdef)
+		for cdef in self.libdirs:
+			stmt_core = prj + "_linkargs += '-L' + " + self.meson_path_relative(cdef)
 			res.append(stmt_core)
 
-		for cdef in self.lists["libfiles"]:
-			if "/" in cdef:
-				# this is probably a project-relative path
-				stmt_core = prj + "_linkargs += '-Wl,' + meson.project_source_root() + '/' + " + meson_string(cdef)
+		for cdef in self.libfiles:
+			if ("/" in cdef) or ("\\" in cdef):
+				# this is probably a project-relative path but would be wrong in build dir
+				stmt_core = prj + "_linkargs += '-Wl,' + " + self.meson_path_absolute(cdef)
 			elif cdef.endswith(".lib"):
 				# this may be meant to be found by -L paths
 				stmt_core = prj + "_linkargs += " + meson_string("-l" + cdef[:-4])
@@ -175,27 +245,37 @@ class Configuration:
 				stmt_core = prj + "_linkargs += " + meson_string("-Wl," + cdef)
 			res.append(stmt_core)
 
-		for lsk in ["clcompile"]:
-			res.append(prj + "_" + lsk + " = []")
-			for cdef in self.lists[lsk]:
-				stmt_core = prj + "_" + lsk + " += " + meson_string(cdef)
-				res.append(stmt_core)
+		res.append(prj + "_sources = []")
+		for cdef in self.clcompile:
+			res.append(prj + "_sources += " + self.meson_path_relative(cdef))
 
 		res.append(prj + "_incdirs = []")
-		for cdef in self.lists["incdirs"]:
-			stmt_core = prj + "_incdirs += " + meson_string(cdef)
-			res.append("if fs.is_dir(" + meson_string(cdef) + ")\n" + stmt_core + "\nendif")
+		for cdef in self.incdirs:
+			stmt_core = prj + "_incdirs += " + self.meson_path_relative(cdef)
+			res.append("if fs.is_dir(" + self.meson_path_relative(cdef) + ")\n" + stmt_core + "\nendif")
 
-		the_main_body = prj + "_lib = shared_library(\n"
+		# Decide what to build based on configuration type.
+		if self.configuration_type == "Application":
+			the_main_body = prj + "_exe = executable(\n"
+		elif self.configuration_type == "StaticLibrary":
+			the_main_body = prj + "_lib = static_library(\n"
+		elif self.configuration_type == "DynamicLibrary":
+			the_main_body = prj + "_lib = shared_library(\n"
+		else:
+			the_main_body += "# WARNING: Unknown ConfigurationType: " + self.configuration_type + "\n"
+			the_main_body = prj + "_lib = shared_library(\n"
+		# And all the stuff that goes inside.
 		the_main_body += "\t" + meson_string(prj) + ",\n"
-		the_main_body += "\t" + prj + "_clcompile,\n"
+		the_main_body += "\t" + prj + "_sources,\n"
 		the_main_body += "\tc_args: " + prj + "_comargs,\n"
 		the_main_body += "\tcpp_args: " + prj + "_comargs,\n"
 		the_main_body += "\tlink_args: " + prj + "_linkargs,\n"
 		the_main_body += "\tinclude_directories: " + prj + "_incdirs,\n"
 		if self.vs_module_defs != "":
-			the_main_body += "\tvs_module_defs: " + meson_string(self.vs_module_defs) + ",\n"
+			the_main_body += "\tvs_module_defs: " + self.meson_path_relative(self.vs_module_defs) + ",\n"
 		the_main_body += ")\n"
+
+		# Done.
 		res.append(the_main_body)
 
 		return res
@@ -205,14 +285,19 @@ class Configuration:
 meson_stmts_dbg = []
 meson_stmts_rel = []
 
-for vcxproj_root, vcxproj_override_name in vcxprojs:
-	cfg_dbg = Configuration(vcxproj_override_name)
+for vcxproj_path, vcxproj_override_name in vcxprojs:
+	vcxproj_relpfx = os.path.dirname(vcxproj_path)
+	if vcxproj_relpfx != "":
+		vcxproj_relpfx += "/"
+	vcxproj_tree = ET.parse(vcxproj_path)
+	vcxproj_root = vcxproj_tree.getroot()
+	cfg_dbg = Configuration(vcxproj_relpfx, vcxproj_override_name)
 	cfg_dbg.props["Platform"] = "Win32"
 	cfg_dbg.props["Configuration"] = "Debug"
 	cfg_dbg.recurse(vcxproj_root, False)
 	meson_stmts_dbg.extend(cfg_dbg.mesonize())
 
-	cfg_rel = Configuration(vcxproj_override_name)
+	cfg_rel = Configuration(vcxproj_relpfx, vcxproj_override_name)
 	cfg_rel.props["Platform"] = "Win32"
 	cfg_rel.props["Configuration"] = "Release"
 	cfg_rel.recurse(vcxproj_root, False)

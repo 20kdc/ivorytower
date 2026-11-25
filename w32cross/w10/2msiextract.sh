@@ -98,10 +98,13 @@ mv -T "$kitroot/Redist" "${IVTW_SDKPFX}redist"
 # clean up isoextract
 rm -rf "${IVTW_SDKPFX}build/isoextract"
 
-# -- WSDK case hacks --
+# -- case hacks --
 
 # downloaded/stl16/stl/src/winapisupp.cpp workaround
 mv -T "${IVTW_SDKPFX}wsdk/include/appmodel.h" "${IVTW_SDKPFX}wsdk/include/AppModel.h"
 # gl is typically called GL, and gl/GL.h expects as much
 # of course, gl/GL.h is referred to as GL/gl.h by gl/GLU.h
 mv -T "${IVTW_SDKPFX}wsdk/include/gl" "${IVTW_SDKPFX}wsdk/include/GL"
+# lbmlib.c workarounds
+ln -s "windows.h" "${IVTW_SDKPFX}wsdk/include/WINDOWS.H"
+ln -s "${IVTW_SDKPFX}ucrt/include/stdio.h" "STDIO.H"
