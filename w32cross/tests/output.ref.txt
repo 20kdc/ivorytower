@@ -91,3 +91,11 @@ mod_declspec_thread [load] {
 - Inspector(example)
 }
 
+
+mod_static_constructors [load] {
+} [invoke] {
++ Inspector(static_constructors)
+} [free] {
+- Inspector(static_constructors)
+}
+

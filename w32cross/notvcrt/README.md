@@ -170,7 +170,8 @@ aka `__declspec(thread)`.
 * `__dyn_tls_on_demand_init`
 	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2517>
 * `_Init_thread_header` / `_Init_thread_footer` / `_Init_thread_abort`
-	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2599>
+	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2599> decls
+	* <https://github.com/llvm/llvm-project/blob/llvmorg-23.1.4/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2782> surrounding code
 * Basic structure from disasm of `declspec_thread` test:
 	* `.tls$` contains actual TLS data.
 	* `.CRT$XDU` section has `___tls_init` added.

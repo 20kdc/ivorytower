@@ -3,3 +3,4 @@
 include tests/02config.ninja
 
 build ${bin}/mod_declspec_thread.s: rtdll_asm tests/mods/declspec_thread.cpp
+build ${bin}/mod_static_constructors.s: rtdll_asm tests/mods/static_constructors.cpp
