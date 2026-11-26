@@ -6,12 +6,10 @@
 # A hacky script originally intended to convert Windows Valve VPC output to Meson for compilation with w32cross.
 # Kinda failed horribly because Clang can't actually deal with all of the VC-isms in Valve's code.
 
-# However, it does work for GoldSrc's projects assuming minor SDK modifications:
-# * hl.def needs SECTIONS section removed
-# * vgui_TeamFortressViewport.cpp tries to catch an exception type it knows nothing about in some Windows-only code.
-#   Frankly, this looks like a shipping-date hack.
-# * a number of places use static variables that w32cross can't handle yet.
-#   these statics can safely be pushed out of their functions
+# However, it does work for GoldSrc SDK if you delete 18 lines:
+# 1. hl.def needs SECTIONS section removed
+# 2. vgui_TeamFortressViewport.cpp, on Windows only, tries to
+#    catch CException. Which is not actually described.
 
 # Notably, multiple projects can be specified, and in different directories.
 # Target names can be overridden, which is important because a lot of them tend to be just be 'project'.
